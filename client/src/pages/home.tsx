@@ -62,6 +62,9 @@ export default function Home() {
   const [newChannelName, setNewChannelName] = useState("");
   const [newChannelDescription, setNewChannelDescription] = useState("");
   const [newChannelType, setNewChannelType] = useState<"public" | "private">("public");
+  const [selectedWorkspace, setSelectedWorkspace] = useState(1);
+  const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState("");
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -109,12 +112,18 @@ export default function Home() {
         {workspaces.map((workspace) => (
           <div
             key={workspace.id}
-            className="w-10 h-10 bg-slate-600 hover:bg-slate-500 rounded-lg flex items-center justify-center text-white font-medium text-sm cursor-pointer transition-colors"
+            className={`w-10 h-10 ${selectedWorkspace === workspace.id ? 'bg-blue-600' : 'bg-slate-600 hover:bg-slate-500'} rounded-lg flex items-center justify-center text-white font-medium text-sm cursor-pointer transition-colors`}
+            onClick={() => setSelectedWorkspace(workspace.id)}
+            title={workspace.name}
           >
             {workspace.initial}
           </div>
         ))}
-        <div className="w-10 h-10 border-2 border-dashed border-slate-600 hover:border-slate-400 rounded-lg flex items-center justify-center text-slate-400 cursor-pointer transition-colors">
+        <div 
+          className="w-10 h-10 border-2 border-dashed border-slate-600 hover:border-slate-400 rounded-lg flex items-center justify-center text-slate-400 cursor-pointer transition-colors"
+          onClick={() => setShowCreateWorkspace(true)}
+          title="Add workspace"
+        >
           <Plus className="h-5 w-5" />
         </div>
       </div>
@@ -125,7 +134,9 @@ export default function Home() {
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-bold text-lg text-white">Kolab360 Demo</h2>
+              <h2 className="font-bold text-lg text-white">
+                {workspaces.find(w => w.id === selectedWorkspace)?.name || "Kolab360 Demo"}
+              </h2>
               <div className="flex items-center space-x-2 text-sm text-slate-300">
                 {getRoleIcon(user.role)}
                 <span>{user.firstName} {user.lastName}</span>
@@ -761,6 +772,51 @@ export default function Home() {
                 }
               }}
               disabled={!newChannelName.trim()}
+            >
+              Create
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Workspace Dialog */}
+      <Dialog open={showCreateWorkspace} onOpenChange={setShowCreateWorkspace}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create a workspace</DialogTitle>
+            <DialogDescription>
+              Workspaces are where your teams collaborate. Create a new workspace to organize different teams or projects.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="workspace-name">Workspace name</Label>
+              <Input
+                id="workspace-name"
+                placeholder="e.g. Marketing Team"
+                value={newWorkspaceName}
+                onChange={(e) => setNewWorkspaceName(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => {
+              setShowCreateWorkspace(false);
+              setNewWorkspaceName("");
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (newWorkspaceName.trim()) {
+                  // Here you would typically make an API call to create the workspace
+                  console.log('Creating workspace:', newWorkspaceName);
+                  alert(`Workspace "${newWorkspaceName}" created successfully!`);
+                  setShowCreateWorkspace(false);
+                  setNewWorkspaceName("");
+                }
+              }}
+              disabled={!newWorkspaceName.trim()}
             >
               Create
             </Button>
