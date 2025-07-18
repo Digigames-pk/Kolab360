@@ -1,71 +1,93 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-type Theme = "dark" | "light" | "system";
+interface ThemeContextType {
+  theme: string;
+  setTheme: (theme: string) => void;
+}
 
-type ThemeProviderProps = {
-  children: React.ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
-};
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-type ThemeProviderState = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
-
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
-
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "ui-theme",
-  ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-      return;
+const themes = {
+  "dark-purple": {
+    name: "Dark Purple",
+    colors: {
+      "--primary": "hsl(265, 69%, 58%)",
+      "--primary-foreground": "hsl(210, 40%, 98%)",
+      "--background": "hsl(0, 0%, 100%)",
+      "--foreground": "hsl(222.2, 84%, 4.9%)",
     }
+  },
+  "ocean-blue": {
+    name: "Ocean Blue",
+    colors: {
+      "--primary": "hsl(215, 80%, 50%)",
+      "--primary-foreground": "hsl(210, 40%, 98%)",
+      "--background": "hsl(0, 0%, 100%)",
+      "--foreground": "hsl(222.2, 84%, 4.9%)",
+    }
+  },
+  "forest-green": {
+    name: "Forest Green",
+    colors: {
+      "--primary": "hsl(145, 63%, 42%)",
+      "--primary-foreground": "hsl(210, 40%, 98%)",
+      "--background": "hsl(0, 0%, 100%)",
+      "--foreground": "hsl(222.2, 84%, 4.9%)",
+    }
+  },
+  "sunset-orange": {
+    name: "Sunset Orange",
+    colors: {
+      "--primary": "hsl(24, 95%, 53%)",
+      "--primary-foreground": "hsl(210, 40%, 98%)",
+      "--background": "hsl(0, 0%, 100%)",
+      "--foreground": "hsl(222.2, 84%, 4.9%)",
+    }
+  },
+  "midnight-blue": {
+    name: "Midnight Blue",
+    colors: {
+      "--primary": "hsl(224, 76%, 45%)",
+      "--primary-foreground": "hsl(210, 40%, 98%)",
+      "--background": "hsl(0, 0%, 100%)",
+      "--foreground": "hsl(222.2, 84%, 4.9%)",
+    }
+  }
+};
 
-    root.classList.add(theme);
-  }, [theme]);
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "dark-purple";
+  });
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
+  const applyTheme = (themeName: string) => {
+    const themeConfig = themes[themeName as keyof typeof themes];
+    if (!themeConfig) return;
+
+    const root = document.documentElement;
+    Object.entries(themeConfig.colors).forEach(([property, value]) => {
+      root.style.setProperty(property, value);
+    });
+
+    localStorage.setItem("theme", themeName);
+    setTheme(themeName);
   };
 
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeContext.Provider value={{ theme, setTheme: applyTheme }}>
       {children}
-    </ThemeProviderContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-
-  if (context === undefined)
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider");
-
+  }
   return context;
-};
+}

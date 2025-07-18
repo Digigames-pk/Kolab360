@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Palette, Check } from "lucide-react";
@@ -91,6 +91,14 @@ export function ThemeSelector() {
     localStorage.setItem("theme", theme.id);
     setCurrentTheme(theme.id);
   };
+
+  // Apply saved theme on component mount
+  useEffect(() => {
+    const savedTheme = themes.find(t => t.id === currentTheme);
+    if (savedTheme) {
+      applyTheme(savedTheme);
+    }
+  }, [currentTheme]);
 
   return (
     <Popover>

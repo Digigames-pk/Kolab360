@@ -29,7 +29,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="collab-ai-theme">
+      <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
             <Toaster />

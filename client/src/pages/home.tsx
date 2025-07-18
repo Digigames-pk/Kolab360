@@ -1,13 +1,15 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { TaskBoard } from "@/components/TaskBoard";
+import { Calendar } from "@/components/Calendar";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ThemeSelector } from "@/components/ThemeSelector";
-import { TaskBoard } from "@/components/TaskBoard";
-import { Calendar } from "@/components/Calendar";
 import { 
   Hash, 
   Lock, 
@@ -34,6 +36,8 @@ import {
 
 export default function Home() {
   const { user, logoutMutation } = useAuth();
+  const [location, setLocation] = useLocation();
+  const [activeView, setActiveView] = useState("chat");
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -109,30 +113,48 @@ export default function Home() {
 
         {/* Navigation Items */}
         <div className="px-4 py-3 space-y-1">
-          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+          <div 
+            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setActiveView("threads")}
+          >
             <MessageSquare className="h-4 w-4" />
             <span className="text-sm">Threads</span>
           </div>
-          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+          <div 
+            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setActiveView("mentions")}
+          >
             <Bell className="h-4 w-4" />
             <span className="text-sm">Mentions & reactions</span>
           </div>
-          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+          <div 
+            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setActiveView("saved")}
+          >
             <Star className="h-4 w-4" />
             <span className="text-sm">Saved items</span>
           </div>
-          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+          <div 
+            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setActiveView("people")}
+          >
             <Users className="h-4 w-4" />
             <span className="text-sm">People & user groups</span>
           </div>
-          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+          <div 
+            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setActiveView("ai")}
+          >
             <Zap className="h-4 w-4 text-purple-400" />
             <span className="text-sm">AI Assistant</span>
           </div>
-          <a href="/email-test" className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+          <div 
+            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setLocation("/email-test")}
+          >
             <Mail className="h-4 w-4 text-blue-400" />
             <span className="text-sm">Email Templates</span>
-          </a>
+          </div>
         </div>
 
         <Separator className="bg-slate-700" />
@@ -253,14 +275,49 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-        {/* Channel Header */}
+        {/* Channel Header with Navigation */}
         <div className="h-14 bg-white dark:bg-slate-900 border-b border-border flex items-center justify-between px-6">
-          <div className="flex items-center space-x-3">
-            <Hash className="h-5 w-5 text-muted-foreground" />
-            <h1 className="font-semibold text-lg">general</h1>
-            <Star className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" />
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <Hash className="h-5 w-5 text-muted-foreground" />
+              <h1 className="font-semibold text-lg">general</h1>
+              <Star className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" />
+            </div>
+            
+            {/* Navigation Tabs */}
+            <div className="flex items-center space-x-1">
+              <Button 
+                variant={activeView === "chat" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("chat")}
+                className="flex items-center space-x-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Chat</span>
+              </Button>
+              <Button 
+                variant={activeView === "tasks" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("tasks")}
+                className="flex items-center space-x-2"
+              >
+                <CheckSquare className="h-4 w-4" />
+                <span>Tasks</span>
+              </Button>
+              <Button 
+                variant={activeView === "calendar" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("calendar")}
+                className="flex items-center space-x-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                <span>Calendar</span>
+              </Button>
+            </div>
           </div>
+          
           <div className="flex items-center space-x-2">
+            <ThemeSelector />
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Phone className="h-4 w-4" />
             </Button>
@@ -276,29 +333,111 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Welcome Message Area */}
-        <div className="flex-1 flex items-center justify-center bg-background">
-          <div className="text-center space-y-4 max-w-md">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-              <Hash className="h-8 w-8 text-primary" />
+        {/* Content Area based on active view */}
+        <div className="flex-1 bg-background">
+          {activeView === "chat" && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4 max-w-md">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <Hash className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Welcome to #general</h2>
+                  <p className="text-muted-foreground">
+                    This is the beginning of the #general channel. Start a conversation or check out some channels and direct messages.
+                  </p>
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <Button variant="outline" className="w-full">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Try AI Assistant
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Users className="h-4 w-4 mr-2" />
+                    Invite teammates
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Welcome to #general</h2>
-              <p className="text-muted-foreground">
-                This is the beginning of the #general channel. Start a conversation or check out some channels and direct messages.
-              </p>
+          )}
+
+          {activeView === "threads" && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-muted/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Threads</h3>
+                  <p className="text-muted-foreground">View and manage message threads</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col space-y-2">
-              <Button variant="outline" className="w-full">
-                <Zap className="h-4 w-4 mr-2" />
-                Try AI Assistant
-              </Button>
-              <Button variant="outline" className="w-full">
-                <Users className="h-4 w-4 mr-2" />
-                Invite teammates
-              </Button>
+          )}
+
+          {activeView === "mentions" && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-muted/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                  <Bell className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Mentions & Reactions</h3>
+                  <p className="text-muted-foreground">View all your mentions and reactions</p>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {activeView === "saved" && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-muted/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                  <Star className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Saved Items</h3>
+                  <p className="text-muted-foreground">Access your saved messages and files</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeView === "people" && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-muted/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                  <Users className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">People & User Groups</h3>
+                  <p className="text-muted-foreground">Manage team members and user groups</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeView === "ai" && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-purple-500/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                  <Zap className="h-8 w-8 text-purple-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">AI Assistant</h3>
+                  <p className="text-muted-foreground">Chat with AI for help and insights</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeView === "tasks" && (
+            <TaskBoard />
+          )}
+
+          {activeView === "calendar" && (
+            <Calendar />
+          )}
         </div>
 
         {/* Message Input */}
