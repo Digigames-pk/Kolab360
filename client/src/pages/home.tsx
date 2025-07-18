@@ -1,8 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { TaskBoard } from "@/components/TaskBoard";
-import { Calendar } from "@/components/Calendar";
+import { EnhancedTaskBoard } from "@/components/EnhancedTaskBoard";
+import { EnhancedCalendar } from "@/components/EnhancedCalendar";
 import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -474,11 +474,11 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <TaskBoard />
+            <EnhancedTaskBoard selectedChannel={selectedChannel} />
           )}
 
           {activeView === "calendar" && (
-            <Calendar />
+            <EnhancedCalendar selectedChannel={selectedChannel} />
           )}
         </div>
 

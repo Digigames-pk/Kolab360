@@ -8,6 +8,8 @@ This is a modern collaboration platform similar to Slack, featuring AI-powered c
 
 Preferred communication style: Simple, everyday language.
 UI Design preference: Slack-style interface with sidebar navigation, channel lists, and workspace-focused layout instead of card-based dashboards.
+Task Board Requirements: Sophisticated visual UI with enhanced features, drag-and-drop, priority indicators, and per-channel task management.
+Calendar Requirements: Advanced calendar with enhanced features, multiple view modes, sophisticated event management, and per-channel calendar capabilities.
 
 ## System Architecture
 
@@ -52,10 +54,10 @@ UI Design preference: Slack-style interface with sidebar navigation, channel lis
 6. **Content Analysis**: AI-driven insights and recommendations
 
 ### Visual Enhancement Features
-1. **Multiple Theme Options**: 5 beautiful color themes (Dark Purple, Ocean Blue, Forest Green, Sunset Orange, Midnight Blue) with dynamic CSS variable system
-2. **Visual Task Management**: Kanban-style task board with priority levels, assignees, due dates, and status tracking integrated into channels
-3. **Calendar Integration**: Full calendar view with meeting scheduling, event management, and different event types (meetings, calls, events, deadlines)
-4. **Enhanced UI Components**: Modern gradient backgrounds, improved spacing, and professional styling throughout
+1. **Multiple Theme Options**: 5 beautiful color themes (Dark Purple, Ocean Blue, Forest Green, Sunset Orange, Midnight Blue) with dynamic CSS variable system and localStorage persistence
+2. **Sophisticated Task Management**: Enhanced Kanban-style task board with visual cards, drag-and-drop capability, priority indicators, subtask progress, assignee avatars, tags, attachments count, comments tracking, and per-channel task management
+3. **Advanced Calendar Integration**: Feature-rich calendar with month/week/day views, event creation dialogs, priority levels, recurring events, virtual meeting links, reminder settings, attendee management, and sophisticated filtering/search capabilities
+4. **Enhanced UI Components**: Modern gradient backgrounds, glassmorphism effects, improved spacing, professional styling, hover animations, and visual feedback throughout
 
 ### Email Integration Features
 1. **Resend.com Integration**: Modern email service with professional templates
