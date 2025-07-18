@@ -15,6 +15,7 @@ export default function EmailTest() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("welcome");
 
   const [welcomeData, setWelcomeData] = useState({
     email: user?.email || "",
@@ -24,14 +25,14 @@ export default function EmailTest() {
 
   const [inviteData, setInviteData] = useState({
     email: "",
-    workspaceName: "CollabSpace Demo",
+    workspaceName: "Kolab360 Demo Team",
     inviteCode: "DEMO123",
     recipientName: ""
   });
 
   const [summaryData, setSummaryData] = useState({
     email: user?.email || "",
-    workspaceName: "CollabSpace Demo",
+    workspaceName: "Kolab360 Demo Team",
     dateRange: "January 18, 2025",
     summary: "Today your team had 15 new messages across 3 channels. Key highlights:\n\n• New project proposal discussed in #general\n• Bug fixes completed in #dev-team\n• Weekly standup scheduled for tomorrow\n\nThe AI detected positive sentiment overall with productive discussions about upcoming milestones."
   });
@@ -41,7 +42,7 @@ export default function EmailTest() {
     mentionedBy: "John Doe",
     channelName: "general",
     messagePreview: "Hey @everyone, don't forget about the meeting tomorrow at 2 PM!",
-    workspaceName: "CollabSpace Demo"
+    workspaceName: "Kolab360 Demo Team"
   });
 
   const sendTestEmail = async (type: string, data: any) => {
@@ -68,55 +69,90 @@ export default function EmailTest() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Mail className="h-6 w-6 text-primary" />
+    <div className="min-h-screen bg-background">
+      {/* Header Section */}
+      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl">
+              <Mail className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Email Template Testing</h1>
-              <p className="text-muted-foreground">Test Resend.com integration with modern email templates</p>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Email Templates
+              </h1>
+              <p className="text-lg text-muted-foreground mt-2">
+                Test Kolab360's professional email templates powered by Resend.com
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Email Templates Testing */}
-        <Tabs defaultValue="welcome" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="welcome" className="flex items-center space-x-2">
-              <UserPlus className="h-4 w-4" />
-              <span>Welcome</span>
-            </TabsTrigger>
-            <TabsTrigger value="invite" className="flex items-center space-x-2">
-              <Send className="h-4 w-4" />
-              <span>Invite</span>
-            </TabsTrigger>
-            <TabsTrigger value="summary" className="flex items-center space-x-2">
-              <Sparkles className="h-4 w-4" />
-              <span>AI Summary</span>
-            </TabsTrigger>
-            <TabsTrigger value="mention" className="flex items-center space-x-2">
-              <Bell className="h-4 w-4" />
-              <span>Mention</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Content Section */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Template Navigation */}
+        <div className="flex space-x-1 bg-muted/50 rounded-xl p-1 mb-8 max-w-2xl">
+          <button
+            onClick={() => setActiveTab("welcome")}
+            className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "welcome" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <UserPlus className="h-4 w-4" />
+            <span>Welcome</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("invite")}
+            className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "invite" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Send className="h-4 w-4" />
+            <span>Workspace Invite</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("summary")}
+            className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "summary" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>AI Summary</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("mention")}
+            className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              activeTab === "mention" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Bell className="h-4 w-4" />
+            <span>Mention Alert</span>
+          </button>
+        </div>
 
-          {/* Welcome Email */}
-          <TabsContent value="welcome">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+        {/* Template Forms */}
+        <div className="space-y-8">
+          {activeTab === "welcome" && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
                   <UserPlus className="h-5 w-5 text-blue-500" />
-                  <span>Welcome Email Template</span>
-                </CardTitle>
-                <CardDescription>
-                  Test the welcome email sent to new users when they register
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold">Welcome Email Template</h2>
+                  <p className="text-muted-foreground">Test the welcome email sent to new users when they register</p>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-background to-muted/20 rounded-2xl p-8 border border-border/50 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="welcome-email">Email Address</Label>
@@ -153,27 +189,26 @@ export default function EmailTest() {
                 <Button 
                   onClick={() => sendTestEmail("welcome", welcomeData)}
                   disabled={loading}
-                  className="w-full"
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                 >
                   {loading ? "Sending..." : "Send Welcome Email"}
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          {/* Workspace Invite Email */}
-          <TabsContent value="invite">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+          {activeTab === "invite" && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-green-500/10 rounded-lg">
                   <Send className="h-5 w-5 text-green-500" />
-                  <span>Workspace Invitation Email</span>
-                </CardTitle>
-                <CardDescription>
-                  Test the invitation email sent when inviting users to workspaces
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold">Workspace Invitation Email</h2>
+                  <p className="text-muted-foreground">Test the invitation email sent when inviting users to workspaces</p>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-background to-muted/20 rounded-2xl p-8 border border-border/50 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="invite-email">Recipient Email</Label>
@@ -217,27 +252,26 @@ export default function EmailTest() {
                 <Button 
                   onClick={() => sendTestEmail("invite", inviteData)}
                   disabled={loading}
-                  className="w-full"
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
                 >
                   {loading ? "Sending..." : "Send Workspace Invitation"}
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          {/* AI Summary Email */}
-          <TabsContent value="summary">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+          {activeTab === "summary" && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-purple-500/10 rounded-lg">
                   <Sparkles className="h-5 w-5 text-purple-500" />
-                  <span>AI Summary Email</span>
-                </CardTitle>
-                <CardDescription>
-                  Test the AI-generated daily summary email sent to users
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold">AI Summary Email</h2>
+                  <p className="text-muted-foreground">Test the AI-generated daily summary email sent to users</p>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-background to-muted/20 rounded-2xl p-8 border border-border/50 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="summary-email">Email Address</Label>
@@ -280,27 +314,26 @@ export default function EmailTest() {
                 <Button 
                   onClick={() => sendTestEmail("ai-summary", summaryData)}
                   disabled={loading}
-                  className="w-full"
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
                 >
                   {loading ? "Sending..." : "Send AI Summary"}
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          )}
 
-          {/* Mention Notification Email */}
-          <TabsContent value="mention">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+          {activeTab === "mention" && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-orange-500/10 rounded-lg">
                   <Bell className="h-5 w-5 text-orange-500" />
-                  <span>Mention Notification Email</span>
-                </CardTitle>
-                <CardDescription>
-                  Test the notification email sent when users are mentioned in messages
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold">Mention Notification Email</h2>
+                  <p className="text-muted-foreground">Test the notification email sent when users are mentioned in messages</p>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-background to-muted/20 rounded-2xl p-8 border border-border/50 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="mention-email">Email Address</Label>
@@ -354,33 +387,38 @@ export default function EmailTest() {
                 <Button 
                   onClick={() => sendTestEmail("mention", mentionData)}
                   disabled={loading}
-                  className="w-full"
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
                 >
                   {loading ? "Sending..." : "Send Mention Notification"}
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Info Card */}
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-blue-500" />
-              <span>Email Testing Instructions</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <p>• All emails are sent using Resend.com with modern HTML templates</p>
-              <p>• Templates include responsive design, gradient backgrounds, and professional styling</p>
-              <p>• Check your email inbox (including spam folder) after sending test emails</p>
-              <p>• Templates are optimized for both desktop and mobile email clients</p>
-              <p>• Each template includes proper branding and call-to-action buttons</p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
+
+        {/* Footer Info */}
+        <div className="mt-12 p-8 bg-gradient-to-r from-muted/30 to-muted/10 rounded-2xl border border-border/30">
+          <div className="flex items-start space-x-4">
+            <div className="p-3 bg-blue-500/10 rounded-xl">
+              <FileText className="h-6 w-6 text-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Email Testing Instructions</h3>
+              <div className="grid grid-cols-2 gap-4 text-muted-foreground">
+                <div className="space-y-2">
+                  <p>• All emails are sent using Resend.com with modern HTML templates</p>
+                  <p>• Templates include responsive design and professional styling</p>
+                  <p>• Emails are sent from noreply@kolab360.com</p>
+                </div>
+                <div className="space-y-2">
+                  <p>• Check your email inbox (including spam folder) after testing</p>
+                  <p>• Templates are optimized for both desktop and mobile clients</p>
+                  <p>• Each template includes proper Kolab360 branding</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

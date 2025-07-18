@@ -4,6 +4,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ThemeSelector } from "@/components/ThemeSelector";
+import { TaskBoard } from "@/components/TaskBoard";
+import { Calendar } from "@/components/Calendar";
 import { 
   Hash, 
   Lock, 
@@ -23,7 +27,9 @@ import {
   Zap,
   Users,
   Bell,
-  Mail
+  Mail,
+  Calendar as CalendarIcon,
+  CheckSquare
 } from "lucide-react";
 
 export default function Home() {
@@ -88,13 +94,16 @@ export default function Home() {
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-bold text-lg text-white">CollabSpace Demo</h2>
+              <h2 className="font-bold text-lg text-white">Kolab360 Demo</h2>
               <div className="flex items-center space-x-2 text-sm text-slate-300">
                 {getRoleIcon(user.role)}
                 <span>{user.firstName} {user.lastName}</span>
               </div>
             </div>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <div className="flex items-center space-x-2">
+              <ThemeSelector />
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </div>
           </div>
         </div>
 

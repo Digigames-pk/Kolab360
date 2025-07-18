@@ -111,20 +111,20 @@ export class EmailService {
     const content = `
       <div style="${emailStyles.header}">
         <h1 style="${emailStyles.logo}">
-          💬 CollabSpace
+          🚀 Kolab360
         </h1>
-        <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Welcome to modern team collaboration</p>
+        <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Modern collaboration platform</p>
       </div>
       
       <div style="${emailStyles.content}">
-        <h2 style="${emailStyles.title}">Welcome to CollabSpace, ${userName}! 🎉</h2>
+        <h2 style="${emailStyles.title}">Welcome to Kolab360, ${userName}! 🎉</h2>
         
         <p style="${emailStyles.text}">
           Your account has been successfully created with <span style="${emailStyles.badge}">${roleDisplay}</span> access level.
         </p>
         
         <p style="${emailStyles.text}">
-          CollabSpace brings modern collaboration to your team with AI-powered features, real-time messaging, 
+          Kolab360 brings modern collaboration to your team with AI-powered features, real-time messaging, 
           and intuitive workspace management. Here's what you can do:
         </p>
         
@@ -161,7 +161,7 @@ export class EmailService {
     `;
 
     return {
-      subject: `Welcome to CollabSpace, ${userName}! 🚀`,
+      subject: `Welcome to Kolab360, ${userName}! 🚀`,
       html: this.createTemplate(content)
     };
   }
@@ -173,7 +173,7 @@ export class EmailService {
     const content = `
       <div style="${emailStyles.header}">
         <h1 style="${emailStyles.logo}">
-          💬 CollabSpace
+          🚀 Kolab360
         </h1>
         <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Workspace Invitation</p>
       </div>
@@ -182,7 +182,7 @@ export class EmailService {
         <h2 style="${emailStyles.title}">${greeting}, you're invited! 📨</h2>
         
         <p style="${emailStyles.text}">
-          <strong>${inviterName}</strong> has invited you to join the <strong>${workspaceName}</strong> workspace on CollabSpace.
+          <strong>${inviterName}</strong> has invited you to join the <strong>${workspaceName}</strong> workspace on Kolab360.
         </p>
         
         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #667eea;">
@@ -220,7 +220,7 @@ export class EmailService {
     `;
 
     return {
-      subject: `You're invited to join ${workspaceName} on CollabSpace`,
+      subject: `You're invited to join ${workspaceName} on Kolab360`,
       html: this.createTemplate(content)
     };
   }
@@ -230,7 +230,7 @@ export class EmailService {
     const content = `
       <div style="${emailStyles.header}">
         <h1 style="${emailStyles.logo}">
-          💬 CollabSpace
+          🚀 Kolab360
         </h1>
         <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Password Reset Request</p>
       </div>
@@ -239,7 +239,7 @@ export class EmailService {
         <h2 style="${emailStyles.title}">Reset Your Password 🔐</h2>
         
         <p style="${emailStyles.text}">
-          Hi ${userName}, we received a request to reset your CollabSpace password.
+          Hi ${userName}, we received a request to reset your Kolab360 password.
         </p>
         
         <p style="${emailStyles.text}">
@@ -270,7 +270,7 @@ export class EmailService {
     `;
 
     return {
-      subject: 'Reset your CollabSpace password',
+      subject: 'Reset your Kolab360 password',
       html: this.createTemplate(content)
     };
   }
@@ -280,7 +280,7 @@ export class EmailService {
     const content = `
       <div style="${emailStyles.header}">
         <h1 style="${emailStyles.logo}">
-          🤖 CollabSpace AI
+          🤖 Kolab360 AI
         </h1>
         <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Daily Team Summary</p>
       </div>
@@ -328,7 +328,7 @@ export class EmailService {
     const content = `
       <div style="${emailStyles.header}">
         <h1 style="${emailStyles.logo}">
-          💬 CollabSpace
+          🚀 Kolab360
         </h1>
         <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">You were mentioned</p>
       </div>
@@ -369,7 +369,7 @@ export class EmailService {
   }
 
   // Send email function
-  async sendEmail(to: string, template: EmailTemplate, from: string = 'CollabSpace <noreply@collabspace.dev>') {
+  async sendEmail(to: string, template: EmailTemplate, from: string = 'Kolab360 <noreply@kolab360.com>') {
     try {
       const result = await resend.emails.send({
         from,
