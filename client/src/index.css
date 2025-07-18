@@ -163,6 +163,53 @@
   .sidebar-item {
     @apply transition-all duration-300 ease-in-out;
   }
+
+  /* Responsive sidebar collapse styles */
+  .sidebar-text {
+    display: block;
+  }
+
+  .sidebar-icon-only {
+    display: none;
+  }
+
+  /* When sidebar is collapsed - using CSS custom properties */
+  .sidebar-container {
+    --sidebar-collapsed: 0;
+  }
+
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .sidebar-text,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-text,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-text {
+    display: none !important;
+  }
+
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .sidebar-icon-only {
+    display: flex !important;
+    justify-content: center;
+  }
+
+  /* Compact navigation when collapsed */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .nav-item {
+    justify-content: center !important;
+    padding: 0.75rem !important;
+  }
+
+  /* Compact channels when collapsed */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-item {
+    justify-content: center !important;
+    padding: 0.5rem !important;
+  }
+
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-badge,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-badge {
+    display: none !important;
+  }
+
+  /* Center the workspace header when collapsed */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .workspace-header {
+    justify-content: center !important;
+  }
   
   .sidebar-item:hover {
     @apply translate-x-1;

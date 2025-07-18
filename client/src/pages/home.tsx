@@ -194,21 +194,33 @@ export default function Home() {
       {/* Main Content with Resizable Panels */}
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Sidebar Panel */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-          <div className="h-full bg-slate-800 text-slate-100 flex flex-col">
+        <ResizablePanel defaultSize={20} minSize={12} maxSize={35} onResize={(size) => {
+          // Track sidebar size for responsive behavior
+          const isCollapsed = size < 16;
+          const sidebar = document.querySelector('.sidebar-container');
+          if (sidebar) {
+            sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
+          }
+        }}>
+          <div className="h-full bg-slate-800 text-slate-100 flex flex-col sidebar-container">
         {/* Workspace Header */}
         <div className="p-4 border-b border-slate-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-bold text-lg text-white">
+          <div className="workspace-header flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <h2 className="font-bold text-lg text-white sidebar-text truncate">
                 {workspaces.find(w => w.id === selectedWorkspace)?.name || "Kolab360 Demo"}
               </h2>
-              <div className="flex items-center space-x-2 text-sm text-slate-300">
+              <div className="flex items-center space-x-2 text-sm text-slate-300 sidebar-text">
                 {getRoleIcon(user.role)}
                 <span>{user.firstName} {user.lastName}</span>
               </div>
+              <div className="sidebar-icon-only hidden">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-medium text-sm">
+                  {workspaces.find(w => w.id === selectedWorkspace)?.initial}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 sidebar-text">
               <SimpleThemeSelector />
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </div>
@@ -218,47 +230,47 @@ export default function Home() {
         {/* Navigation Items */}
         <div className="px-4 py-3 space-y-1">
           <div 
-            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
             onClick={() => setActiveView("threads")}
           >
-            <MessageSquare className="h-4 w-4" />
-            <span className="text-sm">Threads</span>
+            <MessageSquare className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Threads</span>
           </div>
           <div 
-            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
             onClick={() => setActiveView("mentions")}
           >
-            <Bell className="h-4 w-4" />
-            <span className="text-sm">Mentions & reactions</span>
+            <Bell className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Mentions & reactions</span>
           </div>
           <div 
-            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
             onClick={() => setActiveView("saved")}
           >
-            <Star className="h-4 w-4" />
-            <span className="text-sm">Saved items</span>
+            <Star className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Saved items</span>
           </div>
           <div 
-            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
             onClick={() => setActiveView("people")}
           >
-            <Users className="h-4 w-4" />
-            <span className="text-sm">People & user groups</span>
+            <Users className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm sidebar-text">People & user groups</span>
           </div>
           <div 
-            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
             onClick={() => setActiveView("ai")}
           >
-            <Zap className="h-4 w-4 text-purple-400" />
-            <span className="text-sm">AI Assistant</span>
+            <Zap className="h-4 w-4 text-purple-400 flex-shrink-0" />
+            <span className="text-sm sidebar-text">AI Assistant</span>
           </div>
           {(user.role === 'admin' || user.role === 'super_admin') && (
             <div 
-              className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+              className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
               onClick={() => setLocation("/email-test")}
             >
-              <Mail className="h-4 w-4 text-blue-400" />
-              <span className="text-sm">Email Templates</span>
+              <Mail className="h-4 w-4 text-blue-400 flex-shrink-0" />
+              <span className="text-sm sidebar-text">Email Templates</span>
             </div>
           )}
         </div>
@@ -280,7 +292,7 @@ export default function Home() {
               {filteredChannels.map((channel) => (
                 <div
                   key={channel.name}
-                  className={`flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group ${selectedChannel === channel.name ? 'bg-slate-700' : ''}`}
+                  className={`channel-item flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group ${selectedChannel === channel.name ? 'bg-slate-700' : ''}`}
                   onClick={() => {
                     setActiveView("chat");
                     setSelectedChannel(channel.name);
@@ -293,13 +305,13 @@ export default function Home() {
                     ) : (
                       <Lock className="h-4 w-4 text-slate-400 flex-shrink-0" />
                     )}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 channel-text">
                       <div className="text-sm font-medium truncate">{channel.name}</div>
                       <div className="text-xs text-slate-500 truncate">{channel.description}</div>
                     </div>
                   </div>
                   {channel.unread > 0 && (
-                    <Badge variant="destructive" className="h-5 text-xs px-1.5">
+                    <Badge variant="destructive" className="h-5 text-xs px-1.5 channel-badge">
                       {channel.unread}
                     </Badge>
                   )}
