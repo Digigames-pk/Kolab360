@@ -95,10 +95,10 @@ export default function Home() {
     }
   };
 
-  const workspaces = [
+  const [workspaces, setWorkspaces] = useState([
     { id: 1, name: "CollabSpace Demo", initial: "CD" },
     { id: 2, name: "Development Team", initial: "DT" },
-  ];
+  ]);
 
   const channels = [
     { name: "general", unread: 0, type: "public", description: "Company-wide announcements and discussion" },
@@ -1036,7 +1036,8 @@ export default function Home() {
                     initial: newWorkspaceName.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2)
                   };
                   
-                  // Update workspaces list (in a real app, this would be a database operation)
+                  // Add workspace to the list
+                  setWorkspaces(prev => [...prev, newWorkspace]);
                   console.log('Creating workspace:', newWorkspace);
                   alert(`Workspace "${newWorkspaceName}" created successfully!`);
                   setShowCreateWorkspace(false);
