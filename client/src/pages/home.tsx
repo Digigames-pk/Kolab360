@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { TaskBoard } from "@/components/TaskBoard";
 import { Calendar } from "@/components/Calendar";
-import { ThemeSelector } from "@/components/ThemeSelector";
+import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,8 @@ export default function Home() {
   const { user, logoutMutation } = useAuth();
   const [location, setLocation] = useLocation();
   const [activeView, setActiveView] = useState("chat");
+  const [selectedChannel, setSelectedChannel] = useState("general");
+  const [selectedDM, setSelectedDM] = useState(null);
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -148,13 +150,15 @@ export default function Home() {
             <Zap className="h-4 w-4 text-purple-400" />
             <span className="text-sm">AI Assistant</span>
           </div>
-          <div 
-            className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-            onClick={() => setLocation("/email-test")}
-          >
-            <Mail className="h-4 w-4 text-blue-400" />
-            <span className="text-sm">Email Templates</span>
-          </div>
+          {(user.role === 'admin' || user.role === 'super_admin') && (
+            <div 
+              className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+              onClick={() => setLocation("/email-test")}
+            >
+              <Mail className="h-4 w-4 text-blue-400" />
+              <span className="text-sm">Email Templates</span>
+            </div>
+          )}
         </div>
 
         <Separator className="bg-slate-700" />
@@ -163,7 +167,15 @@ export default function Home() {
         <div className="flex-1 px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-300">Channels</span>
-            <Plus className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" />
+            <Plus 
+              className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" 
+              onClick={() => {
+                const channelName = prompt("Enter channel name:");
+                if (channelName) {
+                  alert(`Channel #${channelName} would be created`);
+                }
+              }}
+            />
           </div>
           
           <ScrollArea className="h-32">
@@ -171,7 +183,12 @@ export default function Home() {
               {filteredChannels.map((channel) => (
                 <div
                   key={channel.name}
-                  className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group"
+                  className={`flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group ${selectedChannel === channel.name ? 'bg-slate-700' : ''}`}
+                  onClick={() => {
+                    setActiveView("chat");
+                    setSelectedChannel(channel.name);
+                    setSelectedDM(null);
+                  }}
                 >
                   <div className="flex items-center space-x-2">
                     {channel.type === "public" ? (
@@ -196,7 +213,15 @@ export default function Home() {
           {/* Direct Messages */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-slate-300">Direct messages</span>
-            <Plus className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" />
+            <Plus 
+              className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer"
+              onClick={() => {
+                const userName = prompt("Enter username to start a conversation:");
+                if (userName) {
+                  alert(`Direct message with ${userName} would be started`);
+                }
+              }}
+            />
           </div>
           
           <ScrollArea className="h-24">
@@ -204,7 +229,12 @@ export default function Home() {
               {directMessages.map((dm) => (
                 <div
                   key={dm.name}
-                  className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+                  className={`flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer ${selectedDM === dm.name ? 'bg-slate-700' : ''}`}
+                  onClick={() => {
+                    setActiveView("chat");
+                    setSelectedDM(dm.name);
+                    setSelectedChannel(null);
+                  }}
                 >
                   <div className="flex items-center space-x-2">
                     <div className="relative">
@@ -317,7 +347,7 @@ export default function Home() {
           </div>
           
           <div className="flex items-center space-x-2">
-            <ThemeSelector />
+            <SimpleThemeSelector />
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Phone className="h-4 w-4" />
             </Button>
@@ -342,17 +372,29 @@ export default function Home() {
                   <Hash className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Welcome to #general</h2>
+                  <h2 className="text-2xl font-bold mb-2">Welcome to #{selectedChannel}</h2>
                   <p className="text-muted-foreground">
-                    This is the beginning of the #general channel. Start a conversation or check out some channels and direct messages.
+                    {selectedDM ? 
+                      `This is your conversation with ${selectedDM}. Start chatting!` :
+                      `This is the beginning of the #${selectedChannel} channel. Start a conversation or check out some channels and direct messages.`
+                    }
                   </p>
                 </div>
                 <div className="flex flex-col space-y-2">
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    data-theme-target="primary"
+                    onClick={() => setActiveView("ai")}
+                  >
                     <Zap className="h-4 w-4 mr-2" />
                     Try AI Assistant
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setActiveView("people")}
+                  >
                     <Users className="h-4 w-4 mr-2" />
                     Invite teammates
                   </Button>
