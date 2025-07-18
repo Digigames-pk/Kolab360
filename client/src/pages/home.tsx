@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { EnhancedTaskBoard } from "@/components/EnhancedTaskBoard";
 import { EnhancedCalendar } from "@/components/EnhancedCalendar";
@@ -72,11 +72,7 @@ export default function Home() {
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
   const [showDocuments, setShowDocuments] = useState(false);
-  const [documents, setDocuments] = useState([
-    { id: 1, title: "Team Guidelines", content: "Welcome to our team guidelines...", category: "General", lastModified: "2024-01-15" },
-    { id: 2, title: "API Documentation", content: "REST API endpoints and usage...", category: "Technical", lastModified: "2024-01-14" },
-    { id: 3, title: "Meeting Notes", content: "Weekly standup meeting notes...", category: "Meetings", lastModified: "2024-01-13" }
-  ]);
+  const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [documentSearchTerm, setDocumentSearchTerm] = useState("");
   const [aiMessage, setAiMessage] = useState("");
@@ -100,22 +96,73 @@ export default function Home() {
     { id: 2, name: "Development Team", initial: "DT" },
   ]);
 
-  const channels = [
-    { name: "general", unread: 0, type: "public", description: "Company-wide announcements and discussion" },
-    { name: "random", unread: 3, type: "public", description: "Non-work banter and water cooler conversation" },
-    { name: "announcements", unread: 1, type: "public", description: "Important company announcements" },
-    { name: "dev-team", unread: 0, type: "private", description: "Development team discussions" },
-    { name: "design-reviews", unread: 5, type: "public", description: "Design feedback and UI/UX discussions" },
-    { name: "admin-only", unread: 2, type: "private", adminOnly: true, description: "Administrative discussions" },
-  ];
+  // Workspace-specific content
+  const workspaceData = {
+    1: { // CollabSpace Demo
+      channels: [
+        { name: "general", unread: 0, type: "public", description: "Company-wide announcements and discussion" },
+        { name: "random", unread: 3, type: "public", description: "Non-work banter and water cooler conversation" },
+        { name: "announcements", unread: 1, type: "public", description: "Important company announcements" },
+        { name: "dev-team", unread: 0, type: "private", description: "Development team discussions" },
+        { name: "design-reviews", unread: 5, type: "public", description: "Design feedback and UI/UX discussions" },
+        { name: "admin-only", unread: 2, type: "private", adminOnly: true, description: "Administrative discussions" },
+      ],
+      directMessages: [
+        { name: "John Doe", status: "online", unread: 2, lastMessage: "Thanks for the code review!" },
+        { name: "Jane Smith", status: "away", unread: 0, lastMessage: "See you in the meeting" },
+        { name: "AI Assistant", status: "online", unread: 1, lastMessage: "I can help you with that task" },
+        { name: "Mike Chen", status: "offline", unread: 0, lastMessage: "API docs are updated" },
+        { name: "Sarah Wilson", status: "online", unread: 3, lastMessage: "Can you review the mockups?" },
+      ],
+      documents: [
+        { id: 1, title: "Team Guidelines", content: "Welcome to our team guidelines...", category: "General", lastModified: "2024-01-15" },
+        { id: 2, title: "API Documentation", content: "REST API endpoints and usage...", category: "Technical", lastModified: "2024-01-14" },
+        { id: 3, title: "Meeting Notes", content: "Weekly standup meeting notes...", category: "Meetings", lastModified: "2024-01-13" }
+      ]
+    },
+    2: { // Development Team
+      channels: [
+        { name: "standup", unread: 2, type: "public", description: "Daily standup meetings and updates" },
+        { name: "backend", unread: 5, type: "private", description: "Backend development discussions" },
+        { name: "frontend", unread: 1, type: "private", description: "Frontend development topics" },
+        { name: "code-review", unread: 0, type: "public", description: "Code review requests and discussions" },
+        { name: "deployment", unread: 3, type: "private", description: "Deployment and DevOps topics" },
+      ],
+      directMessages: [
+        { name: "Alex Rodriguez", status: "online", unread: 1, lastMessage: "Ready for code review" },
+        { name: "Emma Davis", status: "online", unread: 0, lastMessage: "Fixed the bug in PR #123" },
+        { name: "Tech Lead", status: "away", unread: 2, lastMessage: "Sprint planning tomorrow" },
+        { name: "DevOps Bot", status: "online", unread: 0, lastMessage: "Deployment successful" },
+      ],
+      documents: [
+        { id: 4, title: "Architecture Overview", content: "System architecture documentation...", category: "Technical", lastModified: "2024-01-16" },
+        { id: 5, title: "Sprint Planning", content: "Current sprint goals and tasks...", category: "Planning", lastModified: "2024-01-15" },
+        { id: 6, title: "Code Standards", content: "Development coding standards...", category: "Technical", lastModified: "2024-01-14" }
+      ]
+    }
+  };
 
-  const directMessages = [
-    { name: "John Doe", status: "online", unread: 2, lastMessage: "Thanks for the code review!" },
-    { name: "Jane Smith", status: "away", unread: 0, lastMessage: "See you in the meeting" },
-    { name: "AI Assistant", status: "online", unread: 1, lastMessage: "I can help you with that task" },
-    { name: "Mike Chen", status: "offline", unread: 0, lastMessage: "API docs are updated" },
-    { name: "Sarah Wilson", status: "online", unread: 3, lastMessage: "Can you review the mockups?" },
-  ];
+  // Get current workspace data or defaults for new workspaces
+  const currentWorkspaceData = workspaceData[selectedWorkspace] || {
+    channels: [
+      { name: "general", unread: 0, type: "public", description: "General discussion" }
+    ],
+    directMessages: [
+      { name: "Welcome Bot", status: "online", unread: 1, lastMessage: "Welcome to your new workspace!" }
+    ],
+    documents: [
+      { id: Date.now(), title: "Getting Started", content: "Welcome to your new workspace! Start by inviting team members and creating channels.", category: "General", lastModified: new Date().toISOString().split('T')[0] }
+    ]
+  };
+
+  const channels = currentWorkspaceData.channels;
+  const directMessages = currentWorkspaceData.directMessages;
+
+  // Update documents when workspace changes
+  useEffect(() => {
+    setDocuments(currentWorkspaceData.documents);
+    setSelectedDocument(null); // Clear selected document when switching workspaces
+  }, [selectedWorkspace]);
 
   const filteredChannels = channels.filter(channel => 
     !channel.adminOnly || user.role === 'admin' || user.role === 'super_admin'
@@ -671,7 +718,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold">Documents</h2>
-                    <p className="text-muted-foreground">#{selectedChannel} documentation and notes</p>
+                    <p className="text-muted-foreground">{workspaces.find(w => w.id === selectedWorkspace)?.name} workspace documentation</p>
                   </div>
                 </div>
                 <Button onClick={() => {
