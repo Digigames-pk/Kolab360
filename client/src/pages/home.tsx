@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { 
   Hash, 
   Lock, 
@@ -46,7 +47,12 @@ import {
   AtSign,
   Paperclip,
   Smile,
-  Send
+  Send,
+  FileText,
+  BookOpen,
+  Tag,
+  Download,
+  Edit3
 } from "lucide-react";
 
 export default function Home() {
@@ -65,6 +71,16 @@ export default function Home() {
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [documents, setDocuments] = useState([
+    { id: 1, title: "Team Guidelines", content: "Welcome to our team guidelines...", category: "General", lastModified: "2024-01-15" },
+    { id: 2, title: "API Documentation", content: "REST API endpoints and usage...", category: "Technical", lastModified: "2024-01-14" },
+    { id: 3, title: "Meeting Notes", content: "Weekly standup meeting notes...", category: "Meetings", lastModified: "2024-01-13" }
+  ]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documentSearchTerm, setDocumentSearchTerm] = useState("");
+  const [aiMessage, setAiMessage] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -128,8 +144,11 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Sidebar */}
-      <div className="w-64 bg-slate-800 text-slate-100 flex flex-col">
+      {/* Main Content with Resizable Panels */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
+        {/* Sidebar Panel */}
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+          <div className="h-full bg-slate-800 text-slate-100 flex flex-col">
         {/* Workspace Header */}
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
@@ -338,10 +357,14 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+          </div>
+        </ResizablePanel>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+        <ResizableHandle />
+
+        {/* Main Content Panel */}
+        <ResizablePanel defaultSize={80}>
+          <div className="flex-1 flex flex-col">
         {/* Enhanced Channel Header with Navigation */}
         <div className="h-14 bg-white dark:bg-slate-900 border-b border-border flex items-center justify-between px-6">
           <div className="flex items-center space-x-6">
@@ -412,6 +435,15 @@ export default function Home() {
               >
                 <Upload className="h-4 w-4" />
                 <span>Files</span>
+              </Button>
+              <Button 
+                variant={activeView === "documents" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("documents")}
+                className="flex items-center space-x-2"
+              >
+                <FileText className="h-4 w-4" />
+                <span>Docs</span>
               </Button>
               <Button 
                 variant={activeView === "search" ? "default" : "ghost"} 
@@ -549,14 +581,62 @@ export default function Home() {
           )}
 
           {activeView === "ai" && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <div className="p-4 bg-purple-500/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
-                  <Zap className="h-8 w-8 text-purple-500" />
+            <div className="flex-1 flex flex-col p-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <Zap className="h-6 w-6 text-purple-500" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">AI Assistant</h3>
-                  <p className="text-muted-foreground">Chat with AI for help and insights</p>
+                  <h2 className="text-xl font-semibold">AI Assistant</h2>
+                  <p className="text-muted-foreground">Ask me anything about your work or project</p>
+                </div>
+              </div>
+              
+              <div className="flex-1 flex flex-col space-y-4">
+                <div className="flex-1 bg-muted/20 rounded-lg p-4 min-h-[300px] max-h-96 overflow-y-auto">
+                  {aiResponse ? (
+                    <div className="space-y-3">
+                      <div className="bg-blue-500/10 rounded-lg p-3">
+                        <p className="text-sm font-medium text-blue-600 mb-1">You asked:</p>
+                        <p className="text-sm">{aiMessage}</p>
+                      </div>
+                      <div className="bg-purple-500/10 rounded-lg p-3">
+                        <p className="text-sm font-medium text-purple-600 mb-1">AI Assistant:</p>
+                        <p className="text-sm">{aiResponse}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      <p>Start a conversation with the AI assistant...</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Ask the AI assistant anything..."
+                    value={aiMessage}
+                    onChange={(e) => setAiMessage(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        if (aiMessage.trim()) {
+                          // Simulate AI response
+                          setAiResponse(`I understand you're asking about "${aiMessage}". As an AI assistant, I can help you with various tasks like code review, documentation, planning, and problem-solving. What specific help do you need?`);
+                        }
+                      }
+                    }}
+                  />
+                  <Button 
+                    onClick={() => {
+                      if (aiMessage.trim()) {
+                        // Simulate AI response
+                        setAiResponse(`I understand you're asking about "${aiMessage}". As an AI assistant, I can help you with various tasks like code review, documentation, planning, and problem-solving. What specific help do you need?`);
+                      }
+                    }}
+                    disabled={!aiMessage.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -579,6 +659,144 @@ export default function Home() {
                   // Handle file upload logic here
                 }}
               />
+            </div>
+          )}
+
+          {activeView === "documents" && (
+            <div className="flex-1 flex flex-col p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <FileText className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">Documents</h2>
+                    <p className="text-muted-foreground">#{selectedChannel} documentation and notes</p>
+                  </div>
+                </div>
+                <Button onClick={() => {
+                  const newDoc = {
+                    id: Date.now(),
+                    title: "New Document",
+                    content: "Start writing your document here...",
+                    category: "General",
+                    lastModified: new Date().toISOString().split('T')[0]
+                  };
+                  setDocuments([...documents, newDoc]);
+                  setSelectedDocument(newDoc);
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Document
+                </Button>
+              </div>
+
+              <div className="flex-1 flex gap-4">
+                {/* Document List */}
+                <div className="w-80 border-r pr-4">
+                  <div className="mb-4">
+                    <Input
+                      placeholder="Search documents..."
+                      value={documentSearchTerm}
+                      onChange={(e) => setDocumentSearchTerm(e.target.value)}
+                      className="mb-3"
+                    />
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {["All", "General", "Technical", "Meetings"].map((category) => (
+                        <Button
+                          key={category}
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                        >
+                          <Tag className="h-3 w-3 mr-1" />
+                          {category}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <ScrollArea className="h-96">
+                    <div className="space-y-2">
+                      {documents
+                        .filter(doc => 
+                          doc.title.toLowerCase().includes(documentSearchTerm.toLowerCase()) ||
+                          doc.content.toLowerCase().includes(documentSearchTerm.toLowerCase())
+                        )
+                        .map((doc) => (
+                        <div
+                          key={doc.id}
+                          className={`p-3 rounded-lg border cursor-pointer hover:bg-muted/50 ${
+                            selectedDocument?.id === doc.id ? 'bg-muted border-blue-500' : ''
+                          }`}
+                          onClick={() => setSelectedDocument(doc)}
+                        >
+                          <div className="flex items-start justify-between mb-1">
+                            <h4 className="font-medium text-sm truncate">{doc.title}</h4>
+                            <Badge variant="outline" className="text-xs">
+                              {doc.category}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
+                            {doc.content}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Modified: {doc.lastModified}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                {/* Document Editor */}
+                <div className="flex-1">
+                  {selectedDocument ? (
+                    <div className="h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-4 pb-3 border-b">
+                        <Input
+                          value={selectedDocument.title}
+                          onChange={(e) => {
+                            const updatedDoc = { ...selectedDocument, title: e.target.value };
+                            setSelectedDocument(updatedDoc);
+                            setDocuments(docs => docs.map(d => d.id === updatedDoc.id ? updatedDoc : d));
+                          }}
+                          className="text-lg font-semibold border-0 p-0 focus-visible:ring-0"
+                        />
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-1" />
+                            Export
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Users className="h-4 w-4 mr-1" />
+                            Share
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 border rounded-lg">
+                        <textarea
+                          value={selectedDocument.content}
+                          onChange={(e) => {
+                            const updatedDoc = { ...selectedDocument, content: e.target.value };
+                            setSelectedDocument(updatedDoc);
+                            setDocuments(docs => docs.map(d => d.id === updatedDoc.id ? updatedDoc : d));
+                          }}
+                          className="w-full h-full p-4 border-0 resize-none focus:outline-none"
+                          placeholder="Start writing your document..."
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      <div className="text-center">
+                        <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p>Select a document to edit or create a new one</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -681,7 +899,9 @@ export default function Home() {
             </div>
           </div>
         )}
-      </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       {/* Create Channel Dialog */}
       <Dialog open={showCreateChannel} onOpenChange={setShowCreateChannel}>
@@ -809,11 +1029,19 @@ export default function Home() {
             <Button 
               onClick={() => {
                 if (newWorkspaceName.trim()) {
-                  // Here you would typically make an API call to create the workspace
-                  console.log('Creating workspace:', newWorkspaceName);
+                  // Create new workspace object
+                  const newWorkspace = {
+                    id: Date.now(),
+                    name: newWorkspaceName,
+                    initial: newWorkspaceName.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2)
+                  };
+                  
+                  // Update workspaces list (in a real app, this would be a database operation)
+                  console.log('Creating workspace:', newWorkspace);
                   alert(`Workspace "${newWorkspaceName}" created successfully!`);
                   setShowCreateWorkspace(false);
                   setNewWorkspaceName("");
+                  setSelectedWorkspace(newWorkspace.id);
                 }
               }}
               disabled={!newWorkspaceName.trim()}
