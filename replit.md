@@ -51,6 +51,15 @@ UI Design preference: Slack-style interface with sidebar navigation, channel lis
 5. **Task Generation**: Automatic task creation from conversations
 6. **Content Analysis**: AI-driven insights and recommendations
 
+### Email Integration Features
+1. **Resend.com Integration**: Modern email service with professional templates
+2. **Welcome Emails**: Automated onboarding emails for new users
+3. **Workspace Invitations**: Beautiful invitation emails with invite codes
+4. **AI Summary Emails**: Daily team activity summaries powered by AI
+5. **Mention Notifications**: Real-time email alerts for @mentions
+6. **Password Reset**: Secure password reset email functionality
+7. **Email Testing Suite**: Admin interface for testing all email templates
+
 ### Real-time Features
 1. **WebSocket Integration**: Live messaging and typing indicators
 2. **Presence System**: User online/offline status tracking

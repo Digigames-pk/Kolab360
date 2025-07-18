@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireRole } from "./auth";
 import { generateAIResponse, analyzeSentiment, summarizeMessages, generateTasks, autoCompleteMessage } from "./openai";
+import { emailService } from "./email";
 import { 
   insertWorkspaceSchema, 
   insertChannelSchema, 
@@ -42,6 +43,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...workspaceData,
         ownerId: userId,
       });
+
+      // Send workspace creation notification email
+      try {
+        const user = req.user;
+        await emailService.sendEmail(
+          user.email,
+          {
+            subject: `Workspace "${workspace.name}" created successfully!`,
+            html: `
+              <div style="max-width: 600px; margin: 0 auto; font-family: sans-serif;">
+                <h2>🎉 Workspace Created!</h2>
+                <p>Hi ${user.firstName},</p>
+                <p>Your workspace <strong>"${workspace.name}"</strong> has been created successfully!</p>
+                <p><strong>Invite Code:</strong> <code>${workspace.inviteCode}</code></p>
+                <p>Share this code with your team members to invite them to join.</p>
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/workspace/${workspace.id}" 
+                   style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">
+                  Open Workspace
+                </a>
+              </div>
+            `
+          }
+        );
+      } catch (emailError) {
+        console.error("Failed to send workspace creation email:", emailError);
+      }
+
       res.json(workspace);
     } catch (error) {
       console.error("Error creating workspace:", error);
@@ -81,6 +109,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const workspace = await storage.joinWorkspaceByCode(userId, inviteCode);
       if (!workspace) {
         return res.status(404).json({ message: "Invalid invite code" });
+      }
+
+      // Send welcome to workspace email
+      try {
+        const user = req.user;
+        await emailService.sendEmail(
+          user.email,
+          {
+            subject: `Welcome to ${workspace.name}!`,
+            html: `
+              <div style="max-width: 600px; margin: 0 auto; font-family: sans-serif;">
+                <h2>🎊 Welcome to ${workspace.name}!</h2>
+                <p>Hi ${user.firstName},</p>
+                <p>You've successfully joined the <strong>"${workspace.name}"</strong> workspace!</p>
+                <p>Start collaborating with your team by joining channels and participating in conversations.</p>
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/workspace/${workspace.id}" 
+                   style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">
+                  Enter Workspace
+                </a>
+              </div>
+            `
+          }
+        );
+      } catch (emailError) {
+        console.error("Failed to send workspace welcome email:", emailError);
       }
       
       res.json(workspace);
@@ -461,6 +514,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating AI response:", error);
       res.status(500).json({ message: "Failed to generate AI response" });
+    }
+  });
+
+  // Email testing routes
+  app.post('/api/email/send-welcome', requireAuth, async (req: any, res) => {
+    try {
+      const { email, name, role } = req.body;
+      await emailService.sendWelcomeEmail(email, name, email, role || 'user');
+      res.json({ message: "Welcome email sent successfully" });
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+      res.status(500).json({ message: "Failed to send welcome email" });
+    }
+  });
+
+  app.post('/api/email/send-invite', requireAuth, async (req: any, res) => {
+    try {
+      const { email, workspaceName, inviteCode, recipientName } = req.body;
+      const inviterName = `${req.user.firstName} ${req.user.lastName}`;
+      
+      await emailService.sendWorkspaceInvite(email, inviterName, workspaceName, inviteCode, recipientName);
+      res.json({ message: "Workspace invitation sent successfully" });
+    } catch (error) {
+      console.error("Error sending workspace invitation:", error);
+      res.status(500).json({ message: "Failed to send workspace invitation" });
+    }
+  });
+
+  app.post('/api/email/send-ai-summary', requireAuth, async (req: any, res) => {
+    try {
+      const { email, workspaceName, summary, dateRange } = req.body;
+      const userName = `${req.user.firstName} ${req.user.lastName}`;
+      
+      await emailService.sendAISummary(email, userName, workspaceName, summary, dateRange);
+      res.json({ message: "AI summary email sent successfully" });
+    } catch (error) {
+      console.error("Error sending AI summary email:", error);
+      res.status(500).json({ message: "Failed to send AI summary email" });
+    }
+  });
+
+  app.post('/api/email/send-mention', requireAuth, async (req: any, res) => {
+    try {
+      const { email, mentionedBy, channelName, messagePreview, workspaceName } = req.body;
+      const userName = `${req.user.firstName} ${req.user.lastName}`;
+      
+      await emailService.sendMentionNotification(email, userName, mentionedBy, channelName, messagePreview, workspaceName);
+      res.json({ message: "Mention notification sent successfully" });
+    } catch (error) {
+      console.error("Error sending mention notification:", error);
+      res.status(500).json({ message: "Failed to send mention notification" });
     }
   });
 

@@ -22,7 +22,8 @@ import {
   ChevronDown,
   Zap,
   Users,
-  Bell
+  Bell,
+  Mail
 } from "lucide-react";
 
 export default function Home() {
@@ -119,6 +120,10 @@ export default function Home() {
             <Zap className="h-4 w-4 text-purple-400" />
             <span className="text-sm">AI Assistant</span>
           </div>
+          <a href="/email-test" className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+            <Mail className="h-4 w-4 text-blue-400" />
+            <span className="text-sm">Email Templates</span>
+          </a>
         </div>
 
         <Separator className="bg-slate-700" />

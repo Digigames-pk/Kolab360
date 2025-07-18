@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import Home from "@/pages/home";
 import Workspace from "@/pages/workspace";
+import EmailTest from "@/pages/email-test";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/workspace/:workspaceId" component={Workspace} />
+      <ProtectedRoute path="/email-test" component={EmailTest} />
       <Route component={NotFound} />
     </Switch>
   );
