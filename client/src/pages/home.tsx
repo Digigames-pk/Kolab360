@@ -4,6 +4,9 @@ import { useLocation } from "wouter";
 import { EnhancedTaskBoard } from "@/components/EnhancedTaskBoard";
 import { EnhancedCalendar } from "@/components/EnhancedCalendar";
 import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
+import { EnhancedFileUpload } from "@/components/EnhancedFileUpload";
+import { AdvancedSearch } from "@/components/AdvancedSearch";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +34,15 @@ import {
   Bell,
   Mail,
   Calendar as CalendarIcon,
-  CheckSquare
+  CheckSquare,
+  Upload,
+  Filter,
+  Settings2,
+  Headphones,
+  AtSign,
+  Paperclip,
+  Smile,
+  Send
 } from "lucide-react";
 
 export default function Home() {
@@ -40,6 +51,9 @@ export default function Home() {
   const [activeView, setActiveView] = useState("chat");
   const [selectedChannel, setSelectedChannel] = useState("general");
   const [selectedDM, setSelectedDM] = useState(null);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [messageText, setMessageText] = useState("");
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -60,17 +74,20 @@ export default function Home() {
   ];
 
   const channels = [
-    { name: "general", unread: 0, type: "public" },
-    { name: "random", unread: 3, type: "public" },
-    { name: "announcements", unread: 1, type: "public" },
-    { name: "dev-team", unread: 0, type: "private" },
-    { name: "admin-only", unread: 2, type: "private", adminOnly: true },
+    { name: "general", unread: 0, type: "public", description: "Company-wide announcements and discussion" },
+    { name: "random", unread: 3, type: "public", description: "Non-work banter and water cooler conversation" },
+    { name: "announcements", unread: 1, type: "public", description: "Important company announcements" },
+    { name: "dev-team", unread: 0, type: "private", description: "Development team discussions" },
+    { name: "design-reviews", unread: 5, type: "public", description: "Design feedback and UI/UX discussions" },
+    { name: "admin-only", unread: 2, type: "private", adminOnly: true, description: "Administrative discussions" },
   ];
 
   const directMessages = [
-    { name: "John Doe", status: "online", unread: 2 },
-    { name: "Jane Smith", status: "away", unread: 0 },
-    { name: "AI Assistant", status: "online", unread: 1 },
+    { name: "John Doe", status: "online", unread: 2, lastMessage: "Thanks for the code review!" },
+    { name: "Jane Smith", status: "away", unread: 0, lastMessage: "See you in the meeting" },
+    { name: "AI Assistant", status: "online", unread: 1, lastMessage: "I can help you with that task" },
+    { name: "Mike Chen", status: "offline", unread: 0, lastMessage: "API docs are updated" },
+    { name: "Sarah Wilson", status: "online", unread: 3, lastMessage: "Can you review the mockups?" },
   ];
 
   const filteredChannels = channels.filter(channel => 
@@ -107,7 +124,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <ThemeSelector />
+              <SimpleThemeSelector />
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </div>
           </div>
@@ -190,13 +207,16 @@ export default function Home() {
                     setSelectedDM(null);
                   }}
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
                     {channel.type === "public" ? (
-                      <Hash className="h-4 w-4 text-slate-400" />
+                      <Hash className="h-4 w-4 text-slate-400 flex-shrink-0" />
                     ) : (
-                      <Lock className="h-4 w-4 text-slate-400" />
+                      <Lock className="h-4 w-4 text-slate-400 flex-shrink-0" />
                     )}
-                    <span className="text-sm">{channel.name}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{channel.name}</div>
+                      <div className="text-xs text-slate-500 truncate">{channel.description}</div>
+                    </div>
                   </div>
                   {channel.unread > 0 && (
                     <Badge variant="destructive" className="h-5 text-xs px-1.5">
@@ -236,8 +256,8 @@ export default function Home() {
                     setSelectedChannel(null);
                   }}
                 >
-                  <div className="flex items-center space-x-2">
-                    <div className="relative">
+                  <div className="flex items-center space-x-2 flex-1 min-w-0">
+                    <div className="relative flex-shrink-0">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs bg-slate-600">
                           {dm.name.split(' ').map(n => n[0]).join('')}
@@ -248,7 +268,10 @@ export default function Home() {
                         dm.status === 'away' ? 'bg-yellow-500' : 'bg-slate-500'
                       }`} />
                     </div>
-                    <span className="text-sm">{dm.name}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{dm.name}</div>
+                      <div className="text-xs text-slate-500 truncate">{dm.lastMessage}</div>
+                    </div>
                   </div>
                   {dm.unread > 0 && (
                     <Badge variant="destructive" className="h-5 text-xs px-1.5">
@@ -305,13 +328,37 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-        {/* Channel Header with Navigation */}
+        {/* Enhanced Channel Header with Navigation */}
         <div className="h-14 bg-white dark:bg-slate-900 border-b border-border flex items-center justify-between px-6">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <Hash className="h-5 w-5 text-muted-foreground" />
-              <h1 className="font-semibold text-lg">general</h1>
-              <Star className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" />
+              {selectedDM ? (
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-xs bg-blue-500 text-white">
+                        {selectedDM.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
+                  </div>
+                  <h1 className="font-semibold text-lg">{selectedDM}</h1>
+                  <Badge variant="outline" className="text-xs">Direct Message</Badge>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  {channels.find(c => c.name === selectedChannel)?.type === "private" ? (
+                    <Lock className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <Hash className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  <h1 className="font-semibold text-lg">{selectedChannel}</h1>
+                  <Star className="h-4 w-4 text-muted-foreground hover:text-yellow-500 cursor-pointer transition-colors" />
+                  <Badge variant="outline" className="text-xs">
+                    {channels.find(c => c.name === selectedChannel)?.type === "private" ? "Private" : "Public"} Channel
+                  </Badge>
+                </div>
+              )}
             </div>
             
             {/* Navigation Tabs */}
@@ -343,16 +390,42 @@ export default function Home() {
                 <CalendarIcon className="h-4 w-4" />
                 <span>Calendar</span>
               </Button>
+              <Button 
+                variant={activeView === "files" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("files")}
+                className="flex items-center space-x-2"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Files</span>
+              </Button>
+              <Button 
+                variant={activeView === "search" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("search")}
+                className="flex items-center space-x-2"
+              >
+                <Search className="h-4 w-4" />
+                <span>Search</span>
+              </Button>
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
+            <NotificationCenter />
             <SimpleThemeSelector />
+            {selectedDM && (
+              <>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-green-600 hover:text-green-700">
+                  <Phone className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700">
+                  <Video className="h-4 w-4" />
+                </Button>
+              </>
+            )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Phone className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Video className="h-4 w-4" />
+              <Users className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Search className="h-4 w-4" />
@@ -480,32 +553,118 @@ export default function Home() {
           {activeView === "calendar" && (
             <EnhancedCalendar selectedChannel={selectedChannel} />
           )}
+
+          {activeView === "files" && (
+            <div className="flex-1 p-6">
+              <EnhancedFileUpload 
+                channel={selectedChannel}
+                onFileUpload={(files) => {
+                  console.log('Files uploaded:', files);
+                  // Handle file upload logic here
+                }}
+              />
+            </div>
+          )}
+
+          {activeView === "search" && (
+            <div className="flex-1">
+              <AdvancedSearch />
+            </div>
+          )}
         </div>
 
-        {/* Message Input */}
-        <div className="p-4 border-t border-border">
-          <div className="relative">
-            <div className="min-h-[44px] max-h-32 px-3 py-2 border border-border rounded-lg focus-within:border-primary bg-background">
-              <div className="flex items-start space-x-2">
-                <div className="flex-1">
-                  <div 
-                    contentEditable
-                    className="outline-none text-sm placeholder:text-muted-foreground min-h-[24px]"
-                    data-placeholder="Message #general"
-                    style={{
-                      caretColor: 'currentColor'
-                    }}
-                  />
+        {/* Enhanced Message Input */}
+        {(activeView === "chat" || !activeView) && (
+          <div className="p-4 border-t border-border bg-white dark:bg-slate-900">
+            <div className="relative">
+              <div className="min-h-[44px] max-h-32 px-3 py-2 border-2 border-border rounded-lg focus-within:border-blue-500 bg-background transition-all">
+                <div className="flex items-start space-x-2">
+                  <div className="flex-1">
+                    <Input
+                      placeholder={selectedDM ? `Message ${selectedDM}` : `Message #${selectedChannel}`}
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      className="border-0 bg-transparent p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          if (messageText.trim()) {
+                            // Handle message send
+                            console.log('Sending message:', messageText);
+                            setMessageText("");
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      title="Attach file"
+                      onClick={() => setActiveView("files")}
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      title="Add emoji"
+                    >
+                      <Smile className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      title="Mention someone"
+                    >
+                      <AtSign className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-purple-500 hover:text-purple-600"
+                      title="AI Assistant"
+                    >
+                      <Zap className="h-4 w-4" />
+                    </Button>
+                    {messageText.trim() && (
+                      <Button 
+                        size="sm" 
+                        className="h-8 px-3 bg-blue-500 hover:bg-blue-600 text-white"
+                        onClick={() => {
+                          if (messageText.trim()) {
+                            console.log('Sending message:', messageText);
+                            setMessageText("");
+                          }
+                        }}
+                      >
+                        <Send className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
-                    <Zap className="h-4 w-4" />
-                  </Button>
+              </div>
+              
+              {/* Message formatting help */}
+              <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                <div className="flex items-center space-x-4">
+                  <span><code>@username</code> to mention</span>
+                  <span><code>#channel</code> to link channel</span>
+                  <span><code>**bold**</code> for emphasis</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>Press Enter to send</span>
+                  <span>•</span>
+                  <span>Shift+Enter for new line</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -74,6 +74,14 @@ Calendar Requirements: Advanced calendar with enhanced features, multiple view m
 3. **Live Notifications**: Real-time alerts for mentions and messages
 4. **Activity Feeds**: Live updates for workspace and channel activity
 
+### Enhanced Slack-Style Features
+1. **Advanced File Sharing**: Drag-and-drop file uploads with live previews, file type detection, and comprehensive file management with recent files gallery
+2. **Sophisticated Search**: Multi-modal search with filters by type, date, author, channel, and advanced search modifiers like "from:", "in:", "has:files", with saved searches and recent history
+3. **Enhanced Notification Center**: Customizable notification preferences, Do Not Disturb mode with scheduling, real-time notification badges, and comprehensive settings for different notification types
+4. **Improved Channel Management**: Enhanced sidebar with channel descriptions, private/public indicators, unread counters, and better visual hierarchy
+5. **Direct Messaging**: Enhanced DM interface with status indicators, last message previews, and integrated voice/video call buttons
+6. **Message Input Enhancements**: Rich text input with @mentions, #channel links, emoji support, file attachment, AI assistant integration, and formatting helpers
+
 ## Data Flow
 
 ### Authentication Flow
