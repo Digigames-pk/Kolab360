@@ -8,8 +8,9 @@ import {
   tasks,
   files,
   reactions,
+  sessions,
   type User,
-  type UpsertUser,
+  type InsertUser,
   type Workspace,
   type InsertWorkspace,
   type Channel,
@@ -26,84 +27,101 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
-  // User operations - mandatory for Replit Auth
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  // User operations
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUserLastLogin(id: number): Promise<void>;
   
   // Workspace operations
-  createWorkspace(workspace: InsertWorkspace): Promise<Workspace>;
+  createWorkspace(workspace: InsertWorkspace & { ownerId: number }): Promise<Workspace>;
   getWorkspace(id: string): Promise<Workspace | undefined>;
-  getUserWorkspaces(userId: string): Promise<Workspace[]>;
-  joinWorkspaceByCode(userId: string, inviteCode: string): Promise<Workspace | null>;
+  getUserWorkspaces(userId: number): Promise<Workspace[]>;
+  joinWorkspaceByCode(userId: number, inviteCode: string): Promise<Workspace | null>;
   getWorkspaceMembers(workspaceId: string): Promise<(WorkspaceMember & { user: User })[]>;
   
   // Channel operations
-  createChannel(channel: InsertChannel): Promise<Channel>;
+  createChannel(channel: InsertChannel & { createdBy: number }): Promise<Channel>;
   getWorkspaceChannels(workspaceId: string): Promise<Channel[]>;
   getChannel(id: string): Promise<Channel | undefined>;
-  joinChannel(channelId: string, userId: string): Promise<void>;
+  joinChannel(channelId: string, userId: number): Promise<void>;
   getChannelMembers(channelId: string): Promise<(ChannelMember & { user: User })[]>;
   
   // Message operations
-  createMessage(message: InsertMessage): Promise<Message>;
+  createMessage(messageData: InsertMessage & { authorId: number }): Promise<Message>;
   getChannelMessages(channelId: string, limit?: number): Promise<(Message & { author: User })[]>;
-  getDirectMessages(userId1: string, userId2: string, limit?: number): Promise<(Message & { author: User })[]>;
+  getDirectMessages(userId1: number, userId2: number, limit?: number): Promise<(Message & { author: User })[]>;
   updateMessage(messageId: string, content: string): Promise<Message | undefined>;
   deleteMessage(messageId: string): Promise<boolean>;
   
   // Task operations
-  createTask(task: InsertTask): Promise<Task>;
+  createTask(taskData: InsertTask & { createdBy: number }): Promise<Task>;
   getWorkspaceTasks(workspaceId: string): Promise<(Task & { assignedUser?: User; creator: User })[]>;
-  updateTask(taskId: string, updates: Partial<InsertTask>): Promise<Task | undefined>;
+  updateTaskStatus(taskId: string, status: string): Promise<Task | undefined>;
   deleteTask(taskId: string): Promise<boolean>;
   
   // File operations
-  createFile(file: InsertFile): Promise<File>;
+  createFile(fileData: InsertFile): Promise<File>;
   getWorkspaceFiles(workspaceId: string): Promise<(File & { uploader: User })[]>;
   
   // Reaction operations
-  addReaction(messageId: string, userId: string, emoji: string): Promise<Reaction>;
-  removeReaction(messageId: string, userId: string, emoji: string): Promise<boolean>;
-  getMessageReactions(messageId: string): Promise<Reaction[]>;
+  addReaction(messageId: string, userId: number, emoji: string): Promise<Reaction>;
+  getMessageReactions(messageId: string): Promise<(Reaction & { user: User })[]>;
+  
+  // Session store
+  sessionStore: any;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations - mandatory for Replit Auth
-  async getUser(id: string): Promise<User | undefined> {
+  sessionStore: any;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true 
+    });
+  }
+
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
   }
 
-  // Workspace operations
-  async createWorkspace(workspaceData: InsertWorkspace): Promise<Workspace> {
-    const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-    
-    const [workspace] = await db
-      .insert(workspaces)
-      .values({ ...workspaceData, inviteCode })
-      .returning();
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
 
-    // Add creator as owner
+  async updateUserLastLogin(id: number): Promise<void> {
+    await db.update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, id));
+  }
+
+  // Workspace operations
+  async createWorkspace(workspaceData: InsertWorkspace & { ownerId: number }): Promise<Workspace> {
+    const inviteCode = Math.random().toString(36).substring(2, 10);
+    const [workspace] = await db.insert(workspaces).values({
+      ...workspaceData,
+      inviteCode,
+    }).returning();
+
+    // Add owner as member
     await db.insert(workspaceMembers).values({
       workspaceId: workspace.id,
-      userId: workspace.ownerId,
+      userId: workspaceData.ownerId,
       role: "owner",
     });
 
@@ -115,7 +133,7 @@ export class DatabaseStorage implements IStorage {
     return workspace;
   }
 
-  async getUserWorkspaces(userId: string): Promise<Workspace[]> {
+  async getUserWorkspaces(userId: number): Promise<Workspace[]> {
     const result = await db
       .select({
         id: workspaces.id,
@@ -123,35 +141,30 @@ export class DatabaseStorage implements IStorage {
         description: workspaces.description,
         ownerId: workspaces.ownerId,
         inviteCode: workspaces.inviteCode,
+        isActive: workspaces.isActive,
         createdAt: workspaces.createdAt,
         updatedAt: workspaces.updatedAt,
       })
       .from(workspaces)
-      .innerJoin(workspaceMembers, eq(workspaces.id, workspaceMembers.workspaceId))
-      .where(eq(workspaceMembers.userId, userId))
-      .orderBy(asc(workspaces.name));
+      .innerJoin(workspaceMembers, eq(workspaceMembers.workspaceId, workspaces.id))
+      .where(eq(workspaceMembers.userId, userId));
 
     return result;
   }
 
-  async joinWorkspaceByCode(userId: string, inviteCode: string): Promise<Workspace | null> {
-    const [workspace] = await db
-      .select()
-      .from(workspaces)
-      .where(eq(workspaces.inviteCode, inviteCode));
-
+  async joinWorkspaceByCode(userId: number, inviteCode: string): Promise<Workspace | null> {
+    const [workspace] = await db.select().from(workspaces).where(eq(workspaces.inviteCode, inviteCode));
+    
     if (!workspace) return null;
 
     // Check if user is already a member
     const [existingMember] = await db
       .select()
       .from(workspaceMembers)
-      .where(
-        and(
-          eq(workspaceMembers.workspaceId, workspace.id),
-          eq(workspaceMembers.userId, userId)
-        )
-      );
+      .where(and(
+        eq(workspaceMembers.workspaceId, workspace.id),
+        eq(workspaceMembers.userId, userId)
+      ));
 
     if (!existingMember) {
       await db.insert(workspaceMembers).values({
@@ -182,24 +195,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Channel operations
-  async createChannel(channelData: InsertChannel): Promise<Channel> {
+  async createChannel(channelData: InsertChannel & { createdBy: number }): Promise<Channel> {
     const [channel] = await db.insert(channels).values(channelData).returning();
-
-    // Add creator to channel
+    
+    // Add creator as member
     await db.insert(channelMembers).values({
       channelId: channel.id,
-      userId: channel.createdBy,
+      userId: channelData.createdBy,
     });
 
     return channel;
   }
 
   async getWorkspaceChannels(workspaceId: string): Promise<Channel[]> {
-    return await db
-      .select()
-      .from(channels)
-      .where(eq(channels.workspaceId, workspaceId))
-      .orderBy(asc(channels.name));
+    return await db.select().from(channels).where(eq(channels.workspaceId, workspaceId));
   }
 
   async getChannel(id: string): Promise<Channel | undefined> {
@@ -207,7 +216,7 @@ export class DatabaseStorage implements IStorage {
     return channel;
   }
 
-  async joinChannel(channelId: string, userId: string): Promise<void> {
+  async joinChannel(channelId: string, userId: number): Promise<void> {
     await db.insert(channelMembers).values({
       channelId,
       userId,
@@ -231,7 +240,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Message operations
-  async createMessage(messageData: InsertMessage): Promise<Message> {
+  async createMessage(messageData: InsertMessage & { authorId: number }): Promise<Message> {
     const [message] = await db.insert(messages).values(messageData).returning();
     return message;
   }
@@ -261,7 +270,7 @@ export class DatabaseStorage implements IStorage {
     return result.reverse();
   }
 
-  async getDirectMessages(userId1: string, userId2: string, limit = 50): Promise<(Message & { author: User })[]> {
+  async getDirectMessages(userId1: number, userId2: number, limit = 50): Promise<(Message & { author: User })[]> {
     const result = await db
       .select({
         id: messages.id,
@@ -309,7 +318,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Task operations
-  async createTask(taskData: InsertTask): Promise<Task> {
+  async createTask(taskData: InsertTask & { createdBy: number }): Promise<Task> {
     const [task] = await db.insert(tasks).values(taskData).returning();
     return task;
   }
@@ -330,29 +339,20 @@ export class DatabaseStorage implements IStorage {
         createdAt: tasks.createdAt,
         updatedAt: tasks.updatedAt,
         creator: users,
-        assignedUser: {
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-          createdAt: users.createdAt,
-          updatedAt: users.updatedAt,
-        },
+        assignedUser: users,
       })
       .from(tasks)
       .innerJoin(users, eq(tasks.createdBy, users.id))
       .leftJoin(users, eq(tasks.assignedTo, users.id))
-      .where(eq(tasks.workspaceId, workspaceId))
-      .orderBy(desc(tasks.createdAt));
+      .where(eq(tasks.workspaceId, workspaceId));
 
-    return result;
+    return result as any;
   }
 
-  async updateTask(taskId: string, updates: Partial<InsertTask>): Promise<Task | undefined> {
+  async updateTaskStatus(taskId: string, status: string): Promise<Task | undefined> {
     const [task] = await db
       .update(tasks)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ status, updatedAt: new Date() })
       .where(eq(tasks.id, taskId))
       .returning();
     return task;
@@ -378,46 +378,44 @@ export class DatabaseStorage implements IStorage {
         mimeType: files.mimeType,
         size: files.size,
         uploadedBy: files.uploadedBy,
-        messageId: files.messageId,
         workspaceId: files.workspaceId,
+        channelId: files.channelId,
+        messageId: files.messageId,
         createdAt: files.createdAt,
         uploader: users,
       })
       .from(files)
       .innerJoin(users, eq(files.uploadedBy, users.id))
-      .where(eq(files.workspaceId, workspaceId))
-      .orderBy(desc(files.createdAt));
+      .where(eq(files.workspaceId, workspaceId));
 
     return result;
   }
 
   // Reaction operations
-  async addReaction(messageId: string, userId: string, emoji: string): Promise<Reaction> {
-    const [reaction] = await db
-      .insert(reactions)
-      .values({ messageId, userId, emoji })
-      .returning();
+  async addReaction(messageId: string, userId: number, emoji: string): Promise<Reaction> {
+    const [reaction] = await db.insert(reactions).values({
+      messageId,
+      userId,
+      emoji,
+    }).returning();
     return reaction;
   }
 
-  async removeReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
+  async getMessageReactions(messageId: string): Promise<(Reaction & { user: User })[]> {
     const result = await db
-      .delete(reactions)
-      .where(
-        and(
-          eq(reactions.messageId, messageId),
-          eq(reactions.userId, userId),
-          eq(reactions.emoji, emoji)
-        )
-      );
-    return result.rowCount > 0;
-  }
-
-  async getMessageReactions(messageId: string): Promise<Reaction[]> {
-    return await db
-      .select()
+      .select({
+        id: reactions.id,
+        messageId: reactions.messageId,
+        userId: reactions.userId,
+        emoji: reactions.emoji,
+        createdAt: reactions.createdAt,
+        user: users,
+      })
       .from(reactions)
+      .innerJoin(users, eq(reactions.userId, users.id))
       .where(eq(reactions.messageId, messageId));
+
+    return result;
   }
 }
 

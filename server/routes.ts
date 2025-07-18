@@ -2,9 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, requireAuth, requireRole } from "./auth";
 import { generateAIResponse, analyzeSentiment, summarizeMessages, generateTasks, autoCompleteMessage } from "./openai";
-import { insertWorkspaceSchema, insertChannelSchema, insertMessageSchema, insertTaskSchema } from "@shared/schema";
+import { 
+  insertWorkspaceSchema, 
+  insertChannelSchema, 
+  insertMessageSchema, 
+  insertTaskSchema 
+} from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { z } from "zod";
@@ -15,40 +20,28 @@ const upload = multer({
 });
 
 interface WebSocketConnection extends WebSocket {
-  userId?: string;
+  userId?: number;
   workspaceId?: string;
   channelId?: string;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  setupAuth(app);
 
   // WebSocket connections store
   const connections = new Set<WebSocketConnection>();
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
   // Workspace routes
-  app.post('/api/workspaces', isAuthenticated, async (req: any, res) => {
+  app.post('/api/workspaces', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const workspaceData = insertWorkspaceSchema.parse({
-        ...req.body,
+      const userId = req.user.id;
+      const workspaceData = insertWorkspaceSchema.parse(req.body);
+      
+      const workspace = await storage.createWorkspace({
+        ...workspaceData,
         ownerId: userId,
       });
-      
-      const workspace = await storage.createWorkspace(workspaceData);
       res.json(workspace);
     } catch (error) {
       console.error("Error creating workspace:", error);
@@ -56,9 +49,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/workspaces', isAuthenticated, async (req: any, res) => {
+  app.get('/api/workspaces', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const workspaces = await storage.getUserWorkspaces(userId);
       res.json(workspaces);
     } catch (error) {
@@ -67,9 +60,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/workspaces/join', isAuthenticated, async (req: any, res) => {
+  app.get('/api/workspaces/:id', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const workspace = await storage.getWorkspace(req.params.id);
+      if (!workspace) {
+        return res.status(404).json({ message: "Workspace not found" });
+      }
+      res.json(workspace);
+    } catch (error) {
+      console.error("Error fetching workspace:", error);
+      res.status(500).json({ message: "Failed to fetch workspace" });
+    }
+  });
+
+  app.post('/api/workspaces/join', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
       const { inviteCode } = req.body;
       
       const workspace = await storage.joinWorkspaceByCode(userId, inviteCode);
@@ -84,10 +90,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/workspaces/:id/members', isAuthenticated, async (req, res) => {
+  app.get('/api/workspaces/:id/members', requireAuth, async (req: any, res) => {
     try {
-      const { id } = req.params;
-      const members = await storage.getWorkspaceMembers(id);
+      const members = await storage.getWorkspaceMembers(req.params.id);
       res.json(members);
     } catch (error) {
       console.error("Error fetching workspace members:", error);
@@ -96,15 +101,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Channel routes
-  app.post('/api/channels', isAuthenticated, async (req: any, res) => {
+  app.post('/api/workspaces/:workspaceId/channels', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const channelData = insertChannelSchema.parse({
         ...req.body,
-        createdBy: userId,
+        workspaceId: req.params.workspaceId,
       });
       
-      const channel = await storage.createChannel(channelData);
+      const channel = await storage.createChannel({
+        ...channelData,
+        createdBy: userId,
+      });
       res.json(channel);
     } catch (error) {
       console.error("Error creating channel:", error);
@@ -112,10 +120,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/workspaces/:workspaceId/channels', isAuthenticated, async (req, res) => {
+  app.get('/api/workspaces/:workspaceId/channels', requireAuth, async (req: any, res) => {
     try {
-      const { workspaceId } = req.params;
-      const channels = await storage.getWorkspaceChannels(workspaceId);
+      const channels = await storage.getWorkspaceChannels(req.params.workspaceId);
       res.json(channels);
     } catch (error) {
       console.error("Error fetching channels:", error);
@@ -123,23 +130,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/channels/:channelId/join', isAuthenticated, async (req: any, res) => {
+  app.get('/api/channels/:id', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const { channelId } = req.params;
-      
-      await storage.joinChannel(channelId, userId);
-      res.json({ success: true });
+      const channel = await storage.getChannel(req.params.id);
+      if (!channel) {
+        return res.status(404).json({ message: "Channel not found" });
+      }
+      res.json(channel);
+    } catch (error) {
+      console.error("Error fetching channel:", error);
+      res.status(500).json({ message: "Failed to fetch channel" });
+    }
+  });
+
+  app.post('/api/channels/:id/join', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.joinChannel(req.params.id, userId);
+      res.json({ message: "Successfully joined channel" });
     } catch (error) {
       console.error("Error joining channel:", error);
       res.status(500).json({ message: "Failed to join channel" });
     }
   });
 
-  app.get('/api/channels/:channelId/members', isAuthenticated, async (req, res) => {
+  app.get('/api/channels/:id/members', requireAuth, async (req: any, res) => {
     try {
-      const { channelId } = req.params;
-      const members = await storage.getChannelMembers(channelId);
+      const members = await storage.getChannelMembers(req.params.id);
       res.json(members);
     } catch (error) {
       console.error("Error fetching channel members:", error);
@@ -148,11 +165,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.get('/api/channels/:channelId/messages', isAuthenticated, async (req, res) => {
+  app.get('/api/channels/:id/messages', requireAuth, async (req: any, res) => {
     try {
-      const { channelId } = req.params;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const messages = await storage.getChannelMessages(channelId, limit);
+      const messages = await storage.getChannelMessages(req.params.id, limit);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -160,30 +176,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/messages/direct/:userId', isAuthenticated, async (req: any, res) => {
+  app.post('/api/channels/:id/messages', requireAuth, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
-      const { userId } = req.params;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const userId = req.user.id;
+      const messageData = insertMessageSchema.parse({
+        ...req.body,
+        channelId: req.params.id,
+      });
       
-      const messages = await storage.getDirectMessages(currentUserId, userId, limit);
-      res.json(messages);
+      const message = await storage.createMessage({
+        ...messageData,
+        authorId: userId,
+      });
+
+      // Broadcast to WebSocket connections
+      const messageWithAuthor = {
+        ...message,
+        author: req.user,
+      };
+
+      connections.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN && ws.channelId === req.params.id) {
+          ws.send(JSON.stringify({
+            type: 'new_message',
+            data: messageWithAuthor,
+          }));
+        }
+      });
+
+      res.json(messageWithAuthor);
     } catch (error) {
-      console.error("Error fetching direct messages:", error);
-      res.status(500).json({ message: "Failed to fetch direct messages" });
+      console.error("Error creating message:", error);
+      res.status(500).json({ message: "Failed to create message" });
     }
   });
 
-  app.put('/api/messages/:messageId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/messages/:id', requireAuth, async (req: any, res) => {
     try {
-      const { messageId } = req.params;
       const { content } = req.body;
-      
-      const message = await storage.updateMessage(messageId, content);
+      const message = await storage.updateMessage(req.params.id, content);
       if (!message) {
         return res.status(404).json({ message: "Message not found" });
       }
-      
       res.json(message);
     } catch (error) {
       console.error("Error updating message:", error);
@@ -191,35 +225,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/messages/:messageId', isAuthenticated, async (req, res) => {
+  app.delete('/api/messages/:id', requireAuth, async (req: any, res) => {
     try {
-      const { messageId } = req.params;
-      const success = await storage.deleteMessage(messageId);
-      
-      if (!success) {
+      const deleted = await storage.deleteMessage(req.params.id);
+      if (!deleted) {
         return res.status(404).json({ message: "Message not found" });
       }
-      
-      res.json({ success: true });
+      res.json({ message: "Message deleted successfully" });
     } catch (error) {
       console.error("Error deleting message:", error);
       res.status(500).json({ message: "Failed to delete message" });
     }
   });
 
-  // AI routes
-  app.post('/api/ai/chat', isAuthenticated, async (req, res) => {
+  // Direct message routes
+  app.get('/api/users/:userId/messages', requireAuth, async (req: any, res) => {
     try {
-      const { prompt, context } = req.body;
-      const response = await generateAIResponse(prompt, context);
-      res.json({ response });
+      const currentUserId = req.user.id;
+      const otherUserId = parseInt(req.params.userId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      const messages = await storage.getDirectMessages(currentUserId, otherUserId, limit);
+      res.json(messages);
     } catch (error) {
-      console.error("Error generating AI response:", error);
-      res.status(500).json({ message: "Failed to generate AI response" });
+      console.error("Error fetching direct messages:", error);
+      res.status(500).json({ message: "Failed to fetch direct messages" });
     }
   });
 
-  app.post('/api/ai/sentiment', isAuthenticated, async (req, res) => {
+  app.post('/api/users/:userId/messages', requireAuth, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const recipientId = parseInt(req.params.userId);
+      const messageData = insertMessageSchema.parse({
+        ...req.body,
+        recipientId,
+      });
+      
+      const message = await storage.createMessage({
+        ...messageData,
+        authorId: currentUserId,
+      });
+
+      // Broadcast to WebSocket connections
+      const messageWithAuthor = {
+        ...message,
+        author: req.user,
+      };
+
+      connections.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN && 
+            (ws.userId === currentUserId || ws.userId === recipientId)) {
+          ws.send(JSON.stringify({
+            type: 'new_direct_message',
+            data: messageWithAuthor,
+          }));
+        }
+      });
+
+      res.json(messageWithAuthor);
+    } catch (error) {
+      console.error("Error creating direct message:", error);
+      res.status(500).json({ message: "Failed to create direct message" });
+    }
+  });
+
+  // Task routes
+  app.get('/api/workspaces/:workspaceId/tasks', requireAuth, async (req: any, res) => {
+    try {
+      const tasks = await storage.getWorkspaceTasks(req.params.workspaceId);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post('/api/workspaces/:workspaceId/tasks', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const taskData = insertTaskSchema.parse({
+        ...req.body,
+        workspaceId: req.params.workspaceId,
+      });
+      
+      const task = await storage.createTask({
+        ...taskData,
+        createdBy: userId,
+      });
+      res.json(task);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.put('/api/tasks/:id/status', requireAuth, async (req: any, res) => {
+    try {
+      const { status } = req.body;
+      const task = await storage.updateTaskStatus(req.params.id, status);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      res.status(500).json({ message: "Failed to update task status" });
+    }
+  });
+
+  app.delete('/api/tasks/:id', requireAuth, async (req: any, res) => {
+    try {
+      const deleted = await storage.deleteTask(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // File upload routes
+  app.post('/api/workspaces/:workspaceId/files', requireAuth, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const userId = req.user.id;
+      const fileData = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        uploadedBy: userId,
+        workspaceId: req.params.workspaceId,
+        channelId: req.body.channelId || null,
+        messageId: req.body.messageId || null,
+      };
+
+      const file = await storage.createFile(fileData);
+      res.json(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "Failed to upload file" });
+    }
+  });
+
+  app.get('/api/workspaces/:workspaceId/files', requireAuth, async (req: any, res) => {
+    try {
+      const files = await storage.getWorkspaceFiles(req.params.workspaceId);
+      res.json(files);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      res.status(500).json({ message: "Failed to fetch files" });
+    }
+  });
+
+  // Reaction routes
+  app.post('/api/messages/:messageId/reactions', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { emoji } = req.body;
+      
+      const reaction = await storage.addReaction(req.params.messageId, userId, emoji);
+      res.json(reaction);
+    } catch (error) {
+      console.error("Error adding reaction:", error);
+      res.status(500).json({ message: "Failed to add reaction" });
+    }
+  });
+
+  app.get('/api/messages/:messageId/reactions', requireAuth, async (req: any, res) => {
+    try {
+      const reactions = await storage.getMessageReactions(req.params.messageId);
+      res.json(reactions);
+    } catch (error) {
+      console.error("Error fetching reactions:", error);
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+
+  // AI-powered features
+  app.post('/api/ai/analyze-sentiment', requireAuth, async (req: any, res) => {
     try {
       const { text } = req.body;
       const sentiment = await analyzeSentiment(text);
@@ -230,271 +420,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/summarize', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/autocomplete', requireAuth, async (req: any, res) => {
+    try {
+      const { text, context } = req.body;
+      const completion = await autoCompleteMessage(text, context);
+      res.json({ completion });
+    } catch (error) {
+      console.error("Error generating autocomplete:", error);
+      res.status(500).json({ message: "Failed to generate autocomplete" });
+    }
+  });
+
+  app.post('/api/ai/summarize', requireAuth, async (req: any, res) => {
     try {
       const { messages } = req.body;
       const summary = await summarizeMessages(messages);
       res.json({ summary });
     } catch (error) {
-      console.error("Error generating summary:", error);
-      res.status(500).json({ message: "Failed to generate summary" });
+      console.error("Error summarizing messages:", error);
+      res.status(500).json({ message: "Failed to summarize messages" });
     }
   });
 
-  app.post('/api/ai/tasks', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/generate-tasks', requireAuth, async (req: any, res: any) => {
     try {
-      const userId = req.user.claims.sub;
-      const { conversationText, workspaceId, channelId } = req.body;
-      
-      const aiTasks = await generateTasks(conversationText);
-      const createdTasks = [];
-      
-      for (const aiTask of aiTasks) {
-        const task = await storage.createTask({
-          title: aiTask.title,
-          description: aiTask.description,
-          priority: aiTask.priority,
-          status: "todo",
-          createdBy: userId,
-          workspaceId,
-          channelId: channelId || null,
-        });
-        createdTasks.push(task);
-      }
-      
-      res.json(createdTasks);
+      const { messages, workspaceId } = req.body;
+      const tasks = await generateTasks(messages);
+      res.json({ tasks });
     } catch (error) {
       console.error("Error generating tasks:", error);
       res.status(500).json({ message: "Failed to generate tasks" });
     }
   });
 
-  app.post('/api/ai/autocomplete', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/response', requireAuth, async (req: any, res: any) => {
     try {
-      const { partialMessage, context } = req.body;
-      const completion = await autoCompleteMessage(partialMessage, context);
-      res.json({ completion });
+      const { message, context } = req.body;
+      const response = await generateAIResponse(message, context);
+      res.json({ response });
     } catch (error) {
-      console.error("Error auto-completing message:", error);
-      res.status(500).json({ message: "Failed to auto-complete message" });
+      console.error("Error generating AI response:", error);
+      res.status(500).json({ message: "Failed to generate AI response" });
     }
   });
 
-  // Task routes
-  app.post('/api/tasks', isAuthenticated, async (req: any, res) => {
+  // Admin routes (Super Admin only)
+  app.get('/api/admin/users', requireRole('super_admin'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const taskData = insertTaskSchema.parse({
-        ...req.body,
-        createdBy: userId,
-      });
-      
-      const task = await storage.createTask(taskData);
-      res.json(task);
+      // This would need to be implemented in storage
+      res.json({ message: "Admin users endpoint - to be implemented" });
     } catch (error) {
-      console.error("Error creating task:", error);
-      res.status(500).json({ message: "Failed to create task" });
+      console.error("Error fetching admin users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 
-  app.get('/api/workspaces/:workspaceId/tasks', isAuthenticated, async (req, res) => {
+  app.get('/api/admin/analytics', requireRole('admin'), async (req: any, res: any) => {
     try {
-      const { workspaceId } = req.params;
-      const tasks = await storage.getWorkspaceTasks(workspaceId);
-      res.json(tasks);
+      // This would need to be implemented in storage
+      res.json({ message: "Admin analytics endpoint - to be implemented" });
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-      res.status(500).json({ message: "Failed to fetch tasks" });
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
 
-  app.put('/api/tasks/:taskId', isAuthenticated, async (req, res) => {
-    try {
-      const { taskId } = req.params;
-      const updates = req.body;
-      
-      const task = await storage.updateTask(taskId, updates);
-      if (!task) {
-        return res.status(404).json({ message: "Task not found" });
-      }
-      
-      res.json(task);
-    } catch (error) {
-      console.error("Error updating task:", error);
-      res.status(500).json({ message: "Failed to update task" });
-    }
-  });
-
-  app.delete('/api/tasks/:taskId', isAuthenticated, async (req, res) => {
-    try {
-      const { taskId } = req.params;
-      const success = await storage.deleteTask(taskId);
-      
-      if (!success) {
-        return res.status(404).json({ message: "Task not found" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting task:", error);
-      res.status(500).json({ message: "Failed to delete task" });
-    }
-  });
-
-  // File upload routes
-  app.post('/api/files', isAuthenticated, upload.single('file'), async (req: any, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-      
-      const userId = req.user.claims.sub;
-      const { workspaceId, messageId } = req.body;
-      
-      const file = await storage.createFile({
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        uploadedBy: userId,
-        workspaceId,
-        messageId: messageId || null,
-      });
-      
-      res.json(file);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      res.status(500).json({ message: "Failed to upload file" });
-    }
-  });
-
-  app.get('/api/workspaces/:workspaceId/files', isAuthenticated, async (req, res) => {
-    try {
-      const { workspaceId } = req.params;
-      const files = await storage.getWorkspaceFiles(workspaceId);
-      res.json(files);
-    } catch (error) {
-      console.error("Error fetching files:", error);
-      res.status(500).json({ message: "Failed to fetch files" });
-    }
-  });
-
-  // Reaction routes
-  app.post('/api/messages/:messageId/reactions', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { messageId } = req.params;
-      const { emoji } = req.body;
-      
-      const reaction = await storage.addReaction(messageId, userId, emoji);
-      res.json(reaction);
-    } catch (error) {
-      console.error("Error adding reaction:", error);
-      res.status(500).json({ message: "Failed to add reaction" });
-    }
-  });
-
-  app.delete('/api/messages/:messageId/reactions/:emoji', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { messageId, emoji } = req.params;
-      
-      const success = await storage.removeReaction(messageId, userId, emoji);
-      if (!success) {
-        return res.status(404).json({ message: "Reaction not found" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error removing reaction:", error);
-      res.status(500).json({ message: "Failed to remove reaction" });
-    }
-  });
-
+  // Create HTTP server
   const httpServer = createServer(app);
 
-  // WebSocket setup
+  // WebSocket server setup
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws: WebSocketConnection, req) => {
-    console.log('New WebSocket connection');
     connections.add(ws);
+    console.log('WebSocket connection established');
 
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
         
         switch (message.type) {
-          case 'auth':
-            ws.userId = message.userId;
+          case 'join_workspace':
             ws.workspaceId = message.workspaceId;
-            ws.channelId = message.channelId;
+            ws.userId = message.userId;
             break;
-
-          case 'message':
-            if (ws.userId) {
-              const messageData = insertMessageSchema.parse({
-                content: message.content,
-                authorId: ws.userId,
-                channelId: message.channelId || null,
-                recipientId: message.recipientId || null,
-                messageType: message.messageType || 'text',
-                metadata: message.metadata || null,
-              });
-              
-              const newMessage = await storage.createMessage(messageData);
-              const messageWithAuthor = {
-                ...newMessage,
-                author: await storage.getUser(ws.userId),
-              };
-
-              // Broadcast to all connections in the same channel/DM
-              connections.forEach((conn) => {
-                if (conn.readyState === WebSocket.OPEN) {
-                  if (message.channelId && conn.channelId === message.channelId) {
-                    conn.send(JSON.stringify({
-                      type: 'message',
-                      data: messageWithAuthor,
-                    }));
-                  } else if (message.recipientId && 
-                           (conn.userId === message.recipientId || conn.userId === ws.userId)) {
-                    conn.send(JSON.stringify({
-                      type: 'directMessage',
-                      data: messageWithAuthor,
-                    }));
-                  }
-                }
-              });
-            }
-            break;
-
-          case 'typing':
-            if (ws.userId) {
-              connections.forEach((conn) => {
-                if (conn.readyState === WebSocket.OPEN && 
-                    conn.channelId === message.channelId && 
-                    conn.userId !== ws.userId) {
-                  conn.send(JSON.stringify({
-                    type: 'typing',
-                    userId: ws.userId,
-                    channelId: message.channelId,
-                    isTyping: message.isTyping,
-                  }));
-                }
-              });
-            }
-            break;
-
+            
           case 'join_channel':
             ws.channelId = message.channelId;
+            break;
+            
+          case 'typing':
+            // Broadcast typing indicator to other users in the channel
+            connections.forEach((conn) => {
+              if (conn !== ws && 
+                  conn.readyState === WebSocket.OPEN && 
+                  conn.channelId === ws.channelId) {
+                conn.send(JSON.stringify({
+                  type: 'user_typing',
+                  userId: ws.userId,
+                  channelId: ws.channelId,
+                }));
+              }
+            });
+            break;
+            
+          case 'stop_typing':
+            // Broadcast stop typing indicator
+            connections.forEach((conn) => {
+              if (conn !== ws && 
+                  conn.readyState === WebSocket.OPEN && 
+                  conn.channelId === ws.channelId) {
+                conn.send(JSON.stringify({
+                  type: 'user_stop_typing',
+                  userId: ws.userId,
+                  channelId: ws.channelId,
+                }));
+              }
+            });
             break;
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: 'Invalid message format',
-        }));
       }
     });
 
