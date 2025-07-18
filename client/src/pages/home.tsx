@@ -14,6 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Hash, 
   Lock, 
@@ -55,6 +58,10 @@ export default function Home() {
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [messageText, setMessageText] = useState("");
+  const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [newChannelName, setNewChannelName] = useState("");
+  const [newChannelDescription, setNewChannelDescription] = useState("");
+  const [newChannelType, setNewChannelType] = useState<"public" | "private">("public");
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -187,12 +194,7 @@ export default function Home() {
             <span className="text-sm font-medium text-slate-300">Channels</span>
             <Plus 
               className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" 
-              onClick={() => {
-                const channelName = prompt("Enter channel name:");
-                if (channelName) {
-                  alert(`Channel #${channelName} would be created`);
-                }
-              }}
+              onClick={() => setShowCreateChannel(true)}
             />
           </div>
           
@@ -464,14 +466,16 @@ export default function Home() {
                     <Zap className="h-4 w-4 mr-2" />
                     Try AI Assistant
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => setActiveView("people")}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Invite teammates
-                  </Button>
+                  {!selectedDM && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setActiveView("people")}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Invite teammates
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -667,6 +671,102 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Create Channel Dialog */}
+      <Dialog open={showCreateChannel} onOpenChange={setShowCreateChannel}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create a channel</DialogTitle>
+            <DialogDescription>
+              Channels are where your team communicates. They're best when organized around a topic — #marketing, for example.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="channel-name">Name</Label>
+              <div className="flex items-center space-x-2">
+                <Hash className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="channel-name"
+                  placeholder="e.g. plan-budget"
+                  value={newChannelName}
+                  onChange={(e) => setNewChannelName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="channel-description">Description (optional)</Label>
+              <Input
+                id="channel-description"
+                placeholder="What's this channel about?"
+                value={newChannelDescription}
+                onChange={(e) => setNewChannelDescription(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Privacy</Label>
+              <Select value={newChannelType} onValueChange={(value: "public" | "private") => setNewChannelType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">
+                    <div className="flex items-center space-x-2">
+                      <Hash className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">Public</div>
+                        <div className="text-xs text-muted-foreground">Anyone in the workspace can join</div>
+                      </div>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="private">
+                    <div className="flex items-center space-x-2">
+                      <Lock className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">Private</div>
+                        <div className="text-xs text-muted-foreground">Only specific people can be added</div>
+                      </div>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => {
+              setShowCreateChannel(false);
+              setNewChannelName("");
+              setNewChannelDescription("");
+              setNewChannelType("public");
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (newChannelName.trim()) {
+                  // Here you would typically make an API call to create the channel
+                  console.log('Creating channel:', {
+                    name: newChannelName,
+                    description: newChannelDescription,
+                    type: newChannelType
+                  });
+                  alert(`Channel #${newChannelName} created successfully!`);
+                  setShowCreateChannel(false);
+                  setNewChannelName("");
+                  setNewChannelDescription("");
+                  setNewChannelType("public");
+                  setSelectedChannel(newChannelName);
+                  setActiveView("chat");
+                }
+              }}
+              disabled={!newChannelName.trim()}
+            >
+              Create
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
