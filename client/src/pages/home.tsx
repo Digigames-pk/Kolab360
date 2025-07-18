@@ -1,19 +1,28 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { 
-  Users, 
+  Hash, 
+  Lock, 
+  Plus, 
   MessageSquare, 
-  Calendar, 
+  Phone, 
+  Video, 
   Settings, 
   LogOut,
   Crown,
   Shield,
   User,
-  BarChart3,
-  Zap
+  Search,
+  Star,
+  MoreHorizontal,
+  ChevronDown,
+  Zap,
+  Users,
+  Bell
 } from "lucide-react";
 
 export default function Home() {
@@ -24,251 +33,285 @@ export default function Home() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'super_admin':
-        return <Crown className="h-4 w-4 text-yellow-500" />;
+        return <Crown className="h-3 w-3 text-yellow-500" />;
       case 'admin':
-        return <Shield className="h-4 w-4 text-blue-500" />;
+        return <Shield className="h-3 w-3 text-blue-500" />;
       default:
-        return <User className="h-4 w-4 text-gray-500" />;
+        return <User className="h-3 w-3 text-gray-500" />;
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'super_admin':
-        return 'default' as const;
-      case 'admin':
-        return 'secondary' as const;
-      default:
-        return 'outline' as const;
-    }
-  };
-
-  const formatRole = (role: string) => {
-    return role.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-
-  const dashboardFeatures = [
-    {
-      title: "Workspaces",
-      description: "Manage your team workspaces",
-      icon: Users,
-      count: "3 Active",
-      color: "text-blue-500",
-      bgColor: "bg-blue-50 dark:bg-blue-950"
-    },
-    {
-      title: "Messages",
-      description: "Recent conversations",
-      icon: MessageSquare,
-      count: "12 Unread",
-      color: "text-green-500",
-      bgColor: "bg-green-50 dark:bg-green-950"
-    },
-    {
-      title: "Tasks",
-      description: "Your assigned tasks",
-      icon: Calendar,
-      count: "5 Pending",
-      color: "text-orange-500",
-      bgColor: "bg-orange-50 dark:bg-orange-950"
-    },
-    {
-      title: "AI Assistant",
-      description: "Smart productivity features",
-      icon: Zap,
-      count: "Available",
-      color: "text-purple-500",
-      bgColor: "bg-purple-50 dark:bg-purple-950"
-    }
+  const workspaces = [
+    { id: 1, name: "CollabSpace Demo", initial: "CD" },
+    { id: 2, name: "Development Team", initial: "DT" },
   ];
 
-  const adminFeatures = user.role === 'super_admin' || user.role === 'admin' ? [
-    {
-      title: "Analytics",
-      description: "Platform insights and metrics",
-      icon: BarChart3,
-      color: "text-indigo-500",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
-    },
-    {
-      title: "User Management",
-      description: "Manage platform users",
-      icon: Settings,
-      color: "text-gray-500",
-      bgColor: "bg-gray-50 dark:bg-gray-950"
-    }
-  ] : [];
+  const channels = [
+    { name: "general", unread: 0, type: "public" },
+    { name: "random", unread: 3, type: "public" },
+    { name: "announcements", unread: 1, type: "public" },
+    { name: "dev-team", unread: 0, type: "private" },
+    { name: "admin-only", unread: 2, type: "private", adminOnly: true },
+  ];
+
+  const directMessages = [
+    { name: "John Doe", status: "online", unread: 2 },
+    { name: "Jane Smith", status: "away", unread: 0 },
+    { name: "AI Assistant", status: "online", unread: 1 },
+  ];
+
+  const filteredChannels = channels.filter(channel => 
+    !channel.adminOnly || user.role === 'admin' || user.role === 'super_admin'
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="bg-primary rounded-lg p-2">
-              <MessageSquare className="h-6 w-6 text-primary-foreground" />
-            </div>
+    <div className="flex h-screen bg-background">
+      {/* Workspace Switcher Sidebar */}
+      <div className="w-16 bg-slate-900 flex flex-col items-center py-3 space-y-2">
+        {workspaces.map((workspace) => (
+          <div
+            key={workspace.id}
+            className="w-10 h-10 bg-slate-600 hover:bg-slate-500 rounded-lg flex items-center justify-center text-white font-medium text-sm cursor-pointer transition-colors"
+          >
+            {workspace.initial}
+          </div>
+        ))}
+        <div className="w-10 h-10 border-2 border-dashed border-slate-600 hover:border-slate-400 rounded-lg flex items-center justify-center text-slate-400 cursor-pointer transition-colors">
+          <Plus className="h-5 w-5" />
+        </div>
+      </div>
+
+      {/* Main Sidebar */}
+      <div className="w-64 bg-slate-800 text-slate-100 flex flex-col">
+        {/* Workspace Header */}
+        <div className="p-4 border-b border-slate-700">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">CollabSpace</h1>
-              <p className="text-sm text-muted-foreground">Modern team collaboration</p>
+              <h2 className="font-bold text-lg text-white">CollabSpace Demo</h2>
+              <div className="flex items-center space-x-2 text-sm text-slate-300">
+                {getRoleIcon(user.role)}
+                <span>{user.firstName} {user.lastName}</span>
+              </div>
             </div>
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          </div>
+        </div>
+
+        {/* Navigation Items */}
+        <div className="px-4 py-3 space-y-1">
+          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+            <MessageSquare className="h-4 w-4" />
+            <span className="text-sm">Threads</span>
+          </div>
+          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+            <Bell className="h-4 w-4" />
+            <span className="text-sm">Mentions & reactions</span>
+          </div>
+          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+            <Star className="h-4 w-4" />
+            <span className="text-sm">Saved items</span>
+          </div>
+          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+            <Users className="h-4 w-4" />
+            <span className="text-sm">People & user groups</span>
+          </div>
+          <div className="flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer">
+            <Zap className="h-4 w-4 text-purple-400" />
+            <span className="text-sm">AI Assistant</span>
+          </div>
+        </div>
+
+        <Separator className="bg-slate-700" />
+
+        {/* Channels */}
+        <div className="flex-1 px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-slate-300">Channels</span>
+            <Plus className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" />
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <Avatar>
-                <AvatarFallback>
-                  {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-right">
-                <div className="flex items-center space-x-2">
-                  <p className="font-medium">{user.firstName} {user.lastName}</p>
-                  {getRoleIcon(user.role)}
+          <ScrollArea className="h-32">
+            <div className="space-y-1">
+              {filteredChannels.map((channel) => (
+                <div
+                  key={channel.name}
+                  className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group"
+                >
+                  <div className="flex items-center space-x-2">
+                    {channel.type === "public" ? (
+                      <Hash className="h-4 w-4 text-slate-400" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-slate-400" />
+                    )}
+                    <span className="text-sm">{channel.name}</span>
+                  </div>
+                  {channel.unread > 0 && (
+                    <Badge variant="destructive" className="h-5 text-xs px-1.5">
+                      {channel.unread}
+                    </Badge>
+                  )}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                  <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
-                    {formatRole(user.role)}
-                  </Badge>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <Separator className="bg-slate-700 my-3" />
+
+          {/* Direct Messages */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-slate-300">Direct messages</span>
+            <Plus className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" />
+          </div>
+          
+          <ScrollArea className="h-24">
+            <div className="space-y-1">
+              {directMessages.map((dm) => (
+                <div
+                  key={dm.name}
+                  className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="relative">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs bg-slate-600">
+                          {dm.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-800 ${
+                        dm.status === 'online' ? 'bg-green-500' : 
+                        dm.status === 'away' ? 'bg-yellow-500' : 'bg-slate-500'
+                      }`} />
+                    </div>
+                    <span className="text-sm">{dm.name}</span>
+                  </div>
+                  {dm.unread > 0 && (
+                    <Badge variant="destructive" className="h-5 text-xs px-1.5">
+                      {dm.unread}
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* User Profile Section */}
+        <div className="p-4 border-t border-slate-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-slate-600">
+                    {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-slate-800" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-white">{user.firstName} {user.lastName}</div>
+                <div className="text-xs text-slate-400 flex items-center space-x-1">
+                  {getRoleIcon(user.role)}
+                  <span>{user.role.replace('_', ' ')}</span>
                 </div>
               </div>
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => logoutMutation.mutate()}
-              disabled={logoutMutation.isPending}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Channel Header */}
+        <div className="h-14 bg-white dark:bg-slate-900 border-b border-border flex items-center justify-between px-6">
+          <div className="flex items-center space-x-3">
+            <Hash className="h-5 w-5 text-muted-foreground" />
+            <h1 className="font-semibold text-lg">general</h1>
+            <Star className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Phone className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Video className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Search className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Welcome Section */}
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold">
-              Welcome back, {user.firstName}!
-            </h2>
-            <p className="text-muted-foreground">
-              Here's what's happening in your workspace today
-            </p>
+        {/* Welcome Message Area */}
+        <div className="flex-1 flex items-center justify-center bg-background">
+          <div className="text-center space-y-4 max-w-md">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Hash className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Welcome to #general</h2>
+              <p className="text-muted-foreground">
+                This is the beginning of the #general channel. Start a conversation or check out some channels and direct messages.
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <Button variant="outline" className="w-full">
+                <Zap className="h-4 w-4 mr-2" />
+                Try AI Assistant
+              </Button>
+              <Button variant="outline" className="w-full">
+                <Users className="h-4 w-4 mr-2" />
+                Invite teammates
+              </Button>
+            </div>
           </div>
+        </div>
 
-          {/* Dashboard Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {dashboardFeatures.map((feature) => (
-              <Card key={feature.title} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className={`${feature.bgColor} rounded-lg p-2`}>
-                      <feature.icon className={`h-5 w-5 ${feature.color}`} />
-                    </div>
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {feature.count}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardTitle className="text-lg mb-1">{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Admin Features */}
-          {adminFeatures.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-blue-500" />
-                <h3 className="text-xl font-semibold">Administration</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {adminFeatures.map((feature) => (
-                  <Card key={feature.title} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader className="pb-3">
-                      <div className={`${feature.bgColor} rounded-lg p-2 w-fit`}>
-                        <feature.icon className={`h-5 w-5 ${feature.color}`} />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <CardTitle className="text-lg mb-1">{feature.title}</CardTitle>
-                      <CardDescription>{feature.description}</CardDescription>
-                    </CardContent>
-                  </Card>
-                ))}
+        {/* Message Input */}
+        <div className="p-4 border-t border-border">
+          <div className="relative">
+            <div className="min-h-[44px] max-h-32 px-3 py-2 border border-border rounded-lg focus-within:border-primary bg-background">
+              <div className="flex items-start space-x-2">
+                <div className="flex-1">
+                  <div 
+                    contentEditable
+                    className="outline-none text-sm placeholder:text-muted-foreground min-h-[24px]"
+                    data-placeholder="Message #general"
+                    style={{
+                      caretColor: 'currentColor'
+                    }}
+                  />
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
+                    <Zap className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>
-                Get started with these common tasks
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button className="h-auto flex-col space-y-2 p-6" variant="outline">
-                  <Users className="h-6 w-6" />
-                  <span>Create Workspace</span>
-                </Button>
-                <Button className="h-auto flex-col space-y-2 p-6" variant="outline">
-                  <MessageSquare className="h-6 w-6" />
-                  <span>Start Conversation</span>
-                </Button>
-                <Button className="h-auto flex-col space-y-2 p-6" variant="outline">
-                  <Calendar className="h-6 w-6" />
-                  <span>Create Task</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Demo Information */}
-          <Card className="border-dashed">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Zap className="h-5 w-5 text-yellow-500" />
-                <span>Demo Platform</span>
-              </CardTitle>
-              <CardDescription>
-                You are currently using the demo version of CollabSpace with role-based authentication
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Your Role:</span>
-                  <div className="flex items-center space-x-2">
-                    {getRoleIcon(user.role)}
-                    <Badge variant={getRoleBadgeVariant(user.role)}>
-                      {formatRole(user.role)}
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {user.role === 'super_admin' && "You have full administrative access to all features and settings."}
-                  {user.role === 'admin' && "You have administrative access to user management and analytics."}
-                  {user.role === 'user' && "You have standard user access to workspaces, channels, and messaging."}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

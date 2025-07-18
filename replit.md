@@ -7,6 +7,7 @@ This is a modern collaboration platform similar to Slack, featuring AI-powered c
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UI Design preference: Slack-style interface with sidebar navigation, channel lists, and workspace-focused layout instead of card-based dashboards.
 
 ## System Architecture
 
