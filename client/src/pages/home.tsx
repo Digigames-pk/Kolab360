@@ -2,6 +2,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { EnhancedTaskBoard } from "@/components/EnhancedTaskBoard";
+import { TaskDetailModal } from "@/components/TaskDetailModal";
+import { FileViewer } from "@/components/FileViewer";
+import { EnhancedDocumentSystem } from "@/components/EnhancedDocumentSystem";
 import { EnhancedCalendar } from "@/components/EnhancedCalendar";
 import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
 import { EnhancedFileUpload } from "@/components/EnhancedFileUpload";
@@ -77,6 +80,10 @@ export default function Home() {
   const [documentSearchTerm, setDocumentSearchTerm] = useState("");
   const [aiMessage, setAiMessage] = useState("");
   const [aiResponse, setAiResponse] = useState("");
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showFileModal, setShowFileModal] = useState(false);
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -702,7 +709,16 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <EnhancedTaskBoard selectedChannel={selectedChannel} />
+            <div className="flex-1 p-6">
+              <EnhancedTaskBoard 
+                selectedChannel={selectedChannel} 
+                workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
+                onTaskClick={(task) => {
+                  setSelectedTask(task);
+                  setShowTaskModal(true);
+                }}
+              />
+            </div>
           )}
 
           {activeView === "calendar" && (
@@ -715,148 +731,21 @@ export default function Home() {
                 channel={selectedChannel}
                 onFileUpload={(files) => {
                   console.log('Files uploaded:', files);
-                  // Handle file upload logic here
+                }}
+                onFileClick={(file) => {
+                  setSelectedFile(file);
+                  setShowFileModal(true);
                 }}
               />
             </div>
           )}
 
           {activeView === "documents" && (
-            <div className="flex-1 flex flex-col p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <FileText className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">Documents</h2>
-                    <p className="text-muted-foreground">{workspaces.find(w => w.id === selectedWorkspace)?.name} workspace documentation</p>
-                  </div>
-                </div>
-                <Button onClick={() => {
-                  const newDoc = {
-                    id: Date.now(),
-                    title: "New Document",
-                    content: "Start writing your document here...",
-                    category: "General",
-                    lastModified: new Date().toISOString().split('T')[0]
-                  };
-                  setDocuments([...documents, newDoc]);
-                  setSelectedDocument(newDoc);
-                }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Document
-                </Button>
-              </div>
-
-              <div className="flex-1 flex gap-4">
-                {/* Document List */}
-                <div className="w-80 border-r pr-4">
-                  <div className="mb-4">
-                    <Input
-                      placeholder="Search documents..."
-                      value={documentSearchTerm}
-                      onChange={(e) => setDocumentSearchTerm(e.target.value)}
-                      className="mb-3"
-                    />
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {["All", "General", "Technical", "Meetings"].map((category) => (
-                        <Button
-                          key={category}
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs"
-                        >
-                          <Tag className="h-3 w-3 mr-1" />
-                          {category}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <ScrollArea className="h-96">
-                    <div className="space-y-2">
-                      {documents
-                        .filter(doc => 
-                          doc.title.toLowerCase().includes(documentSearchTerm.toLowerCase()) ||
-                          doc.content.toLowerCase().includes(documentSearchTerm.toLowerCase())
-                        )
-                        .map((doc) => (
-                        <div
-                          key={doc.id}
-                          className={`p-3 rounded-lg border cursor-pointer hover:bg-muted/50 ${
-                            selectedDocument?.id === doc.id ? 'bg-muted border-blue-500' : ''
-                          }`}
-                          onClick={() => setSelectedDocument(doc)}
-                        >
-                          <div className="flex items-start justify-between mb-1">
-                            <h4 className="font-medium text-sm truncate">{doc.title}</h4>
-                            <Badge variant="outline" className="text-xs">
-                              {doc.category}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                            {doc.content}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Modified: {doc.lastModified}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-
-                {/* Document Editor */}
-                <div className="flex-1">
-                  {selectedDocument ? (
-                    <div className="h-full flex flex-col">
-                      <div className="flex items-center justify-between mb-4 pb-3 border-b">
-                        <Input
-                          value={selectedDocument.title}
-                          onChange={(e) => {
-                            const updatedDoc = { ...selectedDocument, title: e.target.value };
-                            setSelectedDocument(updatedDoc);
-                            setDocuments(docs => docs.map(d => d.id === updatedDoc.id ? updatedDoc : d));
-                          }}
-                          className="text-lg font-semibold border-0 p-0 focus-visible:ring-0"
-                        />
-                        <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Download className="h-4 w-4 mr-1" />
-                            Export
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Users className="h-4 w-4 mr-1" />
-                            Share
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1 border rounded-lg">
-                        <textarea
-                          value={selectedDocument.content}
-                          onChange={(e) => {
-                            const updatedDoc = { ...selectedDocument, content: e.target.value };
-                            setSelectedDocument(updatedDoc);
-                            setDocuments(docs => docs.map(d => d.id === updatedDoc.id ? updatedDoc : d));
-                          }}
-                          className="w-full h-full p-4 border-0 resize-none focus:outline-none"
-                          placeholder="Start writing your document..."
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <div className="text-center">
-                        <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p>Select a document to edit or create a new one</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <EnhancedDocumentSystem 
+              workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
+              documents={documents}
+              onDocumentsChange={setDocuments}
+            />
           )}
 
           {activeView === "search" && (
@@ -1111,6 +1000,30 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={showTaskModal}
+        onClose={() => {
+          setShowTaskModal(false);
+          setSelectedTask(null);
+        }}
+        onUpdate={(updatedTask) => {
+          console.log('Task updated:', updatedTask);
+          // Handle task update logic here
+        }}
+      />
+
+      {/* File Viewer Modal */}
+      <FileViewer
+        file={selectedFile}
+        isOpen={showFileModal}
+        onClose={() => {
+          setShowFileModal(false);
+          setSelectedFile(null);
+        }}
+      />
     </div>
   );
 }

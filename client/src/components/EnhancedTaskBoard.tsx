@@ -49,9 +49,11 @@ interface Task {
 
 interface TaskBoardProps {
   selectedChannel?: string;
+  workspaceName?: string;
+  onTaskClick?: (task: Task) => void;
 }
 
-export function EnhancedTaskBoard({ selectedChannel = "general" }: TaskBoardProps) {
+export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName = "Demo", onTaskClick }: TaskBoardProps) {
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
@@ -419,7 +421,7 @@ export function EnhancedTaskBoard({ selectedChannel = "general" }: TaskBoardProp
                                       column.color.includes('blue') ? '#3b82f6' :
                                       column.color.includes('amber') ? '#f59e0b' : '#10b981'
                     }}
-                    onClick={() => setSelectedTask(task)}
+                    onClick={() => onTaskClick?.(task)}
                   >
                     <CardContent className="p-5 space-y-4">
                       {/* Header */}

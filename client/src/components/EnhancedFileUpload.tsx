@@ -32,6 +32,7 @@ interface FilePreview {
 
 interface EnhancedFileUploadProps {
   onFileUpload?: (files: File[]) => void;
+  onFileClick?: (file: FilePreview) => void;
   maxFileSize?: number;
   allowedTypes?: string[];
   channel?: string;
@@ -39,6 +40,7 @@ interface EnhancedFileUploadProps {
 
 export function EnhancedFileUpload({ 
   onFileUpload, 
+  onFileClick,
   maxFileSize = 10 * 1024 * 1024, // 10MB default
   allowedTypes = [],
   channel = "general"
@@ -343,7 +345,12 @@ export function EnhancedFileUpload({
 
                   {/* Actions */}
                   <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => onFileClick?.(file)}
+                    >
                       <Eye className="h-3 w-3 mr-1" />
                       View
                     </Button>
