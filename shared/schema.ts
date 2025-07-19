@@ -128,6 +128,23 @@ export const files = pgTable("files", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Integration management for external services
+export const integrations = pgTable("integrations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  service: varchar("service", { length: 100 }).notNull(), // google_calendar, zoom, slack, etc.
+  serviceName: varchar("service_name", { length: 255 }).notNull(),
+  isEnabled: boolean("is_enabled").default(true).notNull(),
+  config: jsonb("config"), // Service-specific configuration
+  accessToken: text("access_token"), // Encrypted access token
+  refreshToken: text("refresh_token"), // Encrypted refresh token
+  expiresAt: timestamp("expires_at"),
+  lastSyncAt: timestamp("last_sync_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   workspaces: many(workspaces),
@@ -200,6 +217,13 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({
   updatedAt: true,
 });
 
+export const insertIntegrationSchema = createInsertSchema(integrations).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -224,3 +248,6 @@ export type InsertFile = typeof files.$inferInsert;
 export type WorkspaceMember = typeof workspaceMembers.$inferSelect;
 export type ChannelMember = typeof channelMembers.$inferSelect;
 export type Reaction = typeof reactions.$inferSelect;
+
+export type Integration = typeof integrations.$inferSelect;
+export type InsertIntegration = z.infer<typeof insertIntegrationSchema>;

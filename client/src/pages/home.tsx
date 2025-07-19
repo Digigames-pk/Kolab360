@@ -7,6 +7,8 @@ import { FileViewer } from "@/components/FileViewer";
 import { EnhancedDocumentSystem } from "@/components/EnhancedDocumentSystem";
 import { EnhancedCalendar } from "@/components/EnhancedCalendar";
 import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
+import { IntegrationCenter } from "@/components/IntegrationCenter";
+import { AdminIntegrationPanel } from "@/components/AdminIntegrationPanel";
 import { EnhancedFileUpload } from "@/components/EnhancedFileUpload";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { NotificationCenter } from "@/components/NotificationCenter";
@@ -520,6 +522,15 @@ export default function Home() {
                 <Search className="h-4 w-4" />
                 <span>Search</span>
               </Button>
+              <Button 
+                variant={activeView === "integrations" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setActiveView("integrations")}
+                className="flex items-center space-x-2"
+              >
+                <Zap className="h-4 w-4" />
+                <span>Integrations</span>
+              </Button>
             </div>
           </div>
           
@@ -751,6 +762,16 @@ export default function Home() {
           {activeView === "search" && (
             <div className="flex-1">
               <AdvancedSearch />
+            </div>
+          )}
+
+          {activeView === "integrations" && (
+            <div className="flex-1 p-6">
+              {user.role === "super_admin" ? (
+                <AdminIntegrationPanel />
+              ) : (
+                <IntegrationCenter />
+              )}
             </div>
           )}
         </div>

@@ -9,6 +9,7 @@ import {
   files,
   reactions,
   sessions,
+  integrations,
   type User,
   type InsertUser,
   type Workspace,
@@ -24,6 +25,8 @@ import {
   type WorkspaceMember,
   type ChannelMember,
   type Reaction,
+  type Integration,
+  type InsertIntegration,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
@@ -73,6 +76,16 @@ export interface IStorage {
   // Reaction operations
   addReaction(messageId: string, userId: number, emoji: string): Promise<Reaction>;
   getMessageReactions(messageId: string): Promise<(Reaction & { user: User })[]>;
+
+  // Integration operations
+  getIntegrations(userId: number, workspaceId?: string): Promise<Integration[]>;
+  createIntegration(integrationData: InsertIntegration & { userId: number }): Promise<Integration>;
+  updateIntegration(integrationId: string, userId: number, updates: Partial<Integration>): Promise<Integration>;
+  deleteIntegration(integrationId: string, userId: number): Promise<void>;
+  getIntegrationStats(): Promise<any>;
+  getAllIntegrationsForAdmin(): Promise<any[]>;
+  adminUpdateIntegration(integrationId: string, updates: Partial<Integration>): Promise<Integration>;
+  adminDeleteIntegration(integrationId: string): Promise<void>;
   
   // Session store
   sessionStore: any;
@@ -416,6 +429,101 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reactions.messageId, messageId));
 
     return result;
+  }
+
+  // Integration operations
+  async getIntegrations(userId: number, workspaceId?: string): Promise<Integration[]> {
+    let query = db.select().from(integrations).where(eq(integrations.userId, userId));
+    
+    if (workspaceId) {
+      query = query.where(eq(integrations.workspaceId, workspaceId));
+    }
+    
+    return await query;
+  }
+
+  async createIntegration(integrationData: InsertIntegration & { userId: number }): Promise<Integration> {
+    const [integration] = await db.insert(integrations).values(integrationData).returning();
+    return integration;
+  }
+
+  async updateIntegration(integrationId: string, userId: number, updates: Partial<Integration>): Promise<Integration> {
+    const [integration] = await db
+      .update(integrations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(integrations.id, integrationId), eq(integrations.userId, userId)))
+      .returning();
+    return integration;
+  }
+
+  async deleteIntegration(integrationId: string, userId: number): Promise<void> {
+    await db
+      .delete(integrations)
+      .where(and(eq(integrations.id, integrationId), eq(integrations.userId, userId)));
+  }
+
+  async getIntegrationStats(): Promise<any> {
+    const total = await db.select().from(integrations);
+    const active = total.filter(i => i.isEnabled);
+    const inactive = total.filter(i => !i.isEnabled);
+    const failed = total.filter(i => i.isEnabled && (!i.lastSyncAt || 
+      new Date().getTime() - new Date(i.lastSyncAt).getTime() > 7 * 24 * 60 * 60 * 1000));
+    
+    const byService: Record<string, number> = {};
+    const byWorkspace: Record<string, number> = {};
+    
+    for (const integration of total) {
+      byService[integration.service] = (byService[integration.service] || 0) + 1;
+      // We would need to join with workspaces to get workspace names
+      byWorkspace[integration.workspaceId] = (byWorkspace[integration.workspaceId] || 0) + 1;
+    }
+    
+    return {
+      total: total.length,
+      active: active.length,
+      inactive: inactive.length,
+      failed: failed.length,
+      byService,
+      byWorkspace,
+      recentActivity: [] // Could be implemented with an activity log table
+    };
+  }
+
+  async getAllIntegrationsForAdmin(): Promise<any[]> {
+    const result = await db
+      .select({
+        id: integrations.id,
+        service: integrations.service,
+        serviceName: integrations.serviceName,
+        isEnabled: integrations.isEnabled,
+        config: integrations.config,
+        workspaceId: integrations.workspaceId,
+        workspaceName: workspaces.name,
+        userId: integrations.userId,
+        userName: users.firstName,
+        userEmail: users.email,
+        lastSyncAt: integrations.lastSyncAt,
+        createdAt: integrations.createdAt,
+        updatedAt: integrations.updatedAt,
+      })
+      .from(integrations)
+      .innerJoin(users, eq(integrations.userId, users.id))
+      .innerJoin(workspaces, eq(integrations.workspaceId, workspaces.id));
+    
+    return result;
+  }
+
+  async adminUpdateIntegration(integrationId: string, updates: Partial<Integration>): Promise<Integration> {
+    const [integration] = await db
+      .update(integrations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(integrations.id, integrationId))
+      .returning();
+    return integration;
+  }
+
+  async adminDeleteIntegration(integrationId: string): Promise<void> {
+    await db.delete(integrations).where(eq(integrations.id, integrationId));
   }
 }
 

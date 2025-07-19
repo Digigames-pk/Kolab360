@@ -9,7 +9,8 @@ import {
   insertWorkspaceSchema, 
   insertChannelSchema, 
   insertMessageSchema, 
-  insertTaskSchema 
+  insertTaskSchema,
+  insertIntegrationSchema 
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -586,6 +587,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Integration routes
+  app.get('/api/integrations', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const workspaceId = req.query.workspaceId;
+      
+      const integrations = await storage.getIntegrations(userId, workspaceId);
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching integrations:", error);
+      res.status(500).json({ error: "Failed to fetch integrations" });
+    }
+  });
+
+  app.post('/api/integrations', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const integrationData = insertIntegrationSchema.parse(req.body);
+      
+      const integration = await storage.createIntegration({
+        ...integrationData,
+        userId,
+      });
+      
+      res.json(integration);
+    } catch (error) {
+      console.error("Error creating integration:", error);
+      res.status(500).json({ error: "Failed to create integration" });
+    }
+  });
+
+  app.patch('/api/integrations/:id', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const integrationId = req.params.id;
+      const updates = req.body;
+      
+      const integration = await storage.updateIntegration(integrationId, userId, updates);
+      res.json(integration);
+    } catch (error) {
+      console.error("Error updating integration:", error);
+      res.status(500).json({ error: "Failed to update integration" });
+    }
+  });
+
+  app.delete('/api/integrations/:id', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const integrationId = req.params.id;
+      
+      await storage.deleteIntegration(integrationId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting integration:", error);
+      res.status(500).json({ error: "Failed to delete integration" });
+    }
+  });
+
+  app.post('/api/integrations/:id/sync', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const integrationId = req.params.id;
+      
+      // Update last sync time
+      await storage.updateIntegration(integrationId, userId, {
+        lastSyncAt: new Date().toISOString(),
+      });
+      
+      res.json({ success: true, message: "Sync completed" });
+    } catch (error) {
+      console.error("Error syncing integration:", error);
+      res.status(500).json({ error: "Failed to sync integration" });
+    }
+  });
+
+  // Admin integration routes
+  app.get('/api/admin/integrations/stats', requireRole('super_admin'), async (req: any, res) => {
+    try {
+      const stats = await storage.getIntegrationStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching integration stats:", error);
+      res.status(500).json({ error: "Failed to fetch integration stats" });
+    }
+  });
+
+  app.get('/api/admin/integrations', requireRole('super_admin'), async (req: any, res) => {
+    try {
+      const integrations = await storage.getAllIntegrationsForAdmin();
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching admin integrations:", error);
+      res.status(500).json({ error: "Failed to fetch integrations" });
+    }
+  });
+
+  app.patch('/api/admin/integrations/:id', requireRole('super_admin'), async (req: any, res) => {
+    try {
+      const integrationId = req.params.id;
+      const updates = req.body;
+      
+      const integration = await storage.adminUpdateIntegration(integrationId, updates);
+      res.json(integration);
+    } catch (error) {
+      console.error("Error updating integration:", error);
+      res.status(500).json({ error: "Failed to update integration" });
+    }
+  });
+
+  app.delete('/api/admin/integrations/:id', requireRole('super_admin'), async (req: any, res) => {
+    try {
+      const integrationId = req.params.id;
+      
+      await storage.adminDeleteIntegration(integrationId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting integration:", error);
+      res.status(500).json({ error: "Failed to delete integration" });
+    }
+  });
+
+  app.post('/api/admin/integrations/:id/force-sync', requireRole('super_admin'), async (req: any, res) => {
+    try {
+      const integrationId = req.params.id;
+      
+      await storage.adminUpdateIntegration(integrationId, {
+        lastSyncAt: new Date().toISOString(),
+      });
+      
+      res.json({ success: true, message: "Force sync completed" });
+    } catch (error) {
+      console.error("Error force syncing integration:", error);
+      res.status(500).json({ error: "Failed to force sync integration" });
+    }
+  });
+
+  app.get('/api/admin/integrations/export', requireRole('super_admin'), async (req: any, res) => {
+    try {
+      const format = req.query.format || 'json';
+      const integrations = await storage.getAllIntegrationsForAdmin();
+      
+      if (format === 'csv') {
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=integrations.csv');
+        
+        const csvHeaders = 'ID,Service,Service Name,Workspace,User,Email,Status,Last Sync,Created\n';
+        const csvData = integrations.map((int: any) => 
+          `${int.id},${int.service},${int.serviceName},${int.workspaceName},${int.userName},${int.userEmail},${int.isEnabled ? 'Active' : 'Inactive'},${int.lastSyncAt || 'Never'},${int.createdAt}`
+        ).join('\n');
+        
+        res.send(csvHeaders + csvData);
+      } else {
+        res.json(integrations);
+      }
+    } catch (error) {
+      console.error("Error exporting integrations:", error);
+      res.status(500).json({ error: "Failed to export integrations" });
     }
   });
 

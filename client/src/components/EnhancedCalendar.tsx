@@ -264,6 +264,70 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
     return matchesSearch && matchesType && matchesChannel;
   });
 
+  // View navigation functions
+  const previousView = () => {
+    if (view === "month") {
+      setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
+    } else if (view === "week") {
+      setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 7)));
+    } else if (view === "day") {
+      setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 1)));
+    }
+  };
+
+  const nextView = () => {
+    if (view === "month") {
+      setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
+    } else if (view === "week") {
+      setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 7)));
+    } else if (view === "day") {
+      setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 1)));
+    }
+  };
+
+  // Functions for different actions
+  const startVideoCall = (event?: CalendarEvent) => {
+    if (event?.meetingLink) {
+      window.open(event.meetingLink, '_blank');
+    } else {
+      // Generate a new meeting link
+      const meetingId = Math.random().toString(36).substring(2, 15);
+      window.open(`https://meet.google.com/${meetingId}`, '_blank');
+    }
+  };
+
+  const setReminder = (event: CalendarEvent) => {
+    const now = new Date();
+    const eventTime = new Date(`${event.date} ${event.startTime}`);
+    const timeDiff = eventTime.getTime() - now.getTime();
+    
+    if (timeDiff > 0) {
+      setTimeout(() => {
+        alert(`Reminder: ${event.title} starts in 15 minutes!`);
+      }, Math.max(0, timeDiff - 15 * 60 * 1000)); // 15 minutes before
+    }
+  };
+
+  const exportCalendar = () => {
+    const calendarData = filteredEvents.map(event => ({
+      title: event.title,
+      start: `${event.date}T${event.startTime}`,
+      end: `${event.date}T${event.endTime}`,
+      description: event.description,
+      location: event.location
+    }));
+    
+    const blob = new Blob([JSON.stringify(calendarData, null, 2)], {
+      type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calendar-${selectedChannel}-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const todayEvents = filteredEvents.filter(event => {
     const today = new Date().toISOString().split('T')[0];
     return event.date === today;
@@ -502,67 +566,182 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
                     <span className="text-xl">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
                   </CardTitle>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={previousMonth} className="hover:bg-indigo-50">
+                    <Button variant="outline" size="sm" onClick={previousView} className="hover:bg-indigo-50">
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={nextMonth} className="hover:bg-indigo-50">
+                    <Button variant="outline" size="sm" onClick={nextView} className="hover:bg-indigo-50">
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="h-full overflow-y-auto">
-                <div className="grid grid-cols-7 gap-2 mb-4">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-                    <div key={day} className="p-3 text-center text-sm font-bold text-gray-600 bg-gray-50 rounded-lg">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="grid grid-cols-7 gap-2">
-                  {Array.from({ length: firstDayOfMonth }, (_, i) => (
-                    <div key={`empty-${i}`} className="h-24" />
-                  ))}
-                  
-                  {Array.from({ length: daysInMonth }, (_, i) => {
-                    const day = i + 1;
-                    const dayEvents = getEventsForDate(day);
-                    const isToday = day === new Date().getDate() && 
-                      currentDate.getMonth() === new Date().getMonth() && 
-                      currentDate.getFullYear() === new Date().getFullYear();
-                    
-                    return (
-                      <div 
-                        key={day} 
-                        className={`h-24 p-2 border-2 rounded-xl transition-all hover:shadow-md ${
-                          isToday 
-                            ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300' 
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <div className={`text-sm font-bold mb-1 ${isToday ? 'text-indigo-600' : 'text-gray-700'}`}>
+                {view === "month" && (
+                  <>
+                    <div className="grid grid-cols-7 gap-2 mb-4">
+                      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+                        <div key={day} className="p-3 text-center text-sm font-bold text-gray-600 bg-gray-50 rounded-lg">
                           {day}
                         </div>
-                        <div className="space-y-1">
-                          {dayEvents.slice(0, 2).map(event => (
-                            <div 
-                              key={event.id} 
-                              className={`text-xs p-1 rounded-md text-white cursor-pointer hover:opacity-80 flex items-center space-x-1 ${getEventTypeColor(event.type, event.priority)}`}
-                              onClick={() => setSelectedEvent(event)}
-                            >
-                              {getEventIcon(event.type)}
-                              <span className="truncate">{event.title}</span>
+                      ))}
+                    </div>
+                    
+                    <div className="grid grid-cols-7 gap-2">
+                      {Array.from({ length: firstDayOfMonth }, (_, i) => (
+                        <div key={`empty-${i}`} className="h-24" />
+                      ))}
+                      
+                      {Array.from({ length: daysInMonth }, (_, i) => {
+                        const day = i + 1;
+                        const dayEvents = getEventsForDate(day);
+                        const isToday = day === new Date().getDate() && 
+                          currentDate.getMonth() === new Date().getMonth() && 
+                          currentDate.getFullYear() === new Date().getFullYear();
+                        
+                        return (
+                          <div 
+                            key={day} 
+                            className={`h-24 p-2 border-2 rounded-xl transition-all hover:shadow-md ${
+                              isToday 
+                                ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300' 
+                                : 'bg-white border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className={`text-sm font-bold mb-1 ${isToday ? 'text-indigo-600' : 'text-gray-700'}`}>
+                              {day}
                             </div>
-                          ))}
-                          {dayEvents.length > 2 && (
-                            <div className="text-xs text-gray-500 font-medium">+{dayEvents.length - 2} more</div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                            <div className="space-y-1">
+                              {dayEvents.slice(0, 2).map(event => (
+                                <div 
+                                  key={event.id} 
+                                  className={`text-xs p-1 rounded-md text-white cursor-pointer hover:opacity-80 flex items-center space-x-1 ${getEventTypeColor(event.type, event.priority)}`}
+                                  onClick={() => setSelectedEvent(event)}
+                                >
+                                  {getEventIcon(event.type)}
+                                  <span className="truncate">{event.title}</span>
+                                </div>
+                              ))}
+                              {dayEvents.length > 2 && (
+                                <div className="text-xs text-gray-500 font-medium">+{dayEvents.length - 2} more</div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {view === "week" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-8 gap-2">
+                      <div className="text-sm font-bold text-gray-600 p-2">Time</div>
+                      {Array.from({ length: 7 }, (_, i) => {
+                        const weekStart = new Date(currentDate);
+                        weekStart.setDate(currentDate.getDate() - currentDate.getDay() + i);
+                        const isToday = weekStart.toDateString() === new Date().toDateString();
+                        return (
+                          <div key={i} className={`text-sm font-bold p-2 text-center rounded-lg ${
+                            isToday ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-50 text-gray-600'
+                          }`}>
+                            <div>{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}</div>
+                            <div className="text-xs">{weekStart.getDate()}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {Array.from({ length: 12 }, (_, hour) => {
+                        const timeSlot = `${(hour + 8).toString().padStart(2, '0')}:00`;
+                        return (
+                          <div key={hour} className="grid grid-cols-8 gap-2">
+                            <div className="text-xs text-gray-500 p-2">{timeSlot}</div>
+                            {Array.from({ length: 7 }, (_, day) => {
+                              const cellDate = new Date(currentDate);
+                              cellDate.setDate(currentDate.getDate() - currentDate.getDay() + day);
+                              const dateStr = cellDate.toISOString().split('T')[0];
+                              const cellEvents = filteredEvents.filter(event => 
+                                event.date === dateStr && 
+                                event.startTime.split(':')[0] === (hour + 8).toString().padStart(2, '0')
+                              );
+                              
+                              return (
+                                <div key={day} className="h-12 p-1 border rounded-lg hover:bg-gray-50">
+                                  {cellEvents.map(event => (
+                                    <div 
+                                      key={event.id}
+                                      className={`text-xs p-1 rounded cursor-pointer text-white ${getEventTypeColor(event.type, event.priority)}`}
+                                      onClick={() => setSelectedEvent(event)}
+                                    >
+                                      {event.title}
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {view === "day" && (
+                  <div className="space-y-4">
+                    <div className="text-center text-lg font-semibold text-indigo-600">
+                      {currentDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {Array.from({ length: 16 }, (_, hour) => {
+                        const timeSlot = `${(hour + 6).toString().padStart(2, '0')}:00`;
+                        const dateStr = currentDate.toISOString().split('T')[0];
+                        const timeEvents = filteredEvents.filter(event => 
+                          event.date === dateStr && 
+                          event.startTime.split(':')[0] === (hour + 6).toString().padStart(2, '0')
+                        );
+                        
+                        return (
+                          <div key={hour} className="flex gap-4">
+                            <div className="w-16 text-sm text-gray-500 py-2">{timeSlot}</div>
+                            <div className="flex-1 min-h-[60px] p-2 border rounded-lg hover:bg-gray-50 space-y-1">
+                              {timeEvents.map(event => (
+                                <div 
+                                  key={event.id}
+                                  className={`p-2 rounded-lg cursor-pointer text-white shadow-sm ${getEventTypeColor(event.type, event.priority)}`}
+                                  onClick={() => setSelectedEvent(event)}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      {getEventIcon(event.type)}
+                                      <span className="font-medium">{event.title}</span>
+                                    </div>
+                                    <span className="text-xs">{event.startTime} - {event.endTime}</span>
+                                  </div>
+                                  {event.description && (
+                                    <p className="text-xs mt-1 opacity-90">{event.description}</p>
+                                  )}
+                                  {event.attendees.length > 0 && (
+                                    <div className="flex items-center space-x-1 mt-1">
+                                      <Users className="h-3 w-3" />
+                                      <span className="text-xs">{event.attendees.slice(0, 3).join(", ")}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -668,15 +847,27 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
                   <Plus className="h-4 w-4 mr-2" />
                   Schedule Meeting
                 </Button>
-                <Button variant="outline" className="w-full justify-start hover:bg-green-50">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start hover:bg-green-50"
+                  onClick={() => startVideoCall()}
+                >
                   <Video className="h-4 w-4 mr-2" />
                   Start Video Call
                 </Button>
-                <Button variant="outline" className="w-full justify-start hover:bg-purple-50">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start hover:bg-purple-50"
+                  onClick={() => selectedEvent && setReminder(selectedEvent)}
+                >
                   <Bell className="h-4 w-4 mr-2" />
                   Set Reminder
                 </Button>
-                <Button variant="outline" className="w-full justify-start hover:bg-orange-50">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start hover:bg-orange-50"
+                  onClick={exportCalendar}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export Calendar
                 </Button>

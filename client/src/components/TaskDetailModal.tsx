@@ -70,7 +70,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
       };
       setEditingTask({
         ...editingTask,
-        comments: [...editingTask.comments, comment]
+        comments: [...(editingTask.comments || []), comment]
       });
       setNewComment("");
     }
@@ -85,7 +85,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
       };
       setEditingTask({
         ...editingTask,
-        subtasks: [...editingTask.subtasks, subtask]
+        subtasks: [...(editingTask.subtasks || []), subtask]
       });
       setNewSubtask("");
     }
@@ -95,7 +95,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
     if (editingTask) {
       setEditingTask({
         ...editingTask,
-        subtasks: editingTask.subtasks.map(st => 
+        subtasks: (editingTask.subtasks || []).map(st => 
           st.id === subtaskId ? { ...st, completed: !st.completed } : st
         )
       });
@@ -177,9 +177,9 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
 
             {/* Subtasks */}
             <div>
-              <h3 className="font-medium mb-2">Subtasks ({currentTask.subtasks.filter(st => st.completed).length}/{currentTask.subtasks.length})</h3>
+              <h3 className="font-medium mb-2">Subtasks ({(currentTask.subtasks || []).filter(st => st.completed).length}/{(currentTask.subtasks || []).length})</h3>
               <div className="space-y-2">
-                {currentTask.subtasks.map((subtask) => (
+                {(currentTask.subtasks || []).map((subtask) => (
                   <div key={subtask.id} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -211,9 +211,9 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
 
             {/* Comments */}
             <div>
-              <h3 className="font-medium mb-2">Comments ({currentTask.comments.length})</h3>
+              <h3 className="font-medium mb-2">Comments ({(currentTask.comments || []).length})</h3>
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                {currentTask.comments.map((comment) => (
+                {(currentTask.comments || []).map((comment) => (
                   <div key={comment.id} className="border rounded-lg p-3">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-2">
