@@ -275,7 +275,7 @@ export function VoiceVideoCall({
 
             {controls.isRecording && (
               <Badge className="bg-red-500 text-white animate-pulse">
-                <Record className="h-3 w-3 mr-1" />
+                <div className="h-3 w-3 mr-1 bg-white rounded-full animate-pulse" />
                 Recording
               </Badge>
             )}
@@ -473,7 +473,7 @@ export function VoiceVideoCall({
               className="rounded-full h-12 w-12 p-0"
               onClick={toggleRecording}
             >
-              <Record className="h-5 w-5" />
+              <div className="h-5 w-5 bg-current rounded-full" />
             </Button>
 
             {/* More Options */}

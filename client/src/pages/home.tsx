@@ -22,6 +22,8 @@ import { InteractiveOnboarding } from '@/components/InteractiveOnboarding';
 import { GamificationSystem } from '@/components/GamificationSystem';
 import { EnterpriseAdminPanel } from '@/components/EnterpriseAdminPanel';
 import { ProfileModal } from '@/components/ProfileModal';
+import { InviteUsersModal } from '@/components/InviteUsersModal';
+import { ChannelInfoModal } from '@/components/ChannelInfoModal';
 import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DebugLogger, logger } from '@/components/DebugLogger';
@@ -60,6 +62,8 @@ export default function Home() {
   const [showGamification, setShowGamification] = useState(false);
   const [showEnterprisePanel, setShowEnterprisePanel] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showInviteUsers, setShowInviteUsers] = useState(false);
+  const [showChannelInfo, setShowChannelInfo] = useState(false);
   
   // Selected items for modals
   const [selectedTask, setSelectedTask] = useState(null);
@@ -161,8 +165,8 @@ export default function Home() {
             setCallType(type);
             setShowVoiceCall(true);
           }}
-          onInviteUsers={() => alert('Inviting users to ' + selectedChannel + '...')}
-          onShowChannelInfo={() => alert('Showing channel info for ' + selectedChannel)}
+          onInviteUsers={() => setShowInviteUsers(true)}
+          onShowChannelInfo={() => setShowChannelInfo(true)}
           onShowSettings={() => alert('Opening channel settings...')}
         />
 
@@ -437,6 +441,20 @@ export default function Home() {
       <ProfileModal
         isOpen={showProfile}
         onClose={() => setShowProfile(false)}
+      />
+
+      {/* Invite Users Modal */}
+      <InviteUsersModal
+        isOpen={showInviteUsers}
+        onClose={() => setShowInviteUsers(false)}
+        channelName={selectedChannel}
+      />
+
+      {/* Channel Info Modal */}
+      <ChannelInfoModal
+        isOpen={showChannelInfo}
+        onClose={() => setShowChannelInfo(false)}
+        channelName={selectedChannel}
       />
 
       {/* Debug Logger */}

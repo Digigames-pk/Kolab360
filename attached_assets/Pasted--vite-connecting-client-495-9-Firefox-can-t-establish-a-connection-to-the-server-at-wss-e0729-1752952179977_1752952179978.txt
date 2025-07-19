@@ -1,0 +1,54 @@
+
+[vite] connecting... client:495:9
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=P7-1Due3yWi9. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+client:536
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+Mock WebSocket message sent: 
+Object { type: "join_channel", channelId: "general" }
+useWebSocket.ts:101:15
+Mock WebSocket message sent: 
+Object { type: "join_workspace", workspaceId: 1, userId: 3 }
+useWebSocket.ts:101:15
+[INFO] Home: Component mounted 
+Object { selectedChannel: "general", activeView: "chat", selectedWorkspace: 1 }
+DebugLogger.tsx:38:13
+[INFO] Home: View changed 
+Object { activeView: "chat", selectedChannel: "general" }
+DebugLogger.tsx:38:13
+Uncaught ReferenceError: Record is not defined
+    VoiceVideoCall VoiceVideoCall.tsx:476
+    React 13
+VoiceVideoCall.tsx:476:16
+Uncaught ReferenceError: Record is not defined
+    VoiceVideoCall VoiceVideoCall.tsx:476
+    React 14
+VoiceVideoCall.tsx:476:16
+The above error occurred in the <VoiceVideoCall> component:
+
+VoiceVideoCall@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/VoiceVideoCall.tsx:41:31
+div
+Home@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/pages/home.tsx:47:35
+Route@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=77d8f421:323:13
+ProtectedRoute@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/lib/protected-route.tsx:21:31
+Switch@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=77d8f421:379:14
+Router@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/App.tsx?v=vfJouR6_fyJqBuRDU2HH0:33:31
+AuthProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/hooks/useAuth.ts:11:29
+Provider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=77d8f421:38:47
+TooltipProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=77d8f421:69:7
+ThemeProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/ThemeProvider.tsx:67:30
+QueryClientProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=77d8f421:2804:27
+App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. react-dom.development.js:18704:15
+Uncaught ReferenceError: Record is not defined
+    VoiceVideoCall VoiceVideoCall.tsx:476
+    React 11
+VoiceVideoCall.tsx:476:16
+
+​
+
