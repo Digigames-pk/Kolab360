@@ -175,26 +175,36 @@ export function WasabiFileUpload({
           throw new Error('Upload failed');
         }
       } else {
-        // Multiple files
-        validFiles.forEach(file => formData.append('files', file));
-        if (workspaceId) formData.append('workspaceId', workspaceId);
-        if (channelId) formData.append('channelId', channelId);
+        // Upload files one by one to the simple-files endpoint
+        const uploadedFiles = [];
+        for (const file of validFiles) {
+          const singleFormData = new FormData();
+          singleFormData.append('file', file);
+          if (workspaceId) singleFormData.append('workspaceId', workspaceId);
+          if (channelId) singleFormData.append('channelId', channelId);
 
-        const response = await fetch('/api/simple-files/upload-multiple', {
-          method: 'POST',
-          body: formData,
-        });
+          const response = await fetch('/api/simple-files/upload', {
+            method: 'POST',
+            body: singleFormData,
+          });
 
-        if (response.ok) {
-          const data = await response.json();
-          setFiles(prev => [...data.files, ...prev]);
-          onFileUpload?.(data.files);
+          if (response.ok) {
+            const fileData = await response.json();
+            uploadedFiles.push(fileData);
+          } else {
+            console.error(`Failed to upload ${file.name}`);
+          }
+        }
+
+        if (uploadedFiles.length > 0) {
+          setFiles(prev => [...uploadedFiles, ...prev]);
+          onFileUpload?.(uploadedFiles);
           toast({
             title: "Files uploaded",
-            description: `${data.totalUploaded} of ${data.totalRequested} files uploaded successfully`,
+            description: `${uploadedFiles.length} of ${validFiles.length} files uploaded successfully`,
           });
         } else {
-          throw new Error('Upload failed');
+          throw new Error('All uploads failed');
         }
       }
 

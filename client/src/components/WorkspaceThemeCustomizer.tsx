@@ -30,54 +30,54 @@ interface WorkspaceThemeCustomizerProps {
 
 const predefinedThemes: WorkspaceTheme[] = [
   {
-    id: 'dark-purple',
-    name: 'Dark Purple',
-    primary: '#8b5cf6',
-    secondary: '#a78bfa',
-    accent: '#c084fc',
-    background: '#1f2937',
-    sidebar: '#111827',
-    text: '#f9fafb'
+    id: 'professional-blue',
+    name: 'Professional Blue',
+    primary: '#2563eb',
+    secondary: '#3b82f6',
+    accent: '#60a5fa',
+    background: '#f8fafc',
+    sidebar: '#e2e8f0',
+    text: '#1e293b'
   },
   {
-    id: 'ocean-blue',
-    name: 'Ocean Blue',
-    primary: '#0ea5e9',
-    secondary: '#38bdf8',
-    accent: '#7dd3fc',
+    id: 'elegant-dark',
+    name: 'Elegant Dark',
+    primary: '#6366f1',
+    secondary: '#8b5cf6',
+    accent: '#a78bfa',
     background: '#0f172a',
-    sidebar: '#020617',
-    text: '#f8fafc'
+    sidebar: '#1e293b',
+    text: '#f1f5f9'
   },
   {
-    id: 'forest-green',
-    name: 'Forest Green',
-    primary: '#10b981',
-    secondary: '#34d399',
-    accent: '#6ee7b7',
-    background: '#064e3b',
-    sidebar: '#022c22',
-    text: '#ecfdf5'
+    id: 'warm-neutral',
+    name: 'Warm Neutral',
+    primary: '#059669',
+    secondary: '#10b981',
+    accent: '#34d399',
+    background: '#fefefe',
+    sidebar: '#f3f4f6',
+    text: '#374151'
   },
   {
-    id: 'sunset-orange',
-    name: 'Sunset Orange',
-    primary: '#f97316',
-    secondary: '#fb923c',
-    accent: '#fdba74',
-    background: '#9a3412',
-    sidebar: '#7c2d12',
-    text: '#fff7ed'
+    id: 'modern-purple',
+    name: 'Modern Purple',
+    primary: '#7c3aed',
+    secondary: '#8b5cf6',
+    accent: '#a78bfa',
+    background: '#faf5ff',
+    sidebar: '#f3e8ff',
+    text: '#581c87'
   },
   {
-    id: 'midnight-blue',
-    name: 'Midnight Blue',
-    primary: '#3b82f6',
-    secondary: '#60a5fa',
-    accent: '#93c5fd',
-    background: '#1e3a8a',
-    sidebar: '#1e40af',
-    text: '#eff6ff'
+    id: 'clean-slate',
+    name: 'Clean Slate',
+    primary: '#475569',
+    secondary: '#64748b',
+    accent: '#94a3b8',
+    background: '#ffffff',
+    sidebar: '#f1f5f9',
+    text: '#334155'
   }
 ];
 

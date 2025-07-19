@@ -76,7 +76,7 @@ export default function MessageInput({
       formData.append("file", file);
       formData.append("workspaceId", workspaceId);
       
-      const response = await fetch("/api/files", {
+      const response = await fetch("/api/simple-files/upload", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -90,9 +90,9 @@ export default function MessageInput({
     },
     onSuccess: (fileData) => {
       onSendMessage(
-        `📎 ${fileData.originalName}`,
+        `📎 ${fileData.originalName || fileData.filename}`,
         "file",
-        { fileId: fileData.id, fileName: fileData.originalName, fileSize: fileData.size }
+        { fileId: fileData.id, fileName: fileData.originalName || fileData.filename, fileSize: fileData.size }
       );
       toast({
         title: "Success",

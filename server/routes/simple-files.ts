@@ -89,7 +89,7 @@ router.get('/simple-files', async (req, res) => {
 });
 
 // POST /api/simple-files/upload - Upload a file
-router.post('/simple-files/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });

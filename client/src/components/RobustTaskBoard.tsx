@@ -453,11 +453,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                     <DropdownMenuItem 
                       className="text-red-600"
                       onClick={() => {
-                        // Delete task from columns
-                        setColumns(prev => prev.map(col => ({
-                          ...col,
-                          tasks: col.tasks.filter(t => t.id !== task.id)
-                        })));
+                        onTaskDelete(task.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -549,12 +545,13 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
 
   const KanbanView = () => (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex space-x-6 overflow-x-auto pb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full"
+           style={{ gridTemplateRows: 'minmax(0, 1fr)' }}>
         {columns.map((column) => {
           const filteredTasks = getFilteredTasks(column.tasks);
           
           return (
-            <div key={column.id} className="flex-shrink-0 w-80">
+            <div key={column.id} className="flex flex-col h-full min-w-0">
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-700 flex items-center">
@@ -580,7 +577,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className={`min-h-[200px] p-3 rounded-lg border-2 border-dashed transition-colors ${
+                      className={`flex-1 min-h-0 p-3 rounded-lg border-2 border-dashed transition-colors overflow-y-auto ${
                         snapshot.isDraggingOver 
                           ? 'border-blue-400 bg-blue-50' 
                           : `${column.color}`
@@ -614,7 +611,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
     );
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 h-full overflow-y-auto">
         {allTasks.map((task) => {
           const PriorityIcon = PRIORITY_ICONS[task.priority];
           
@@ -816,7 +813,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
       </div>
 
       {/* Task Board Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden p-6">
         {activeView === 'categories' ? (
           <EnhancedTaskCategoryManager 
             channelId={selectedChannel || 'general'}
@@ -827,11 +824,9 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
             onBack={() => setActiveView('board')}
           />
         ) : (
-          <ScrollArea className="h-full">
-            <div className="p-6">
-              {viewMode === 'kanban' ? <KanbanView /> : <ListView />}
-            </div>
-          </ScrollArea>
+          <div className="h-full">
+            {viewMode === 'kanban' ? <KanbanView /> : <ListView />}
+          </div>
         )}
       </div>
 
