@@ -769,6 +769,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email invitation endpoint
+  app.post('/api/invitations/send', async (req, res) => {
+    try {
+      const { email, channelName, inviteCode } = req.body;
+      
+      if (!email || !channelName) {
+        return res.status(400).json({ error: 'Email and channel name are required' });
+      }
+
+      // Send invitation email
+      await emailService.sendEmail(
+        email,
+        {
+          subject: `You're invited to join #${channelName}!`,
+          html: `
+            <div style="max-width: 600px; margin: 0 auto; font-family: sans-serif;">
+              <h2>🎉 You're invited to join our workspace!</h2>
+              <p>Hi there,</p>
+              <p>You've been invited to join the <strong>#${channelName}</strong> channel in our collaboration workspace.</p>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Invite Code:</strong> <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px; font-family: monospace;">${inviteCode}</code></p>
+              </div>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/invite/${channelName}?code=${inviteCode}" 
+                 style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">
+                Join Channel
+              </a>
+              <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #6c757d; font-size: 14px;">${process.env.FRONTEND_URL || 'http://localhost:5000'}/invite/${channelName}?code=${inviteCode}</p>
+            </div>
+          `
+        }
+      );
+
+      res.json({ success: true, message: 'Invitation sent successfully' });
+    } catch (error) {
+      console.error('Error sending invitation email:', error);
+      res.status(500).json({ error: 'Failed to send invitation email' });
+    }
+  });
+
   // Files routes - mount the simple files router
   app.use('/api/files', simpleFilesRoutes);
   

@@ -326,7 +326,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     formData.append('recipientId', recipientId?.toString() || '');
 
     try {
-      const response = await fetch('/api/files/upload', {
+      const response = await fetch('/api/simple-files/upload', {
         method: 'POST',
         body: formData,
       });
@@ -334,16 +334,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       if (response.ok) {
         const fileData = await response.json();
         
-        // Send file message with file data
-        const fileMessage = {
-          content: `📎 Shared file: ${file.name}`,
-          fileUrl: fileData.url || `/api/files/${fileData.id}`,
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size
-        };
-        
-        // Create message with file attachment
+        // Create message with file attachment using the actual file data
         const endpoint = channelId 
           ? `/api/channels/${channelId}/messages`
           : `/api/messages/direct`;
@@ -352,20 +343,28 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            content: fileMessage.content,
-            authorId: user.id,
+            content: `📎 Shared file: ${fileData.originalName}`,
+            authorId: user?.id || 3,
             channelId: channelId,
             recipientId: recipientId,
-            fileUrl: fileMessage.fileUrl,
-            fileName: fileMessage.fileName,
-            fileType: fileMessage.fileType,
-            fileSize: fileMessage.fileSize
+            fileUrl: fileData.url,
+            fileName: fileData.originalName,
+            fileType: fileData.mimetype,
+            fileSize: fileData.size
           })
         });
         
         if (messageResponse.ok) {
           const newMessage = await messageResponse.json();
-          setMessages(prev => [...prev, newMessage]);
+          // Add file metadata to the message
+          const messageWithFile = {
+            ...newMessage,
+            fileUrl: fileData.url,
+            fileName: fileData.originalName,
+            fileType: fileData.mimetype,
+            fileSize: fileData.size
+          };
+          setMessages(prev => [...prev, messageWithFile]);
         }
       }
     } catch (error) {

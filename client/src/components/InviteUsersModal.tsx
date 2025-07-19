@@ -69,11 +69,48 @@ export function InviteUsersModal({ isOpen, onClose, channelName }: InviteUsersMo
     }
   };
 
-  const handleEmailInvite = () => {
+  const handleEmailInvite = async () => {
     if (inviteEmail.trim()) {
-      console.log('Sending email invite to:', inviteEmail);
-      alert(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail('');
+      try {
+        const response = await fetch('/api/invitations/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: inviteEmail,
+            channelName: channelName,
+            inviteCode: inviteLink.split('=')[1] || 'abc123'
+          })
+        });
+
+        if (response.ok) {
+          // Show success message with better UI
+          const successDialog = document.createElement('div');
+          successDialog.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50';
+          successDialog.innerHTML = `
+            <div class="bg-white rounded-lg p-6 max-w-md mx-4 text-center">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">Invitation Sent!</h3>
+              <p class="text-gray-600 mb-4">An invitation has been sent to ${inviteEmail}</p>
+              <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700" onclick="this.closest('.fixed').remove()">
+                OK
+              </button>
+            </div>
+          `;
+          document.body.appendChild(successDialog);
+          setTimeout(() => successDialog.remove(), 5000);
+          setInviteEmail('');
+        } else {
+          const error = await response.text();
+          alert(`Failed to send invitation: ${error}`);
+        }
+      } catch (error) {
+        console.error('Error sending invitation:', error);
+        alert('Failed to send invitation. Please try again.');
+      }
     }
   };
 
