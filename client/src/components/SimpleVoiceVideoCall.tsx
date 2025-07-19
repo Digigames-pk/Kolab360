@@ -77,6 +77,7 @@ export function SimpleVoiceVideoCall({
         
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play().catch(console.error);
         }
       } else {
         // Request only microphone for voice calls
@@ -201,6 +202,11 @@ export function SimpleVoiceVideoCall({
                     muted
                     playsInline
                     className="w-full h-full object-cover"
+                    onLoadedMetadata={() => {
+                      if (localVideoRef.current) {
+                        localVideoRef.current.play().catch(console.error);
+                      }
+                    }}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full bg-gray-800">

@@ -92,6 +92,9 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [showCallOptions, setShowCallOptions] = useState(false);
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -272,6 +275,53 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         sendMessage({ type: 'user_stop_typing', channelId, userId: user.id });
       }, 2000);
     }
+  };
+
+  // Mock user data for @ mentions
+  const mockUsers = [
+    { id: 1, name: 'Alice Johnson', username: 'alice' },
+    { id: 2, name: 'Bob Smith', username: 'bob' },
+    { id: 3, name: 'Charlie Brown', username: 'charlie' },
+    { id: 4, name: 'Diana Wilson', username: 'diana' },
+    { id: 5, name: 'Eva Martinez', username: 'eva' }
+  ];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+    setMessageText(text);
+    
+    // Check for @ mentions
+    const lastAtIndex = text.lastIndexOf('@');
+    if (lastAtIndex !== -1) {
+      const query = text.slice(lastAtIndex + 1);
+      console.log('User typing @mention:', text);
+      
+      if (query.length >= 0) {
+        setMentionQuery(query);
+        setShowMentionDropdown(true);
+        
+        // Calculate position for dropdown
+        if (inputRef.current) {
+          const rect = inputRef.current.getBoundingClientRect();
+          setMentionPosition({
+            top: rect.top - 150,
+            left: rect.left
+          });
+        }
+      }
+    } else {
+      setShowMentionDropdown(false);
+    }
+    
+    handleTyping();
+  };
+
+  const insertMention = (user: any) => {
+    const lastAtIndex = messageText.lastIndexOf('@');
+    const newText = messageText.slice(0, lastAtIndex) + `@${user.username} `;
+    setMessageText(newText);
+    setShowMentionDropdown(false);
+    inputRef.current?.focus();
   };
 
   const editMessage = async (messageId: string, newContent: string) => {
@@ -744,6 +794,40 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         </div>
       )}
 
+      {/* @ Mention Dropdown */}
+      {showMentionDropdown && (
+        <div 
+          className="fixed z-50 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto"
+          style={{
+            top: `${mentionPosition.top}px`,
+            left: `${mentionPosition.left}px`,
+            minWidth: '200px'
+          }}
+        >
+          {mockUsers
+            .filter(user => 
+              user.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+              user.username.toLowerCase().includes(mentionQuery.toLowerCase())
+            )
+            .map(user => (
+              <div
+                key={user.id}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center space-x-2"
+                onClick={() => insertMention(user)}
+              >
+                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                  {user.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="text-sm font-medium">{user.name}</div>
+                  <div className="text-xs text-gray-500">@{user.username}</div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      )}
+
       {/* Message Input */}
       <div className="p-4 border-t bg-background">
         <div className="flex items-end space-x-2">
@@ -781,16 +865,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
               ref={inputRef}
               placeholder={channelId ? `Message #${channelId}` : `Message ${recipientName}`}
               value={messageText}
-              onChange={(e) => {
-                setMessageText(e.target.value);
-                handleTyping();
-                
-                // Handle @mentions
-                const text = e.target.value;
-                if (text.includes('@')) {
-                  console.log('User typing @mention:', text);
-                }
-              }}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               className="pr-20 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               autoFocus
