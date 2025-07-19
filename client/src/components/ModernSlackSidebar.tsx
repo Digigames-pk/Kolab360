@@ -174,15 +174,37 @@ export function ModernSlackSidebar({
           <Upload className="h-4 w-4 mr-3" />
           Files
         </Button>
+        
+        <Button
+          variant={currentView === 'ai' ? 'default' : 'ghost'}
+          className="w-full justify-start"
+          onClick={() => onViewChange('ai')}
+        >
+          <Zap className="h-4 w-4 mr-3 text-purple-500" />
+          AI Assistant
+        </Button>
+        
+        <Button
+          variant={currentView === 'integrations' ? 'default' : 'ghost'}
+          className="w-full justify-start"
+          onClick={() => onViewChange('integrations')}
+        >
+          <Archive className="h-4 w-4 mr-3" />
+          Integrations
+        </Button>
       </div>
 
       <Separator />
 
       {/* Quick Actions */}
       <div className="px-4 py-3 space-y-1">
-        <Button variant="ghost" className="w-full justify-start" onClick={onShowSearch}>
+        <Button 
+          variant={currentView === 'search' ? 'default' : 'ghost'} 
+          className="w-full justify-start" 
+          onClick={() => onViewChange('search')}
+        >
           <Search className="h-4 w-4 mr-3" />
-          Search
+          Advanced Search
         </Button>
         
         <Button variant="ghost" className="w-full justify-start" onClick={onShowNotifications}>
@@ -191,9 +213,40 @@ export function ModernSlackSidebar({
           <Badge variant="destructive" className="ml-auto">3</Badge>
         </Button>
         
-        <Button variant="ghost" className="w-full justify-start">
+        <Button 
+          variant={currentView === 'saved' ? 'default' : 'ghost'} 
+          className="w-full justify-start"
+          onClick={() => onViewChange('saved')}
+        >
           <Star className="h-4 w-4 mr-3" />
-          Starred
+          Saved Items
+        </Button>
+        
+        <Button 
+          variant={currentView === 'threads' ? 'default' : 'ghost'} 
+          className="w-full justify-start"
+          onClick={() => onViewChange('threads')}
+        >
+          <MessageSquare className="h-4 w-4 mr-3" />
+          Threads
+        </Button>
+        
+        <Button 
+          variant={currentView === 'mentions' ? 'default' : 'ghost'} 
+          className="w-full justify-start"
+          onClick={() => onViewChange('mentions')}
+        >
+          <Bell className="h-4 w-4 mr-3" />
+          Mentions
+        </Button>
+        
+        <Button 
+          variant={currentView === 'people' ? 'default' : 'ghost'} 
+          className="w-full justify-start"
+          onClick={() => onViewChange('people')}
+        >
+          <Users className="h-4 w-4 mr-3" />
+          People
         </Button>
       </div>
 
