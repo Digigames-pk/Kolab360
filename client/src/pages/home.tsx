@@ -347,62 +347,14 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-1 sidebar-text">
-              <SimpleThemeSelector />
-              <AdvancedThemeCustomizer
-                currentTheme={{
-                  id: 'current-theme',
-                  name: 'Current Theme',
-                  colors: {
-                    primary: '#8b5cf6',
-                    secondary: '#a78bfa',
-                    accent: '#ec4899',
-                    background: '#ffffff',
-                    foreground: '#1f2937',
-                    muted: '#f3f4f6',
-                    mutedForeground: '#6b7280',
-                    popover: '#ffffff',
-                    card: '#ffffff',
-                    border: '#e5e7eb',
-                    input: '#f3f4f6',
-                    ring: '#8b5cf6',
-                    destructive: '#ef4444',
-                    warning: '#f59e0b',
-                    success: '#10b981'
-                  },
-                  darkMode: false,
-                  gradients: {
-                    primary: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
-                    secondary: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)'
-                  },
-                  typography: {
-                    fontFamily: 'Inter',
-                    headingFont: 'Poppins',
-                    fontSize: 'medium'
-                  },
-                  spacing: {
-                    compact: false,
-                    borderRadius: 'medium'
-                  },
-                  effects: {
-                    glassmorphism: true,
-                    animations: true,
-                    shadows: 'soft'
-                  }
-                }}
-                onThemeChange={(theme) => {
-                  console.log('Advanced theme applied:', theme);
-                  // Apply the complete theme to the workspace
-                  setWorkspaceSettings(prev => ({
-                    ...prev,
-                    advancedTheme: theme
-                  }));
-                }}
-                workspaceId={selectedWorkspace}
-              />
+              {/* Theme customization moved to settings dropdown */}
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </div>
           </div>
+        </div>
+
+        {/* Navigation Section */}
+        <div className="px-4 py-3 space-y-1">
         </div>
 
         {/* Core Navigation - Clean and Essential */}
@@ -643,12 +595,10 @@ export default function Home() {
                     <Zap className="h-4 w-4 mr-2" />
                     Integrations
                   </DropdownMenuItem>
+
                   <DropdownMenuItem onClick={() => setShowThemeCustomizer(true)}>
-                    <Palette className="h-4 w-4 mr-2" />
-                    Customize Theme
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <SimpleThemeSelector />
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    Workspace Themes
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowLayoutCustomizer(true)}>
                     <Settings2 className="h-4 w-4 mr-2" />
@@ -1146,15 +1096,6 @@ export default function Home() {
         onClose={() => setShowGamification(false)}
       />
 
-      {/* Workspace Theme Customizer */}
-      <WorkspaceThemeCustomizer
-        isOpen={showThemeCustomizer}
-        onClose={() => setShowThemeCustomizer(false)}
-        onThemeChange={(theme) => {
-          // Apply theme changes
-          console.log('Theme changed:', theme);
-        }}
-      />
 
       {/* Enterprise Admin Panel */}
       {user.role === 'super_admin' && (
@@ -1254,9 +1195,16 @@ export default function Home() {
         isOpen={showThemeCustomizer}
         onClose={() => setShowThemeCustomizer(false)}
         onThemeChange={(theme) => {
-          // Apply theme changes
-          console.log('Theme changed:', theme);
+          setWorkspaceTheme(theme);
+          // Apply workspace-specific theme immediately
+          document.documentElement.style.setProperty('--workspace-primary', theme.primary);
+          document.documentElement.style.setProperty('--workspace-secondary', theme.secondary);
+          document.documentElement.style.setProperty('--workspace-accent', theme.accent);
+          document.documentElement.style.setProperty('--workspace-background', theme.background);
+          document.documentElement.style.setProperty('--workspace-sidebar', theme.sidebar);
+          document.documentElement.style.setProperty('--workspace-text', theme.text);
         }}
+        workspaceId={selectedWorkspace}
       />
 
       {/* Enterprise Admin Panel */}
