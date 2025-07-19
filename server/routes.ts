@@ -16,6 +16,8 @@ import multer from "multer";
 import path from "path";
 import { z } from "zod";
 import filesRoutes from "./routes/files";
+import simpleFilesRoutes from "./routes/simple-files";
+import simpleTasksRoutes from "./routes/simple-tasks";
 
 const upload = multer({
   dest: "uploads/",
@@ -751,8 +753,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Files routes - mount the files router
-  app.use('/api/files', filesRoutes);
+  // Files routes - mount the simple files router
+  app.use('/api/files', simpleFilesRoutes);
+  
+  // Tasks routes - mount the simple tasks router  
+  app.use('/api/tasks', simpleTasksRoutes);
 
   // Create HTTP server
   const httpServer = createServer(app);

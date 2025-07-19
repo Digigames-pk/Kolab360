@@ -55,7 +55,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     );
 
     // Save file metadata to database
-    const [fileRecord] = await db.insert(files).values({
+    const fileRecord = await storage.createFile({
       filename: uploadResult.filename,
       originalName: req.file.originalname,
       wasabiKey: uploadResult.key,
@@ -67,7 +67,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       workspaceId: workspaceId || null,
       channelId: channelId || null,
       messageId: messageId || null,
-    }).returning();
+    });
 
     res.json({
       success: true,
