@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -266,7 +266,13 @@ export function WebRTCVoiceVideoCall({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] p-0 bg-gray-900 text-white border-gray-700">
+      <DialogContent className="max-w-6xl max-h-[90vh] p-0 bg-gray-900 text-white border-gray-700" aria-describedby="call-description">
+        <DialogTitle className="sr-only">
+          {callType === "video" ? "Video Call" : "Voice Call"} - #{channelName}
+        </DialogTitle>
+        <div id="call-description" className="sr-only">
+          {callType} call interface with controls for mute, video, and screen sharing
+        </div>
         <div className="flex flex-col h-[80vh]">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">

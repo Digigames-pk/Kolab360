@@ -23,8 +23,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const reconnectDelay = 3000;
 
   const connect = () => {
-    // In development mode, simulate successful connection
+    // In development mode, use mock WebSocket functionality
     if (process.env.NODE_ENV === 'development') {
+      console.log("WebSocket: Using mock connection in development mode");
       setIsConnected(true);
       setError(null);
       options.onConnect?.();
