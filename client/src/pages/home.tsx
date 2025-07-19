@@ -9,6 +9,7 @@ import { CustomizableSidebar } from "@/components/CustomizableSidebar";
 import { WorkspaceLayoutCustomizer } from "@/components/WorkspaceLayoutCustomizer";
 import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { EnhancedAI } from "@/components/EnhancedAI";
+import { RealTimeChat } from "@/components/RealTimeChat";
 import { X } from "lucide-react";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { FileViewer } from "@/components/FileViewer";
@@ -215,11 +216,11 @@ export default function Home() {
         { name: "admin-only", unread: 2, type: "private", adminOnly: true, description: "Administrative discussions" },
       ],
       directMessages: [
-        { name: "John Doe", status: "online", unread: 2, lastMessage: "Thanks for the code review!" },
-        { name: "Jane Smith", status: "away", unread: 0, lastMessage: "See you in the meeting" },
-        { name: "AI Assistant", status: "online", unread: 1, lastMessage: "I can help you with that task" },
-        { name: "Mike Chen", status: "offline", unread: 0, lastMessage: "API docs are updated" },
-        { name: "Sarah Wilson", status: "online", unread: 3, lastMessage: "Can you review the mockups?" },
+        { id: 1, name: "John Doe", status: "online", unread: 2, lastMessage: "Thanks for the code review!" },
+        { id: 2, name: "Jane Smith", status: "away", unread: 0, lastMessage: "See you in the meeting" },
+        { id: 3, name: "AI Assistant", status: "online", unread: 1, lastMessage: "I can help you with that task" },
+        { id: 4, name: "Mike Chen", status: "offline", unread: 0, lastMessage: "API docs are updated" },
+        { id: 5, name: "Sarah Wilson", status: "online", unread: 3, lastMessage: "Can you review the mockups?" },
       ],
       documents: [
         { id: 1, title: "Team Guidelines", content: "Welcome to our team guidelines...", category: "General", lastModified: "2024-01-15" },
@@ -236,10 +237,10 @@ export default function Home() {
         { name: "deployment", unread: 3, type: "private", description: "Deployment and DevOps topics" },
       ],
       directMessages: [
-        { name: "Alex Rodriguez", status: "online", unread: 1, lastMessage: "Ready for code review" },
-        { name: "Emma Davis", status: "online", unread: 0, lastMessage: "Fixed the bug in PR #123" },
-        { name: "Tech Lead", status: "away", unread: 2, lastMessage: "Sprint planning tomorrow" },
-        { name: "DevOps Bot", status: "online", unread: 0, lastMessage: "Deployment successful" },
+        { id: 6, name: "Alex Rodriguez", status: "online", unread: 1, lastMessage: "Ready for code review" },
+        { id: 7, name: "Emma Davis", status: "online", unread: 0, lastMessage: "Fixed the bug in PR #123" },
+        { id: 8, name: "Tech Lead", status: "away", unread: 2, lastMessage: "Sprint planning tomorrow" },
+        { id: 9, name: "DevOps Bot", status: "online", unread: 0, lastMessage: "Deployment successful" },
       ],
       documents: [
         { id: 4, title: "Architecture Overview", content: "System architecture documentation...", category: "Technical", lastModified: "2024-01-16" },
@@ -310,7 +311,7 @@ export default function Home() {
             setSidebarWidth(size * 15); // Approximate conversion
             
             // Track sidebar size for responsive behavior and save settings
-            const isCollapsed = size < 15;
+            const isCollapsed = size < 25;
             const sidebar = document.querySelector('.sidebar-container');
             if (sidebar) {
               sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
@@ -769,43 +770,11 @@ export default function Home() {
         {/* Content Area based on active view */}
         <div className="flex-1 bg-background">
           {activeView === "chat" && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center space-y-4 max-w-md">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Hash className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Welcome to #{selectedChannel}</h2>
-                  <p className="text-muted-foreground">
-                    {selectedDM ? 
-                      `This is your conversation with ${selectedDM}. Start chatting!` :
-                      `This is the beginning of the #${selectedChannel} channel. Start a conversation or check out some channels and direct messages.`
-                    }
-                  </p>
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    data-theme-target="primary"
-                    onClick={() => setActiveView("ai")}
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    Try AI Assistant
-                  </Button>
-                  {!selectedDM && (
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => setActiveView("people")}
-                    >
-                      <Users className="h-4 w-4 mr-2" />
-                      Invite teammates
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <RealTimeChat
+              channelId={selectedDM ? undefined : selectedChannel}
+              recipientId={selectedDM ? directMessages.find(dm => dm.name === selectedDM)?.id : undefined}
+              recipientName={selectedDM}
+            />
           )}
 
           {activeView === "threads" && (
@@ -912,98 +881,7 @@ export default function Home() {
 
         </div>
 
-        {/* Enhanced Message Input */}
-        {(activeView === "chat" || !activeView) && (
-          <div className="p-4 border-t border-border bg-white dark:bg-slate-900">
-            <div className="relative">
-              <div className="min-h-[44px] max-h-32 px-3 py-2 border-2 border-border rounded-lg focus-within:border-blue-500 bg-background transition-all">
-                <div className="flex items-start space-x-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder={selectedDM ? `Message ${selectedDM}` : `Message #${selectedChannel}`}
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      className="border-0 bg-transparent p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          if (messageText.trim()) {
-                            // Handle message send
-                            console.log('Sending message:', messageText);
-                            setMessageText("");
-                          }
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                      title="Attach file"
-                      onClick={() => setActiveView("files")}
-                    >
-                      <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                      title="Add emoji"
-                    >
-                      <Smile className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                      title="Mention someone"
-                    >
-                      <AtSign className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 text-purple-500 hover:text-purple-600"
-                      title="AI Assistant"
-                    >
-                      <Zap className="h-4 w-4" />
-                    </Button>
-                    {messageText.trim() && (
-                      <Button 
-                        size="sm" 
-                        className="h-8 px-3 bg-blue-500 hover:bg-blue-600 text-white"
-                        onClick={() => {
-                          if (messageText.trim()) {
-                            console.log('Sending message:', messageText);
-                            setMessageText("");
-                          }
-                        }}
-                      >
-                        <Send className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Message formatting help */}
-              <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                <div className="flex items-center space-x-4">
-                  <span><code>@username</code> to mention</span>
-                  <span><code>#channel</code> to link channel</span>
-                  <span><code>**bold**</code> for emphasis</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span>Press Enter to send</span>
-                  <span>•</span>
-                  <span>Shift+Enter for new line</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

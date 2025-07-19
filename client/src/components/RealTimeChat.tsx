@@ -1,0 +1,580 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { 
+  Send,
+  Smile,
+  Paperclip,
+  Plus,
+  MoreHorizontal,
+  Reply,
+  Edit3,
+  Trash2,
+  Copy,
+  Quote,
+  Heart,
+  ThumbsUp,
+  Laugh,
+  Clock,
+  Check,
+  CheckCheck
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+
+interface Message {
+  id: string;
+  content: string;
+  authorId: number;
+  channelId?: string;
+  recipientId?: number;
+  createdAt: string;
+  updatedAt?: string;
+  isEdited?: boolean;
+  author: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email?: string;
+  };
+  reactions?: Reaction[];
+  replyTo?: Message;
+}
+
+interface Reaction {
+  emoji: string;
+  count: number;
+  users: number[];
+}
+
+interface TypingUser {
+  userId: number;
+  userName: string;
+  timestamp: number;
+}
+
+interface RealTimeChatProps {
+  channelId?: string;
+  recipientId?: number;
+  recipientName?: string;
+  className?: string;
+}
+
+export function RealTimeChat({ channelId, recipientId, recipientName, className }: RealTimeChatProps) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messageText, setMessageText] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // WebSocket connection
+  const { isConnected, sendMessage } = useWebSocket({
+    onMessage: handleWebSocketMessage,
+    onConnect: () => {
+      if (channelId) {
+        sendMessage({ type: 'join_channel', channelId });
+      }
+      if (user) {
+        sendMessage({ type: 'join_workspace', workspaceId: 1, userId: user.id });
+      }
+    },
+  });
+
+  function handleWebSocketMessage(message: any) {
+    switch (message.type) {
+      case 'new_message':
+        if (message.data.channelId === channelId) {
+          setMessages(prev => [...prev, message.data]);
+        }
+        break;
+      case 'new_direct_message':
+        if ((message.data.authorId === user?.id && message.data.recipientId === recipientId) ||
+            (message.data.authorId === recipientId && message.data.recipientId === user?.id)) {
+          setMessages(prev => [...prev, message.data]);
+        }
+        break;
+      case 'user_typing':
+        if (message.channelId === channelId && message.userId !== user?.id) {
+          setTypingUsers(prev => {
+            const filtered = prev.filter(t => t.userId !== message.userId);
+            return [...filtered, {
+              userId: message.userId,
+              userName: `User ${message.userId}`,
+              timestamp: Date.now()
+            }];
+          });
+        }
+        break;
+      case 'user_stop_typing':
+        setTypingUsers(prev => prev.filter(t => t.userId !== message.userId));
+        break;
+    }
+  }
+
+  // Load messages
+  useEffect(() => {
+    loadMessages();
+  }, [channelId, recipientId]);
+
+  const loadMessages = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const endpoint = channelId 
+        ? `/api/channels/${channelId}/messages`
+        : `/api/users/${recipientId}/messages`;
+        
+      const response = await fetch(endpoint);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.messages || data || []);
+      }
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Clean up typing indicators
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTypingUsers(prev => prev.filter(t => Date.now() - t.timestamp < 5000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const sendChatMessage = async () => {
+    if (!messageText.trim() || !user) return;
+
+    const content = messageText.trim();
+    setMessageText('');
+
+    try {
+      const endpoint = channelId 
+        ? `/api/channels/${channelId}/messages`
+        : `/api/users/${recipientId}/messages`;
+        
+      const payload = {
+        content,
+        ...(replyingTo && { replyTo: replyingTo.id })
+      };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      setReplyingTo(null);
+      // Message will be added via WebSocket
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      setMessageText(content); // Restore message on error
+    }
+  };
+
+  const handleTyping = () => {
+    if (channelId && isConnected) {
+      sendMessage({ type: 'typing', channelId });
+      
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      typingTimeoutRef.current = setTimeout(() => {
+        sendMessage({ type: 'stop_typing', channelId });
+      }, 2000);
+    }
+  };
+
+  const editMessage = async (messageId: string, newContent: string) => {
+    try {
+      const response = await fetch(`/api/messages/${messageId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newContent }),
+      });
+
+      if (response.ok) {
+        const updatedMessage = await response.json();
+        setMessages(prev => prev.map(m => m.id === messageId ? updatedMessage : m));
+        setEditingMessageId(null);
+        setEditingText('');
+      }
+    } catch (error) {
+      console.error('Failed to edit message:', error);
+    }
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/messages/${messageId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setMessages(prev => prev.filter(m => m.id !== messageId));
+      }
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    
+    return date.toLocaleDateString();
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (editingMessageId) {
+        editMessage(editingMessageId, editingText);
+      } else {
+        sendChatMessage();
+      }
+    }
+  };
+
+  const groupMessagesByDate = (messages: Message[]) => {
+    const groups: { [date: string]: Message[] } = {};
+    
+    messages.forEach(message => {
+      const date = new Date(message.createdAt).toDateString();
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(message);
+    });
+    
+    return Object.entries(groups).sort(([a], [b]) => 
+      new Date(a).getTime() - new Date(b).getTime()
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const messageGroups = groupMessagesByDate(messages);
+
+  return (
+    <div className={cn("flex-1 flex flex-col h-full", className)}>
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 px-4">
+        <div className="space-y-4 py-4">
+          {messageGroups.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center py-12">
+              <div className="text-center space-y-2">
+                <p className="text-lg font-medium">
+                  {channelId ? `Welcome to #${channelId}` : `Welcome to your chat with ${recipientName}`}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Start the conversation by sending a message below.
+                </p>
+              </div>
+            </div>
+          ) : (
+            messageGroups.map(([date, dateMessages]) => (
+              <div key={date}>
+                <div className="flex items-center justify-center py-2">
+                  <div className="flex items-center space-x-4">
+                    <Separator className="flex-1 max-w-12" />
+                    <Badge variant="secondary" className="text-xs">
+                      {formatDate(date)}
+                    </Badge>
+                    <Separator className="flex-1 max-w-12" />
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  {dateMessages.map((message, index) => {
+                    const prevMessage = index > 0 ? dateMessages[index - 1] : null;
+                    const isSequential = prevMessage && 
+                      prevMessage.authorId === message.authorId &&
+                      new Date(message.createdAt).getTime() - new Date(prevMessage.createdAt).getTime() < 5 * 60 * 1000;
+
+                    return (
+                      <div
+                        key={message.id}
+                        className={cn(
+                          "group flex items-start space-x-3 hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors",
+                          isSequential && "mt-1"
+                        )}
+                      >
+                        {!isSequential ? (
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {message.author.firstName?.[0]}{message.author.lastName?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="w-10 flex justify-center">
+                            <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                              {formatTime(message.createdAt)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          {!isSequential && (
+                            <div className="flex items-baseline space-x-2 mb-1">
+                              <span className="font-semibold text-sm">
+                                {message.author.firstName} {message.author.lastName}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTime(message.createdAt)}
+                              </span>
+                              {message.isEdited && (
+                                <span className="text-xs text-muted-foreground">(edited)</span>
+                              )}
+                            </div>
+                          )}
+                          
+                          {message.replyTo && (
+                            <div className="mb-2 pl-3 border-l-2 border-muted">
+                              <p className="text-xs text-muted-foreground">
+                                Replying to {message.replyTo.author.firstName}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {message.replyTo.content}
+                              </p>
+                            </div>
+                          )}
+                          
+                          {editingMessageId === message.id ? (
+                            <div className="space-y-2">
+                              <Input
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                className="text-sm"
+                                autoFocus
+                              />
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => editMessage(message.id, editingText)}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setEditingMessageId(null);
+                                    setEditingText('');
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm break-words">{message.content}</p>
+                          )}
+                        </div>
+                        
+                        {message.authorId === user?.id && editingMessageId !== message.id && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                  <MoreHorizontal className="h-3 w-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setReplyingTo(message)}>
+                                  <Reply className="h-4 w-4 mr-2" />
+                                  Reply
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setEditingMessageId(message.id);
+                                    setEditingText(message.content);
+                                  }}
+                                >
+                                  <Edit3 className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(message.content)}>
+                                  <Copy className="h-4 w-4 mr-2" />
+                                  Copy
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => deleteMessage(message.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+          
+          {/* Typing Indicators */}
+          {typingUsers.length > 0 && (
+            <div className="flex items-center space-x-2 px-2 py-1">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}} />
+                <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}} />
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {typingUsers.length === 1 
+                  ? `${typingUsers[0].userName} is typing...`
+                  : `${typingUsers.length} people are typing...`
+                }
+              </span>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Reply Preview */}
+      {replyingTo && (
+        <div className="px-4 py-2 bg-muted/50 border-t">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Reply className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Replying to {replyingTo.author.firstName}
+              </span>
+              <span className="text-sm text-muted-foreground truncate max-w-xs">
+                {replyingTo.content}
+              </span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setReplyingTo(null)}>
+              ✕
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Message Input */}
+      <div className="p-4 border-t bg-background">
+        <div className="flex items-end space-x-2">
+          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+            <Plus className="h-4 w-4" />
+          </Button>
+          
+          <div className="flex-1 relative">
+            <Input
+              ref={inputRef}
+              placeholder={channelId ? `Message #${channelId}` : `Message ${recipientName}`}
+              value={messageText}
+              onChange={(e) => {
+                setMessageText(e.target.value);
+                handleTyping();
+              }}
+              onKeyPress={handleKeyPress}
+              className="pr-20"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Smile className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Paperclip className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={sendChatMessage}
+            disabled={!messageText.trim()}
+            className="h-9"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+          <div className="flex items-center space-x-2">
+            <span>Press Enter to send</span>
+            {!isConnected && (
+              <Badge variant="destructive" className="text-xs">
+                Disconnected
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center space-x-1">
+            {isConnected ? (
+              <Check className="h-3 w-3 text-green-500" />
+            ) : (
+              <Clock className="h-3 w-3 text-orange-500" />
+            )}
+            <span>{isConnected ? 'Connected' : 'Connecting...'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

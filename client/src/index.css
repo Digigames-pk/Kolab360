@@ -141,9 +141,10 @@
     @apply transition-all duration-300 ease-in-out;
   }
 
-  /* Simple sidebar styles - keep text visible */
+  /* Responsive sidebar styles with proper text handling */
   .sidebar-text {
     display: block;
+    transition: opacity 0.2s ease;
   }
 
   .sidebar-icon-only {
@@ -154,17 +155,30 @@
     --sidebar-collapsed: 0;
   }
 
-  /* Only hide text when sidebar is very narrow (< 120px) */
-  .sidebar-container[style*="width"][style*="120"] .sidebar-text,
-  .sidebar-container[style*="width"][style*="100"] .sidebar-text,
-  .sidebar-container[style*="width"][style*="80"] .sidebar-text {
+  /* Progressive text hiding based on width */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-text .text-xs,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-text .text-xs {
     display: none !important;
   }
 
-  .sidebar-container[style*="width"][style*="120"] .sidebar-icon-only,
-  .sidebar-container[style*="width"][style*="100"] .sidebar-icon-only,
-  .sidebar-container[style*="width"][style*="80"] .sidebar-icon-only {
+  /* Hide all text when very narrow */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .sidebar-text,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-text,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-text {
+    display: none !important;
+  }
+
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .sidebar-icon-only {
     display: flex !important;
+    justify-content: center;
+  }
+
+  /* Responsive channel descriptions */
+  @media (max-width: 300px) {
+    .channel-text .text-xs,
+    .dm-text .text-xs {
+      display: none !important;
+    }
   }
   
   .sidebar-item:hover {

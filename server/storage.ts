@@ -547,4 +547,216 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Memory storage for immediate messaging functionality
+class MemoryStorage implements IStorage {
+  private mockMessages: (Message & { author: User })[] = [
+    {
+      id: "1",
+      content: "Welcome to the general channel! Let's start collaborating.",
+      authorId: 1,
+      channelId: "general",
+      recipientId: null,
+      threadId: null,
+      messageType: "text",
+      metadata: null,
+      editedAt: null,
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      author: { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin", createdAt: new Date(), lastLoginAt: null }
+    },
+    {
+      id: "2", 
+      content: "Thanks for setting this up! Excited to work with everyone.",
+      authorId: 3,
+      channelId: "general",
+      recipientId: null,
+      threadId: null,
+      messageType: "text",
+      metadata: null,
+      editedAt: null,
+      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+      author: { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user", createdAt: new Date(), lastLoginAt: null }
+    },
+    {
+      id: "3",
+      content: "Let me know if you need any help with the new features!",
+      authorId: 1,
+      channelId: "general", 
+      recipientId: null,
+      threadId: null,
+      messageType: "text",
+      metadata: null,
+      editedAt: null,
+      createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      author: { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin", createdAt: new Date(), lastLoginAt: null }
+    },
+    // Direct messages
+    {
+      id: "4",
+      content: "Hey! Can you review my latest changes?",
+      authorId: 1,
+      channelId: null,
+      recipientId: 3,
+      threadId: null,
+      messageType: "text",
+      metadata: null,
+      editedAt: null,
+      createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
+      author: { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin", createdAt: new Date(), lastLoginAt: null }
+    },
+    {
+      id: "5",
+      content: "Absolutely! I'll take a look right now.",
+      authorId: 3,
+      channelId: null,
+      recipientId: 1,
+      threadId: null,
+      messageType: "text",
+      metadata: null,
+      editedAt: null,
+      createdAt: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
+      author: { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user", createdAt: new Date(), lastLoginAt: null }
+    }
+  ];
+
+  // Stub implementations for required interface methods
+  async getUser(id: number): Promise<User | undefined> {
+    const mockUsers = [
+      { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin" as const, createdAt: new Date(), lastLoginAt: null },
+      { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user" as const, createdAt: new Date(), lastLoginAt: null }
+    ];
+    return mockUsers.find(u => u.id === id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.getUser(email === "admin@demo.com" ? 1 : 3);
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async updateUserLastLogin(id: number): Promise<void> {
+    // No-op for memory storage
+  }
+
+  async createWorkspace(workspace: InsertWorkspace & { ownerId: number }): Promise<Workspace> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getWorkspace(id: string): Promise<Workspace | undefined> {
+    return { id: "1", name: "Demo Workspace", slug: "demo", inviteCode: "DEMO123", createdAt: new Date(), ownerId: 1 };
+  }
+
+  async getUserWorkspaces(userId: number): Promise<Workspace[]> {
+    return [{ id: "1", name: "Demo Workspace", slug: "demo", inviteCode: "DEMO123", createdAt: new Date(), ownerId: 1 }];
+  }
+
+  async joinWorkspaceByCode(userId: number, inviteCode: string): Promise<Workspace | null> {
+    return null;
+  }
+
+  async getWorkspaceMembers(workspaceId: string): Promise<(WorkspaceMember & { user: User })[]> {
+    return [];
+  }
+
+  async createChannel(channel: InsertChannel & { createdBy: number }): Promise<Channel> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getWorkspaceChannels(workspaceId: string): Promise<Channel[]> {
+    return [];
+  }
+
+  async getChannel(id: string): Promise<Channel | undefined> {
+    return undefined;
+  }
+
+  async joinChannel(channelId: string, userId: number): Promise<void> {
+    // No-op for memory storage
+  }
+
+  async getChannelMembers(channelId: string): Promise<(ChannelMember & { user: User })[]> {
+    return [];
+  }
+
+  async createMessage(messageData: InsertMessage & { authorId: number }): Promise<Message> {
+    const newMessage: Message = {
+      id: (this.mockMessages.length + 1).toString(),
+      content: messageData.content,
+      authorId: messageData.authorId,
+      channelId: messageData.channelId || null,
+      recipientId: messageData.recipientId || null,
+      threadId: messageData.threadId || null,
+      messageType: messageData.messageType || "text",
+      metadata: messageData.metadata || null,
+      editedAt: null,
+      createdAt: new Date()
+    };
+    
+    // Add to mock messages with author info
+    const author = await this.getUser(messageData.authorId);
+    if (author) {
+      this.mockMessages.push({ ...newMessage, author });
+    }
+    
+    return newMessage;
+  }
+
+  async getChannelMessages(channelId: string, limit = 50): Promise<(Message & { author: User })[]> {
+    return this.mockMessages
+      .filter(m => m.channelId === channelId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .slice(-limit);
+  }
+
+  async getDirectMessages(userId1: number, userId2: number, limit = 50): Promise<(Message & { author: User })[]> {
+    return this.mockMessages
+      .filter(m => 
+        (m.authorId === userId1 && m.recipientId === userId2) ||
+        (m.authorId === userId2 && m.recipientId === userId1)
+      )
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .slice(-limit);
+  }
+
+  async updateMessage(messageId: string, content: string): Promise<Message | undefined> {
+    const messageIndex = this.mockMessages.findIndex(m => m.id === messageId);
+    if (messageIndex >= 0) {
+      this.mockMessages[messageIndex].content = content;
+      this.mockMessages[messageIndex].editedAt = new Date();
+      return this.mockMessages[messageIndex];
+    }
+    return undefined;
+  }
+
+  async deleteMessage(messageId: string): Promise<boolean> {
+    const messageIndex = this.mockMessages.findIndex(m => m.id === messageId);
+    if (messageIndex >= 0) {
+      this.mockMessages.splice(messageIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  // Stub implementations for other required methods
+  async createTask(taskData: InsertTask & { createdBy: number }): Promise<Task> { throw new Error("Not implemented"); }
+  async getWorkspaceTasks(workspaceId: string): Promise<(Task & { assignedUser?: User; creator: User })[]> { return []; }
+  async updateTaskStatus(taskId: string, status: string): Promise<Task | undefined> { return undefined; }
+  async deleteTask(taskId: string): Promise<boolean> { return false; }
+  async createFile(fileData: InsertFile): Promise<File> { throw new Error("Not implemented"); }
+  async getFile(fileId: string): Promise<File | undefined> { return undefined; }
+  async getWorkspaceFiles(workspaceId: string): Promise<(File & { uploader: User })[]> { return []; }
+  async deleteFile(fileId: string): Promise<boolean> { return false; }
+  async addReaction(messageId: string, userId: number, emoji: string): Promise<Reaction> { throw new Error("Not implemented"); }
+  async getMessageReactions(messageId: string): Promise<(Reaction & { user: User })[]> { return []; }
+  async getIntegrations(userId: number, workspaceId?: string): Promise<Integration[]> { return []; }
+  async createIntegration(integrationData: InsertIntegration & { userId: number }): Promise<Integration> { throw new Error("Not implemented"); }
+  async updateIntegration(integrationId: string, userId: number, updates: Partial<Integration>): Promise<Integration> { throw new Error("Not implemented"); }
+  async deleteIntegration(integrationId: string, userId: number): Promise<void> { }
+  async adminGetAllIntegrations(): Promise<(Integration & { user: User; workspace: Workspace })[]> { return []; }
+  async adminUpdateIntegration(integrationId: string, updates: Partial<Integration>): Promise<Integration> { throw new Error("Not implemented"); }
+  async adminDeleteIntegration(integrationId: string): Promise<void> { }
+}
+
+// Use memory storage for immediate messaging functionality  
+export const storage = process.env.NODE_ENV === 'development' ? new MemoryStorage() : new DatabaseStorage();
