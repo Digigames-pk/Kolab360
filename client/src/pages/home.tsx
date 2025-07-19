@@ -6,6 +6,9 @@ import { MobileTaskBoard } from "@/components/MobileTaskBoard";
 import { RobustTaskBoard } from "@/components/RobustTaskBoard";
 import { WorkspaceCustomizer } from "@/components/WorkspaceCustomizer";
 import { CustomizableSidebar } from "@/components/CustomizableSidebar";
+import { WorkspaceLayoutCustomizer } from "@/components/WorkspaceLayoutCustomizer";
+import { EnhancedSearch } from "@/components/EnhancedSearch";
+import { EnhancedAI } from "@/components/EnhancedAI";
 import { X } from "lucide-react";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { FileViewer } from "@/components/FileViewer";
@@ -114,6 +117,7 @@ export default function Home() {
   const [showGamification, setShowGamification] = useState(false);
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   const [showEnterprisePanel, setShowEnterprisePanel] = useState(false);
+  const [showLayoutCustomizer, setShowLayoutCustomizer] = useState(false);
   const [callType, setCallType] = useState<"voice" | "video">("voice");
   
   // Additional workspace customization state
@@ -568,9 +572,9 @@ export default function Home() {
                     <Palette className="h-4 w-4 mr-2" />
                     Customize Theme
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowWorkspaceCustomizer(true)}>
+                  <DropdownMenuItem onClick={() => setShowLayoutCustomizer(true)}>
                     <Settings2 className="h-4 w-4 mr-2" />
-                    Workspace Settings
+                    Workspace Layout
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowGamification(true)}>
                     <Trophy className="h-4 w-4 mr-2" />
@@ -842,67 +846,7 @@ export default function Home() {
             </div>
           )}
 
-          {activeView === "ai" && (
-            <div className="flex-1 flex flex-col p-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Zap className="h-6 w-6 text-purple-500" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">AI Assistant</h2>
-                  <p className="text-muted-foreground">Ask me anything about your work or project</p>
-                </div>
-              </div>
-              
-              <div className="flex-1 flex flex-col space-y-4">
-                <div className="flex-1 bg-muted/20 rounded-lg p-4 min-h-[300px] max-h-96 overflow-y-auto">
-                  {aiResponse ? (
-                    <div className="space-y-3">
-                      <div className="bg-blue-500/10 rounded-lg p-3">
-                        <p className="text-sm font-medium text-blue-600 mb-1">You asked:</p>
-                        <p className="text-sm">{aiMessage}</p>
-                      </div>
-                      <div className="bg-purple-500/10 rounded-lg p-3">
-                        <p className="text-sm font-medium text-purple-600 mb-1">AI Assistant:</p>
-                        <p className="text-sm">{aiResponse}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <p>Start a conversation with the AI assistant...</p>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Ask the AI assistant anything..."
-                    value={aiMessage}
-                    onChange={(e) => setAiMessage(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        if (aiMessage.trim()) {
-                          // Simulate AI response
-                          setAiResponse(`I understand you're asking about "${aiMessage}". As an AI assistant, I can help you with various tasks like code review, documentation, planning, and problem-solving. What specific help do you need?`);
-                        }
-                      }
-                    }}
-                  />
-                  <Button 
-                    onClick={() => {
-                      if (aiMessage.trim()) {
-                        // Simulate AI response
-                        setAiResponse(`I understand you're asking about "${aiMessage}". As an AI assistant, I can help you with various tasks like code review, documentation, planning, and problem-solving. What specific help do you need?`);
-                      }
-                    }}
-                    disabled={!aiMessage.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeView === "ai" && <EnhancedAI />}
 
           {activeView === "tasks" && (
             <RobustTaskBoard 
@@ -915,20 +859,28 @@ export default function Home() {
             <EnhancedCalendar selectedChannel={selectedChannel} />
           )}
 
-          {activeView === "files" && (
-            <WasabiFileUpload 
-              channel={selectedChannel}
-              workspaceId={selectedWorkspace}
-              onFileUpload={(files) => {
-                console.log('Files uploaded to Wasabi:', files);
-              }}
-              onFileClick={(file) => {
-                // Open file in new tab for download/view
-                window.open(file.downloadUrl, '_blank');
-              }}
-              maxFiles={10}
-              maxSizeMB={100}
+          {activeView === "search" && <EnhancedSearch />}
+
+          {activeView === "integrations" && (
+            <IntegrationCenter 
+              userRole={user.role}
+              onShowAdminPanel={() => setShowIntegrationPanel(true)}
             />
+          )}
+
+          {activeView === "files" && (
+            <div className="h-full">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-bold mb-2">Files & Storage</h2>
+                <p className="text-gray-600">Upload, manage, and share files with your team</p>
+              </div>
+              <div className="flex-1">
+                <WasabiFileUpload 
+                  channelId={selectedChannel || 'general'}
+                  workspaceId={selectedWorkspace.toString()}
+                />
+              </div>
+            </div>
           )}
 
           {activeView === "documents" && (
@@ -939,21 +891,7 @@ export default function Home() {
             />
           )}
 
-          {activeView === "search" && (
-            <div className="flex-1">
-              <AdvancedSearch />
-            </div>
-          )}
 
-          {activeView === "integrations" && (
-            <div className="flex-1 p-6">
-              {user.role === "super_admin" ? (
-                <AdminIntegrationPanel />
-              ) : (
-                <IntegrationCenter />
-              )}
-            </div>
-          )}
         </div>
 
         {/* Enhanced Message Input */}
@@ -1298,6 +1236,11 @@ export default function Home() {
             />
           </div>
         </div>
+      )}
+
+      {/* Layout Customizer Modal */}
+      {showLayoutCustomizer && (
+        <WorkspaceLayoutCustomizer onClose={() => setShowLayoutCustomizer(false)} />
       )}
     </div>
   );

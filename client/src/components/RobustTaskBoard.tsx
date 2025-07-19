@@ -41,6 +41,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CreateTaskModal, EditTaskModal } from './TaskModals';
+import { TaskCategoryManager } from './TaskCategoryManager';
 
 interface Task {
   id: string;
@@ -196,6 +197,7 @@ export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskD
   const [selectedColumn, setSelectedColumn] = useState<string>('todo');
   const [showEditTask, setShowEditTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [activeView, setActiveView] = useState<'board' | 'categories'>('board');
 
   // Filter tasks based on search and filters
   const getFilteredTasks = (tasks: Task[]) => {
@@ -558,14 +560,44 @@ export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskD
     );
   };
 
+  if (activeView === 'categories') {
+    return (
+      <TaskCategoryManager 
+        channelId={channelId}
+        onCategoriesChange={(categories) => {
+          console.log('Categories updated:', categories);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
       <div className="border-b bg-white p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Task Board</h1>
-            <p className="text-gray-500">Manage your team's tasks and workflow</p>
+            {activeView === 'categories' && (
+              <div className="flex items-center space-x-2 mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setActiveView('board')}
+                  className="text-gray-500 hover:text-gray-900"
+                >
+                  ← Back to Board
+                </Button>
+              </div>
+            )}
+            <h1 className="text-2xl font-bold text-gray-900">
+              {activeView === 'categories' ? 'Task Categories' : 'Task Board'}
+            </h1>
+            <p className="text-gray-500">
+              {activeView === 'categories' 
+                ? 'Organize your workflow with custom categories' 
+                : 'Manage your team\'s tasks and workflow'
+              }
+            </p>
           </div>
           
           <div className="flex items-center space-x-3">
@@ -588,10 +620,19 @@ export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskD
               </Button>
             </div>
             
-            <Button onClick={() => setShowCreateTask(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Task
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setActiveView('categories')}
+              >
+                <Settings2 className="h-4 w-4 mr-2" />
+                Manage Categories
+              </Button>
+              <Button onClick={() => setShowCreateTask(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Task
+              </Button>
+            </div>
           </div>
         </div>
 
