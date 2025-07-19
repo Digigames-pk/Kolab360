@@ -168,6 +168,64 @@ router.get('/simple-files/:id', async (req, res) => {
 });
 
 // DELETE /api/simple-files/:id - Delete a file
+// POST /api/simple-files/upload-multiple - Upload multiple files
+router.post('/simple-files/upload-multiple', upload.array('files', 10), async (req, res) => {
+  try {
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      return res.status(400).json({ message: 'No files uploaded' });
+    }
+    
+    const { workspaceId = '1', channelId = 'general' } = req.body;
+    const uploadedFiles = [];
+    
+    for (const file of req.files) {
+      // Determine file category based on MIME type
+      let category = 'documents';
+      if (file.mimetype.startsWith('image/')) {
+        category = 'images';
+      } else if (file.mimetype.startsWith('video/')) {
+        category = 'videos';
+      } else if (file.mimetype.startsWith('audio/')) {
+        category = 'audio';
+      }
+      
+      const newFile = {
+        id: (mockFiles.length + uploadedFiles.length + 1).toString(),
+        filename: file.filename,
+        originalName: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype,
+        uploadedBy: 3, // Mock user ID
+        uploadedAt: new Date(),
+        workspaceId,
+        channelId,
+        category,
+        url: `/uploads/${file.filename}`
+      };
+      
+      mockFiles.push(newFile);
+      uploadedFiles.push({
+        ...newFile,
+        uploader: {
+          id: 3,
+          firstName: 'Regular',
+          lastName: 'User',
+          email: 'user@test.com'
+        }
+      });
+    }
+    
+    res.status(201).json({
+      files: uploadedFiles,
+      totalUploaded: uploadedFiles.length,
+      totalRequested: req.files.length
+    });
+  } catch (error) {
+    console.error('Error uploading multiple files:', error);
+    res.status(500).json({ message: 'Failed to upload files' });
+  }
+});
+
 router.delete('/simple-files/:id', async (req, res) => {
   try {
     const fileId = req.params.id;

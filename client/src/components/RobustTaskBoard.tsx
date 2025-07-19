@@ -224,6 +224,111 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activeView, setActiveView] = useState<'board' | 'categories'>('board');
 
+  // API functions
+  const loadTasks = async () => {
+    try {
+      const response = await fetch(`/api/simple-tasks?workspaceId=${workspaceId}`);
+      if (response.ok) {
+        const tasks = await response.json();
+        
+        // Convert API tasks to our format and organize by status
+        const tasksByStatus = {
+          'todo': [],
+          'in-progress': [],
+          'review': [],
+          'done': []
+        };
+        
+        tasks.forEach(task => {
+          const formattedTask = {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            priority: task.priority,
+            assignee: task.assignedUser ? `${task.assignedUser.firstName} ${task.assignedUser.lastName}` : '',
+            dueDate: task.dueDate,
+            tags: [task.category],
+            createdAt: task.createdAt
+          };
+          
+          if (tasksByStatus[task.status]) {
+            tasksByStatus[task.status].push(formattedTask);
+          }
+        });
+        
+        // Update columns with real data
+        setColumns(INITIAL_COLUMNS.map(col => ({
+          ...col,
+          tasks: tasksByStatus[col.id] || []
+        })));
+      }
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    }
+  };
+
+  const onTaskCreate = async (task: Partial<Task>) => {
+    try {
+      const response = await fetch('/api/simple-tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: task.title,
+          description: task.description,
+          priority: task.priority || 'medium',
+          category: task.tags?.[0] || 'General',
+          workspaceId: workspaceId.toString()
+        }),
+      });
+      
+      if (response.ok) {
+        loadTasks();
+      }
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
+  };
+  
+  const onTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      const response = await fetch(`/api/simple-tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+      
+      if (response.ok) {
+        loadTasks();
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+  
+  const onTaskDelete = async (taskId: string) => {
+    try {
+      const response = await fetch(`/api/simple-tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        loadTasks();
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  // Load tasks on component mount
+  useEffect(() => {
+    loadTasks();
+  }, [workspaceId]);
+
   // Filter tasks based on search and filters
   const getFilteredTasks = (tasks: Task[]) => {
     return tasks.filter(task => {

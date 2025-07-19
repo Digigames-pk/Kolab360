@@ -88,10 +88,10 @@ export function WasabiFileUpload({
       if (channelId) params.append('channelId', channelId);
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
-      const response = await fetch(`/api/files?${params}`);
+      const response = await fetch(`/api/simple-files?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setFiles(data.files || []);
+        setFiles(data || []);
       }
     } catch (error) {
       console.error('Failed to load files:', error);
@@ -157,7 +157,7 @@ export function WasabiFileUpload({
         if (workspaceId) formData.append('workspaceId', workspaceId);
         if (channelId) formData.append('channelId', channelId);
 
-        const response = await fetch('/api/files/upload', {
+        const response = await fetch('/api/simple-files/upload', {
           method: 'POST',
           body: formData,
         });
@@ -180,7 +180,7 @@ export function WasabiFileUpload({
         if (workspaceId) formData.append('workspaceId', workspaceId);
         if (channelId) formData.append('channelId', channelId);
 
-        const response = await fetch('/api/files/upload-multiple', {
+        const response = await fetch('/api/simple-files/upload-multiple', {
           method: 'POST',
           body: formData,
         });
@@ -240,7 +240,7 @@ export function WasabiFileUpload({
 
   const deleteFile = async (fileId: string) => {
     try {
-      const response = await fetch(`/api/files/${fileId}`, {
+      const response = await fetch(`/api/simple-files/${fileId}`, {
         method: 'DELETE',
       });
 
