@@ -174,7 +174,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden bg-gray-50">
+              <div className="flex-1 bg-gray-50" style={{ height: 'calc(100vh - 160px)' }}>
                 <RobustTaskBoard 
                   selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
                   workspaceId={selectedWorkspace}

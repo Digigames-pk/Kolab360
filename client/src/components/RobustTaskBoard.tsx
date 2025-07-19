@@ -427,6 +427,11 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
             className={`mb-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
               snapshot.isDragging ? 'shadow-lg rotate-2' : ''
             }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTask(task);
+              setShowEditTask(true);
+            }}
           >
             <CardContent className="p-4">
               {/* Priority and Actions */}
@@ -594,7 +599,12 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                           ? 'border-blue-400 bg-blue-50' 
                           : `${column.color}`
                       }`}
-                      style={{ minHeight: '400px', maxHeight: 'calc(100vh - 350px)' }}
+                      style={{ 
+                        minHeight: '400px', 
+                        maxHeight: 'calc(100vh - 300px)',
+                        overflowY: 'auto',
+                        scrollBehavior: 'smooth' 
+                      }}
                     >
                       {filteredTasks.map((task, index) => (
                         <TaskCard key={task.id} task={task} index={index} />
@@ -626,7 +636,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
     logger.log('info', 'RobustTaskBoard', 'Rendering List view', { tasksCount: allTasks.length });
 
     return (
-      <div className="h-full overflow-y-auto">
+      <div className="h-full overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
         <div className="space-y-2 pb-6">
           {allTasks.map((task) => {
           const PriorityIcon = PRIORITY_ICONS[task.priority];
