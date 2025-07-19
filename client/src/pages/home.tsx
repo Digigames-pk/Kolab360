@@ -310,7 +310,7 @@ export default function Home() {
             setSidebarWidth(size * 15); // Approximate conversion
             
             // Track sidebar size for responsive behavior and save settings
-            const isCollapsed = size < 25;
+            const isCollapsed = size < 15;
             const sidebar = document.querySelector('.sidebar-container');
             if (sidebar) {
               sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
