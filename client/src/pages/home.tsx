@@ -303,14 +303,14 @@ export default function Home() {
         {/* Enhanced Customizable Sidebar */}
         <ResizablePanel 
           defaultSize={sidebarSizes[0]} 
-          minSize={12} 
-          maxSize={35} 
+          minSize={15} 
+          maxSize={40} 
           onResize={(size) => {
             setSidebarSizes([size, 100 - size]);
             setSidebarWidth(size * 15); // Approximate conversion
             
             // Track sidebar size for responsive behavior and save settings
-            const isCollapsed = size < 16;
+            const isCollapsed = size < 20;
             const sidebar = document.querySelector('.sidebar-container');
             if (sidebar) {
               sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
@@ -613,10 +613,10 @@ export default function Home() {
           </div>
         </ResizablePanel>
 
-        <ResizableHandle />
+        <ResizableHandle withHandle className="w-2 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 transition-colors cursor-col-resize" />
 
         {/* Main Content Panel */}
-        <ResizablePanel defaultSize={80}>
+        <ResizablePanel defaultSize={80} minSize={50}>
           <div className="flex-1 flex flex-col">
         {/* Enhanced Channel Header with Navigation */}
         <div className="h-14 bg-white dark:bg-slate-900 border-b border-border flex items-center justify-between px-6">

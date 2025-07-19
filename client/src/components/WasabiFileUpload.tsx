@@ -48,7 +48,7 @@ interface FileData {
 }
 
 interface WasabiFileUploadProps {
-  channel?: string;
+  channelId?: string;
   workspaceId?: string;
   onFileUpload?: (files: FileData[]) => void;
   onFileClick?: (file: FileData) => void;
@@ -58,7 +58,7 @@ interface WasabiFileUploadProps {
 }
 
 export function WasabiFileUpload({ 
-  channel, 
+  channelId, 
   workspaceId, 
   onFileUpload, 
   onFileClick,
@@ -77,15 +77,15 @@ export function WasabiFileUpload({
   const { toast } = useToast();
 
   // Load files on component mount
-  useState(() => {
+  useEffect(() => {
     loadFiles();
-  });
+  }, [channelId, workspaceId, selectedCategory]);
 
   const loadFiles = async () => {
     try {
       const params = new URLSearchParams();
       if (workspaceId) params.append('workspaceId', workspaceId);
-      if (channel) params.append('channelId', channel);
+      if (channelId) params.append('channelId', channelId);
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
       const response = await fetch(`/api/files?${params}`);
@@ -155,7 +155,7 @@ export function WasabiFileUpload({
       if (validFiles.length === 1) {
         formData.append('file', validFiles[0]);
         if (workspaceId) formData.append('workspaceId', workspaceId);
-        if (channel) formData.append('channelId', channel);
+        if (channelId) formData.append('channelId', channelId);
 
         const response = await fetch('/api/files/upload', {
           method: 'POST',
@@ -178,7 +178,7 @@ export function WasabiFileUpload({
         // Multiple files
         validFiles.forEach(file => formData.append('files', file));
         if (workspaceId) formData.append('workspaceId', workspaceId);
-        if (channel) formData.append('channelId', channel);
+        if (channelId) formData.append('channelId', channelId);
 
         const response = await fetch('/api/files/upload-multiple', {
           method: 'POST',

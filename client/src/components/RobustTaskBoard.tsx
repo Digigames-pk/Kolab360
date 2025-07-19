@@ -66,10 +66,8 @@ interface TaskColumn {
 }
 
 interface RobustTaskBoardProps {
-  channelId: string;
-  onTaskCreate: (task: Omit<Task, 'id' | 'createdAt'>) => void;
-  onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
-  onTaskDelete: (taskId: string) => void;
+  selectedChannel?: string;
+  workspaceId: number;
 }
 
 const INITIAL_COLUMNS: TaskColumn[] = [
@@ -81,20 +79,33 @@ const INITIAL_COLUMNS: TaskColumn[] = [
       {
         id: '1',
         title: 'Design new user interface',
-        description: 'Create wireframes and mockups for the new dashboard interface',
+        description: 'Create wireframes and mockups for the new dashboard',
         status: 'todo',
         priority: 'high',
         assignee: 'Sarah Chen',
         dueDate: '2024-01-20',
-        tags: ['design', 'ui/ux'],
+        tags: ['UI/UX', 'Design'],
         subtasks: [
-          { id: 's1', title: 'Research competitors', completed: true },
-          { id: 's2', title: 'Create wireframes', completed: false },
-          { id: 's3', title: 'Design mockups', completed: false }
+          { id: 's1', title: 'Research user requirements', completed: true },
+          { id: 's2', title: 'Create wireframes', completed: false }
         ],
         comments: 3,
         attachments: 2,
-        createdAt: '2024-01-15'
+        createdAt: '2024-01-15T10:30:00Z'
+      },
+      {
+        id: '2',
+        title: 'Setup development environment',
+        description: 'Configure local development environment for new team members',
+        status: 'todo',
+        priority: 'medium',
+        assignee: 'Alex Rodriguez',
+        dueDate: '2024-01-18',
+        tags: ['DevOps', 'Setup'],
+        subtasks: [],
+        comments: 1,
+        attachments: 0,
+        createdAt: '2024-01-14T14:20:00Z'
       }
     ]
   },
@@ -104,22 +115,22 @@ const INITIAL_COLUMNS: TaskColumn[] = [
     color: 'bg-blue-50 border-blue-200',
     tasks: [
       {
-        id: '2',
+        id: '3',
         title: 'Implement authentication system',
         description: 'Build secure login and registration functionality',
         status: 'in-progress',
         priority: 'urgent',
-        assignee: 'Alex Rodriguez',
-        dueDate: '2024-01-18',
-        tags: ['backend', 'security'],
+        assignee: 'Emma Davis',
+        dueDate: '2024-01-22',
+        tags: ['Backend', 'Security'],
         subtasks: [
-          { id: 's4', title: 'Set up OAuth', completed: true },
-          { id: 's5', title: 'Create login form', completed: true },
-          { id: 's6', title: 'Add password reset', completed: false }
+          { id: 's3', title: 'Setup JWT tokens', completed: true },
+          { id: 's4', title: 'Create login API', completed: true },
+          { id: 's5', title: 'Add password reset', completed: false }
         ],
         comments: 5,
         attachments: 1,
-        createdAt: '2024-01-10'
+        createdAt: '2024-01-13T09:15:00Z'
       }
     ]
   },
@@ -129,21 +140,18 @@ const INITIAL_COLUMNS: TaskColumn[] = [
     color: 'bg-orange-50 border-orange-200',
     tasks: [
       {
-        id: '3',
-        title: 'Code review for API endpoints',
-        description: 'Review and test all REST API endpoints',
+        id: '4',
+        title: 'Code review for dashboard component',
+        description: 'Review the new dashboard React component implementation',
         status: 'review',
         priority: 'medium',
-        assignee: 'Emma Davis',
-        dueDate: '2024-01-22',
-        tags: ['backend', 'testing'],
-        subtasks: [
-          { id: 's7', title: 'Test GET endpoints', completed: true },
-          { id: 's8', title: 'Test POST endpoints', completed: false }
-        ],
+        assignee: 'Michael Kim',
+        dueDate: '2024-01-19',
+        tags: ['Frontend', 'Review'],
+        subtasks: [],
         comments: 2,
         attachments: 0,
-        createdAt: '2024-01-12'
+        createdAt: '2024-01-12T16:45:00Z'
       }
     ]
   },
@@ -153,21 +161,36 @@ const INITIAL_COLUMNS: TaskColumn[] = [
     color: 'bg-green-50 border-green-200',
     tasks: [
       {
-        id: '4',
-        title: 'Set up project structure',
-        description: 'Initialize project with proper folder structure and dependencies',
+        id: '5',
+        title: 'Database schema design',
+        description: 'Design and implement the initial database schema',
         status: 'done',
-        priority: 'medium',
-        assignee: 'Michael Kim',
-        dueDate: '2024-01-15',
-        tags: ['setup', 'infrastructure'],
+        priority: 'high',
+        assignee: 'David Park',
+        dueDate: '2024-01-16',
+        tags: ['Database', 'Backend'],
         subtasks: [
-          { id: 's9', title: 'Create folder structure', completed: true },
-          { id: 's10', title: 'Install dependencies', completed: true }
+          { id: 's6', title: 'Design ER diagram', completed: true },
+          { id: 's7', title: 'Create migration scripts', completed: true },
+          { id: 's8', title: 'Test with sample data', completed: true }
         ],
-        comments: 1,
+        comments: 4,
         attachments: 3,
-        createdAt: '2024-01-08'
+        createdAt: '2024-01-10T11:20:00Z'
+      },
+      {
+        id: '6',
+        title: 'Project documentation',
+        description: 'Create comprehensive project documentation',
+        status: 'done',
+        priority: 'low',
+        assignee: 'Lisa Wong',
+        dueDate: '2024-01-15',
+        tags: ['Documentation'],
+        subtasks: [],
+        comments: 1,
+        attachments: 2,
+        createdAt: '2024-01-08T13:30:00Z'
       }
     ]
   }
@@ -187,7 +210,8 @@ const PRIORITY_ICONS = {
   urgent: Flag
 };
 
-export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskDelete }: RobustTaskBoardProps) {
+export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoardProps) {
+  const channelId = selectedChannel || 'general';
   const [columns, setColumns] = useState<TaskColumn[]>(INITIAL_COLUMNS);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchTerm, setSearchTerm] = useState('');
@@ -278,7 +302,7 @@ export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskD
         return col;
       }));
 
-      onTaskUpdate(draggableId, { status: finish.id as Task['status'] });
+      // Task updated successfully in drag and drop
     }
   };
 
@@ -322,7 +346,13 @@ export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskD
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-red-600"
-                      onClick={() => onTaskDelete(task.id)}
+                      onClick={() => {
+                        // Delete task from columns
+                        setColumns(prev => prev.map(col => ({
+                          ...col,
+                          tasks: col.tasks.filter(t => t.id !== task.id)
+                        })));
+                      }}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
@@ -535,7 +565,13 @@ export function RobustTaskBoard({ channelId, onTaskCreate, onTaskUpdate, onTaskD
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-red-600"
-                          onClick={() => onTaskDelete(task.id)}
+                          onClick={() => {
+                            // Delete task from columns
+                            setColumns(prev => prev.map(col => ({
+                              ...col,
+                              tasks: col.tasks.filter(t => t.id !== task.id)
+                            })));
+                          }}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
