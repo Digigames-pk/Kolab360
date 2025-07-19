@@ -43,8 +43,10 @@ import {
   Volume2,
   VolumeX,
   Circle,
-  Edit3
+  Edit3,
+  Settings2
 } from 'lucide-react';
+import { SidebarCustomizer, SidebarSettings, useSidebarSettings } from './SidebarCustomizer';
 
 interface ModernSlackSidebarProps {
   selectedChannel: string;
@@ -73,6 +75,8 @@ export function ModernSlackSidebar({
 }: ModernSlackSidebarProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
+  const [showSidebarCustomizer, setShowSidebarCustomizer] = useState(false);
+  const { settings, updateSettings } = useSidebarSettings();
 
   const channels = [
     { id: 'general', name: 'general', type: 'public', unread: 3 },
@@ -92,7 +96,11 @@ export function ModernSlackSidebar({
   const currentWorkspace = getCurrentWorkspace();
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+    <>
+    <div 
+      className="h-full flex flex-col bg-white border-r border-gray-200" 
+      style={{ width: `${settings.sidebarWidth}px` }}
+    >
       {/* Workspace Header */}
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
         <DropdownMenu>
@@ -139,103 +147,140 @@ export function ModernSlackSidebar({
 
 
       {/* Quick Actions */}
-      <div className="px-4 py-3 space-y-1">
-        <Button 
-          variant={currentView === 'search' ? 'default' : 'ghost'} 
-          className="w-full justify-start" 
-          onClick={() => onViewChange('search')}
+      {settings.sections.quickActions.visible && (
+        <div 
+          className={`px-4 py-3 space-y-1 ${settings.compactMode ? 'py-2' : 'py-3'}`}
+          style={{ height: `${settings.sections.quickActions.height}px`, overflowY: 'auto' }}
         >
-          <Search className="h-4 w-4 mr-3" />
-          Advanced Search
-        </Button>
-        
-        <Button variant="ghost" className="w-full justify-start" onClick={onShowNotifications}>
-          <Bell className="h-4 w-4 mr-3" />
-          Notifications
-          <Badge variant="destructive" className="ml-auto">3</Badge>
-        </Button>
-        
-        <Button 
-          variant={currentView === 'saved' ? 'default' : 'ghost'} 
-          className="w-full justify-start"
-          onClick={() => onViewChange('saved')}
-        >
-          <Star className="h-4 w-4 mr-3" />
-          Saved Items
-        </Button>
-        
-        <Button 
-          variant={currentView === 'threads' ? 'default' : 'ghost'} 
-          className="w-full justify-start"
-          onClick={() => onViewChange('threads')}
-        >
-          <MessageSquare className="h-4 w-4 mr-3" />
-          Threads
-        </Button>
-        
-        <Button 
-          variant={currentView === 'mentions' ? 'default' : 'ghost'} 
-          className="w-full justify-start"
-          onClick={() => onViewChange('mentions')}
-        >
-          <Bell className="h-4 w-4 mr-3" />
-          Mentions
-        </Button>
-        
-        <Button 
-          variant={currentView === 'people' ? 'default' : 'ghost'} 
-          className="w-full justify-start"
-          onClick={() => onViewChange('people')}
-        >
-          <Users className="h-4 w-4 mr-3" />
-          People
-        </Button>
-      </div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-700">Quick Actions</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0"
+              onClick={() => setShowSidebarCustomizer(true)}
+            >
+              <Settings2 className="h-3 w-3" />
+            </Button>
+          </div>
+          
+          <Button 
+            variant={currentView === 'search' ? 'default' : 'ghost'} 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={() => onViewChange('search')}
+          >
+            <Search className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            Advanced Search
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={onShowNotifications}
+          >
+            <Bell className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            Notifications
+            {settings.showUnreadCounts && (
+              <Badge variant="destructive" className="ml-auto">3</Badge>
+            )}
+          </Button>
+          
+          <Button 
+            variant={currentView === 'saved' ? 'default' : 'ghost'} 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={() => onViewChange('saved')}
+          >
+            <Star className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            Saved Items
+          </Button>
+          
+          <Button 
+            variant={currentView === 'threads' ? 'default' : 'ghost'} 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={() => onViewChange('threads')}
+          >
+            <MessageSquare className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            Threads
+          </Button>
+          
+          <Button 
+            variant={currentView === 'mentions' ? 'default' : 'ghost'} 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={() => onViewChange('mentions')}
+          >
+            <Bell className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            Mentions
+          </Button>
+          
+          <Button 
+            variant={currentView === 'people' ? 'default' : 'ghost'} 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={() => onViewChange('people')}
+          >
+            <Users className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            People
+          </Button>
+        </div>
+      )}
 
-      <Separator />
+      {settings.sections.quickActions.visible && <Separator />}
 
       {/* Channels Section */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-700">Channels</h3>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-            
-            <div className="space-y-1">
-              {channels.map((channel) => (
-                <Button
-                  key={channel.id}
-                  variant={selectedChannel === channel.id ? 'secondary' : 'ghost'}
-                  className="w-full justify-start px-2 py-1 h-8"
-                  onClick={() => {
-                    onChannelSelect(channel.id);
-                    onViewChange('chat'); // Switch to chat view when selecting a channel
-                  }}
-                >
-                  {channel.type === 'private' ? (
-                    <Lock className="h-3 w-3 mr-2 text-gray-500" />
-                  ) : (
-                    <Hash className="h-3 w-3 mr-2 text-gray-500" />
-                  )}
-                  <span className="text-sm truncate">{channel.name}</span>
-                  {channel.unread > 0 && (
-                    <Badge variant="destructive" className="ml-auto text-xs h-5 min-w-5">
-                      {channel.unread}
-                    </Badge>
-                  )}
+      {settings.sections.channels.visible && (
+        <div className="flex-1 overflow-hidden">
+          <div 
+            className="h-full overflow-y-auto"
+            style={{ maxHeight: `${settings.sections.channels.height}px` }}
+          >
+            <div className={`px-4 ${settings.compactMode ? 'py-2' : 'py-3'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-gray-700">Channels</h3>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Plus className="h-3 w-3" />
                 </Button>
-              ))}
+              </div>
+              
+              <div className={`space-y-1 ${settings.compactMode ? 'space-y-0' : 'space-y-1'}`}>
+                {channels.map((channel) => (
+                  <Button
+                    key={channel.id}
+                    variant={selectedChannel === channel.id ? 'secondary' : 'ghost'}
+                    className={`w-full justify-start px-2 ${settings.compactMode ? 'py-0 h-6 text-xs' : 'py-1 h-8 text-sm'}`}
+                    onClick={() => {
+                      onChannelSelect(channel.id);
+                      onViewChange('chat');
+                    }}
+                  >
+                    {channel.type === 'private' ? (
+                      <Lock className={`${settings.compactMode ? 'h-2 w-2' : 'h-3 w-3'} mr-2 text-gray-500`} />
+                    ) : (
+                      <Hash className={`${settings.compactMode ? 'h-2 w-2' : 'h-3 w-3'} mr-2 text-gray-500`} />
+                    )}
+                    <span className="truncate">{channel.name}</span>
+                    {settings.showUnreadCounts && channel.unread > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className={`ml-auto ${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}
+                      >
+                        {channel.unread}
+                      </Badge>
+                    )}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
+      )}
 
+      {/* Direct Messages Section */}
+      {settings.sections.directMessages.visible && (
+        <>
           <Separator />
-
-          {/* Direct Messages Section */}
-          <div className="px-4 py-3">
+          <div 
+            className={`px-4 ${settings.compactMode ? 'py-2' : 'py-3'} overflow-y-auto`}
+            style={{ maxHeight: `${settings.sections.directMessages.height}px` }}
+          >
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-gray-700">Direct messages</h3>
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -243,35 +288,39 @@ export function ModernSlackSidebar({
               </Button>
             </div>
             
-            <div className="space-y-1">
+            <div className={`space-y-1 ${settings.compactMode ? 'space-y-0' : 'space-y-1'}`}>
               {directMessages.map((dm) => (
                 <Button
                   key={dm.id}
                   variant="ghost"
-                  className="w-full justify-start px-2 py-1 h-8"
+                  className={`w-full justify-start px-2 ${settings.compactMode ? 'py-0 h-6 text-xs' : 'py-1 h-8 text-sm'}`}
                   onClick={() => {
                     onViewChange('chat');
-                    // This would set the DM - you'll need to pass this function from parent
                     console.log('Selected DM:', dm.name);
                   }}
                 >
                   <div className="flex items-center mr-2">
-                    <Circle 
-                      className={`h-2 w-2 mr-1 ${
-                        dm.status === 'online' ? 'text-green-500 fill-current' :
-                        dm.status === 'away' ? 'text-yellow-500 fill-current' :
-                        'text-gray-400'
-                      }`} 
-                    />
-                    <Avatar className="h-5 w-5">
-                      <AvatarFallback className="text-xs">
+                    {settings.showStatusIndicators && (
+                      <Circle 
+                        className={`${settings.compactMode ? 'h-1 w-1' : 'h-2 w-2'} mr-1 ${
+                          dm.status === 'online' ? 'text-green-500 fill-current' :
+                          dm.status === 'away' ? 'text-yellow-500 fill-current' :
+                          'text-gray-400'
+                        }`} 
+                      />
+                    )}
+                    <Avatar className={settings.compactMode ? 'h-4 w-4' : 'h-5 w-5'}>
+                      <AvatarFallback className={settings.compactMode ? 'text-xs' : 'text-xs'}>
                         {dm.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <span className="text-sm truncate">{dm.name}</span>
-                  {dm.unread > 0 && (
-                    <Badge variant="destructive" className="ml-auto text-xs h-5 min-w-5">
+                  <span className="truncate">{dm.name}</span>
+                  {settings.showUnreadCounts && dm.unread > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className={`ml-auto ${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}
+                    >
                       {dm.unread}
                     </Badge>
                   )}
@@ -279,8 +328,8 @@ export function ModernSlackSidebar({
               ))}
             </div>
           </div>
-        </ScrollArea>
-      </div>
+        </>
+      )}
 
       {/* User Profile Footer */}
       <div className="border-t border-gray-200 p-4 bg-gradient-to-r from-gray-50 to-gray-100">
@@ -309,6 +358,10 @@ export function ModernSlackSidebar({
               <DropdownMenuItem onClick={onShowThemeCustomizer}>
                 <Edit3 className="h-4 w-4 mr-2" />
                 Customize theme
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowSidebarCustomizer(true)}>
+                <Settings2 className="h-4 w-4 mr-2" />
+                Customize sidebar
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onViewChange('integrations')}>
                 <Archive className="h-4 w-4 mr-2" />
@@ -349,5 +402,14 @@ export function ModernSlackSidebar({
         </div>
       </div>
     </div>
+
+    {/* Sidebar Customizer Modal */}
+    <SidebarCustomizer
+      isOpen={showSidebarCustomizer}
+      onClose={() => setShowSidebarCustomizer(false)}
+      onSettingsChange={updateSettings}
+      currentSettings={settings}
+    />
+    </>
   );
 }
