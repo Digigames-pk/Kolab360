@@ -143,23 +143,60 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <RobustTaskBoard 
-              selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
-              workspaceId={selectedWorkspace}
-            />
+            <div className="h-full">
+              <div className="p-6 border-b bg-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">Tasks - #{selectedChannel}</h2>
+                    <p className="text-gray-600">Manage tasks and project progress for this channel</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm">
+                    Channel: {selectedChannel}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <RobustTaskBoard 
+                  selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
+                  workspaceId={selectedWorkspace}
+                />
+              </div>
+            </div>
           )}
 
           {activeView === "calendar" && (
-            <EnhancedCalendar selectedChannel={selectedChannel} />
+            <div className="h-full">
+              <div className="p-6 border-b bg-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">Calendar - #{selectedChannel}</h2>
+                    <p className="text-gray-600">Schedule and track events for this channel</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm">
+                    Channel: {selectedChannel}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <EnhancedCalendar selectedChannel={selectedChannel} />
+              </div>
+            </div>
           )}
 
           {activeView === "files" && (
             <div className="h-full">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-bold mb-2">Files & Storage</h2>
-                <p className="text-gray-600">Upload, manage, and share files with your team</p>
+              <div className="p-6 border-b bg-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">Files & Storage - #{selectedChannel}</h2>
+                    <p className="text-gray-600">Upload, manage, and share files for this channel</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm">
+                    Channel: {selectedChannel}
+                  </Badge>
+                </div>
               </div>
-              <div className="p-6">
+              <div className="p-6 flex-1 overflow-hidden">
                 <WasabiFileUpload
                   onFileUpload={(files) => {
                     console.log('Files uploaded:', files);

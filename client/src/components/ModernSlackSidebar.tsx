@@ -184,14 +184,7 @@ export function ModernSlackSidebar({
           AI Assistant
         </Button>
         
-        <Button
-          variant={currentView === 'integrations' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-          onClick={() => onViewChange('integrations')}
-        >
-          <Archive className="h-4 w-4 mr-3" />
-          Integrations
-        </Button>
+
       </div>
 
       <Separator />
@@ -269,7 +262,10 @@ export function ModernSlackSidebar({
                   key={channel.id}
                   variant={selectedChannel === channel.id ? 'secondary' : 'ghost'}
                   className="w-full justify-start px-2 py-1 h-8"
-                  onClick={() => onChannelSelect(channel.id)}
+                  onClick={() => {
+                    onChannelSelect(channel.id);
+                    onViewChange('chat'); // Switch to chat view when selecting a channel
+                  }}
                 >
                   {channel.type === 'private' ? (
                     <Lock className="h-3 w-3 mr-2 text-gray-500" />
@@ -304,6 +300,11 @@ export function ModernSlackSidebar({
                   key={dm.id}
                   variant="ghost"
                   className="w-full justify-start px-2 py-1 h-8"
+                  onClick={() => {
+                    onViewChange('chat');
+                    // This would set the DM - you'll need to pass this function from parent
+                    console.log('Selected DM:', dm.name);
+                  }}
                 >
                   <div className="flex items-center mr-2">
                     <Circle 
@@ -359,6 +360,10 @@ export function ModernSlackSidebar({
               <DropdownMenuItem onClick={onShowThemeCustomizer}>
                 <Edit3 className="h-4 w-4 mr-2" />
                 Customize theme
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onViewChange('integrations')}>
+                <Archive className="h-4 w-4 mr-2" />
+                Integrations
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>

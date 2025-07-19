@@ -697,7 +697,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
 
   if (activeView === 'categories') {
     return (
-      <TaskCategoryManager 
+      <EnhancedTaskCategoryManager 
         channelId={channelId}
         onCategoriesChange={(categories) => {
           console.log('Categories updated:', categories);
