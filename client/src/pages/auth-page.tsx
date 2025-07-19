@@ -214,9 +214,9 @@ export default function AuthPage() {
                       <Button
                         type="submit"
                         className="w-full"
-                        disabled={loginMutation.isPending}
+                        disabled={isLoading}
                       >
-                        {loginMutation.isPending ? (
+                        {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Signing in...
@@ -296,9 +296,9 @@ export default function AuthPage() {
                       <Button
                         type="submit"
                         className="w-full"
-                        disabled={registerMutation.isPending}
+                        disabled={isLoading}
                       >
-                        {registerMutation.isPending ? (
+                        {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Creating account...
@@ -313,10 +313,10 @@ export default function AuthPage() {
               </TabsContent>
             </Tabs>
 
-            {(loginMutation.error || registerMutation.error) && (
+            {error && (
               <Alert variant="destructive" className="mt-4">
                 <AlertDescription>
-                  {loginMutation.error?.message || registerMutation.error?.message}
+                  {error}
                 </AlertDescription>
               </Alert>
             )}
