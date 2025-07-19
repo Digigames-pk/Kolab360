@@ -1,7 +1,7 @@
 // Centralized API utility functions
 // This ensures API calls are properly routed to the backend
 
-const API_BASE = import.meta.env.PROD ? '' : 'http://localhost:5000';
+const API_BASE = ''; // Use relative URLs for same-origin requests
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';

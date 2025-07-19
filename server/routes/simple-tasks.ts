@@ -76,8 +76,8 @@ const mockTasks = [
   }
 ];
 
-// GET /api/simple-tasks - Get all tasks
-router.get('/simple-tasks', async (req, res) => {
+// GET /api/tasks - Get all tasks
+router.get('/', async (req, res) => {
   try {
     const workspaceId = req.query.workspaceId || '1';
     const filteredTasks = mockTasks.filter(task => task.workspaceId === workspaceId);
@@ -96,8 +96,8 @@ router.get('/simple-tasks', async (req, res) => {
   }
 });
 
-// POST /api/simple-tasks - Create a new task
-router.post('/simple-tasks', async (req, res) => {
+// POST /api/tasks - Create a new task
+router.post('/', async (req, res) => {
   try {
     const { title, description, priority = 'medium', category = 'General', workspaceId = '1', assignedUserId = 3 } = req.body;
     
@@ -131,8 +131,8 @@ router.post('/simple-tasks', async (req, res) => {
   }
 });
 
-// PUT /api/simple-tasks/:id - Update a task
-router.put('/simple-tasks/:id', async (req, res) => {
+// PUT /api/tasks/:id - Update a task
+router.put('/:id', async (req, res) => {
   try {
     const taskId = req.params.id;
     const updates = req.body;
@@ -161,8 +161,8 @@ router.put('/simple-tasks/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/simple-tasks/:id - Delete a task
-router.delete('/simple-tasks/:id', async (req, res) => {
+// DELETE /api/tasks/:id - Delete a task
+router.delete('/:id', async (req, res) => {
   try {
     const taskId = req.params.id;
     const taskIndex = mockTasks.findIndex(task => task.id === taskId);

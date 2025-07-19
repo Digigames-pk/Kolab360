@@ -58,8 +58,8 @@ const mockFiles = [
   }
 ];
 
-// GET /api/simple-files - Get all files
-router.get('/simple-files', async (req, res) => {
+// GET /api/files - Get all files
+router.get('/', async (req, res) => {
   try {
     const workspaceId = req.query.workspaceId || '1';
     const category = req.query.category;
@@ -89,6 +89,7 @@ router.get('/simple-files', async (req, res) => {
 });
 
 // POST /api/simple-files/upload - Upload a file
+// POST /api/files/upload - Upload a file
 router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
