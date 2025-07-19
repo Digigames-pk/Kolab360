@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { EnhancedTaskBoard } from "@/components/EnhancedTaskBoard";
+import { MobileTaskBoard } from "@/components/MobileTaskBoard";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { FileViewer } from "@/components/FileViewer";
 import { EnhancedDocumentSystem } from "@/components/EnhancedDocumentSystem";
@@ -857,15 +858,28 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <div className="flex-1">
-              <EnhancedTaskBoard 
-                selectedChannel={selectedChannel} 
-                workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
-                onTaskClick={(task) => {
-                  setSelectedTask(task);
-                  setShowTaskModal(true);
-                }}
-              />
+            <div className="flex-1 h-full">
+              {/* Desktop: Enhanced Task Board, Mobile: Mobile Task Board */}
+              <div className="hidden md:block h-full">
+                <EnhancedTaskBoard 
+                  selectedChannel={selectedChannel} 
+                  workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
+                  onTaskClick={(task) => {
+                    setSelectedTask(task);
+                    setShowTaskModal(true);
+                  }}
+                />
+              </div>
+              <div className="block md:hidden h-full">
+                <MobileTaskBoard 
+                  selectedChannel={selectedChannel} 
+                  workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
+                  onTaskClick={(task) => {
+                    setSelectedTask(task);
+                    setShowTaskModal(true);
+                  }}
+                />
+              </div>
             </div>
           )}
 

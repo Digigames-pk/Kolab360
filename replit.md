@@ -82,6 +82,14 @@ Calendar Requirements: Advanced calendar with enhanced features, multiple view m
 5. **Direct Messaging**: Enhanced DM interface with status indicators, last message previews, and integrated voice/video call buttons
 6. **Message Input Enhancements**: Rich text input with @mentions, #channel links, emoji support, file attachment, AI assistant integration, and formatting helpers
 
+### Advanced Task Management Features
+1. **Mobile-First Task Board**: Responsive design with native mobile components, optimized touch interactions, and seamless desktop/mobile switching
+2. **Drag-and-Drop Category Management**: Full category reordering with react-beautiful-dnd, visual feedback during drag operations, and automatic persistence
+3. **Dual View System**: Kanban view for visual workflow management and List view for detailed task information with mobile-optimized layouts
+4. **Enhanced Task Creation**: Streamlined mobile-friendly task creation modal with priority selection, status assignment, and assignee management
+5. **Color-Coded Workflow**: Consistent color theming across categories with dark mode support and gradient backgrounds for visual appeal
+6. **Smart Persistence**: Per-channel category ordering, automatic save functionality, and workspace-specific customization settings
+
 ## Data Flow
 
 ### Authentication Flow
