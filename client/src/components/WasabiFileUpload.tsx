@@ -34,12 +34,20 @@ interface FileData {
   id: string;
   filename: string;
   originalName: string;
-  downloadUrl: string;
-  mimeType: string;
+  downloadUrl?: string;
+  url?: string;
+  mimeType?: string;
+  mimetype?: string;
   category: 'document' | 'image' | 'video' | 'audio' | 'other';
   size: number;
   downloadCount: number;
-  uploadedBy: {
+  uploadedBy?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  uploader?: {
     id: number;
     firstName: string;
     lastName: string;
@@ -286,7 +294,7 @@ export function WasabiFileUpload({
     }
   };
 
-  const getFileIcon = (mimeType: string, category: string) => {
+  const getFileIcon = (mimeType: string | undefined, category: string) => {
     if (category === 'image') return <FileImage className="h-5 w-5 text-blue-500" />;
     if (category === 'video') return <FileVideo className="h-5 w-5 text-purple-500" />;
     if (category === 'audio') return <FileAudio className="h-5 w-5 text-green-500" />;
@@ -467,7 +475,7 @@ export function WasabiFileUpload({
                           <div className="space-y-3">
                             <div className="flex items-start justify-between">
                               <div className="flex items-center space-x-2 flex-1 min-w-0">
-                                {getFileIcon(file.mimeType, file.category)}
+                                {getFileIcon(file.mimeType || file.mimetype, file.category)}
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium truncate text-sm">
                                     {file.originalName}
@@ -493,12 +501,12 @@ export function WasabiFileUpload({
                             <div className="flex items-center space-x-2">
                               <Avatar className="h-6 w-6">
                                 <AvatarFallback className="text-xs bg-gradient-to-br from-purple-400 to-blue-500 text-white">
-                                  {file.uploadedBy.firstName[0]}{file.uploadedBy.lastName[0]}
+                                  {file.uploadedBy?.firstName?.[0] || file.uploader?.firstName?.[0] || 'U'}{file.uploadedBy?.lastName?.[0] || file.uploader?.lastName?.[0] || 'U'}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs text-muted-foreground truncate">
-                                  {file.uploadedBy.firstName} {file.uploadedBy.lastName}
+                                  {file.uploadedBy?.firstName || file.uploader?.firstName || 'Unknown'} {file.uploadedBy?.lastName || file.uploader?.lastName || 'User'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                   {new Date(file.uploadedAt).toLocaleDateString()}

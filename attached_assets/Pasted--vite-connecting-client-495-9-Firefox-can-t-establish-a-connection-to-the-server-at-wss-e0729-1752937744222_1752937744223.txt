@@ -1,0 +1,79 @@
+
+[vite] connecting... client:495:9
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=S2OR3Xaipn3n. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+client:536
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+Mock WebSocket message sent: 
+Object { type: "join_channel", channelId: "general" }
+useWebSocket.ts:101:15
+Mock WebSocket message sent: 
+Object { type: "join_workspace", workspaceId: 1, userId: 3 }
+useWebSocket.ts:101:15
+[INFO] Home: Component mounted 
+Object { selectedChannel: "general", activeView: "chat", selectedWorkspace: 1 }
+DebugLogger.tsx:38:13
+[INFO] Home: View changed 
+Object { activeView: "chat", selectedChannel: "general" }
+DebugLogger.tsx:38:13
+[INFO] WasabiFileUpload: Component mounted 
+Object { channelId: "general", workspaceId: "1", filesCount: 0 }
+DebugLogger.tsx:38:13
+[INFO] WasabiFileUpload: Tab changed 
+Object { activeTab: "upload", filesCount: 0 }
+DebugLogger.tsx:38:13
+[INFO] Home: View changed 
+Object { activeView: "files", selectedChannel: "general" }
+DebugLogger.tsx:38:13
+Uncaught TypeError: can't access property 0, file.uploadedBy.firstName is undefined
+    children WasabiFileUpload.tsx:496
+    WasabiFileUpload WasabiFileUpload.tsx:460
+    React 11
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+WasabiFileUpload.tsx:496:36
+Uncaught TypeError: can't access property 0, file.uploadedBy.firstName is undefined
+    children WasabiFileUpload.tsx:496
+    WasabiFileUpload WasabiFileUpload.tsx:460
+    React 12
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+WasabiFileUpload.tsx:496:36
+The above error occurred in the <WasabiFileUpload> component:
+
+WasabiFileUpload@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/WasabiFileUpload.tsx:42:33
+div
+div
+div
+div
+div
+Home@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/pages/home.tsx:46:35
+Route@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=77d8f421:323:13
+ProtectedRoute@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/lib/protected-route.tsx:21:31
+Switch@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=77d8f421:379:14
+Router@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/App.tsx?v=DW5MwFvBpiAOxtk64Nnc0:33:31
+AuthProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/hooks/useAuth.ts:11:29
+Provider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=77d8f421:38:47
+TooltipProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=77d8f421:69:7
+ThemeProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/ThemeProvider.tsx:67:30
+QueryClientProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=77d8f421:2804:27
+App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. react-dom.development.js:18704:15
+Uncaught TypeError: can't access property 0, file.uploadedBy.firstName is undefined
+    children WasabiFileUpload.tsx:496
+    WasabiFileUpload WasabiFileUpload.tsx:460
+    React 9
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+WasabiFileUpload.tsx:496:36
+
+​
+
