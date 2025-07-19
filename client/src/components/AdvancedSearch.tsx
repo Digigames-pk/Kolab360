@@ -50,6 +50,8 @@ export function AdvancedSearch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   
   const [filters, setFilters] = useState<SearchFilters>({
     dateRange: "all",
@@ -60,7 +62,10 @@ export function AdvancedSearch() {
     starred: false
   });
 
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+
+  // Mock data for demonstration - in real app this would come from API
+  const mockResults: SearchResult[] = [
     {
       id: "1",
       type: "message",
@@ -109,7 +114,7 @@ export function AdvancedSearch() {
       timestamp: "2024-01-15T11:00:00Z",
       relevance: 70
     }
-  ]);
+  ];
 
   const [recentSearches] = useState([
     "sprint planning",
@@ -165,6 +170,68 @@ export function AdvancedSearch() {
     return date.toLocaleDateString();
   };
 
+  // Perform search function
+  const performSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setHasSearched(true);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Filter mock results based on search query and filters
+    let filteredResults = mockResults.filter(result => {
+      const matchesQuery = 
+        result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        result.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        result.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        result.channel?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesType = filters.type === "all" || 
+        (filters.type === "messages" && result.type === "message") ||
+        (filters.type === "files" && result.type === "file") ||
+        (filters.type === "people" && result.type === "user") ||
+        (filters.type === "channels" && result.type === "channel");
+      
+      const matchesChannel = !filters.channel || 
+        result.channel?.toLowerCase().includes(filters.channel.toLowerCase());
+      
+      const matchesAuthor = !filters.author || 
+        result.author?.toLowerCase().includes(filters.author.toLowerCase());
+      
+      return matchesQuery && matchesType && matchesChannel && matchesAuthor;
+    });
+    
+    // Sort by relevance
+    filteredResults.sort((a, b) => b.relevance - a.relevance);
+    
+    setSearchResults(filteredResults);
+    setIsSearching(false);
+  };
+
+  // Handle search on Enter key
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      performSearch();
+    }
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults([]);
+    setHasSearched(false);
+    setFilters({
+      dateRange: "all",
+      type: "all",
+      channel: "",
+      author: "",
+      hasFiles: false,
+      starred: false
+    });
+  };
+
   const filteredResults = searchResults.filter(result => {
     if (activeTab !== "all" && result.type !== activeTab) return false;
     if (filters.type !== "all" && result.type !== filters.type) return false;
@@ -201,11 +268,35 @@ export function AdvancedSearch() {
                 placeholder="Search messages, files, people..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 h-12 text-lg border-2 focus:border-blue-500"
+                onKeyPress={handleKeyPress}
+                className="pl-10 pr-20 h-12 text-lg border-2 focus:border-blue-500"
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-12 top-1/2 transform -translate-y-1/2"
+                  onClick={clearSearch}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             
-            <Dialog open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+            <Button 
+              onClick={performSearch}
+              disabled={!searchQuery.trim() || isSearching}
+              className="h-12 px-6 bg-blue-600 hover:bg-blue-700"
+            >
+              {isSearching ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Search"
+              )}
+            </Button>
+          </div>
+            
+          <Dialog open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="h-12 px-6">
                   <Filter className="h-4 w-4 mr-2" />
@@ -289,8 +380,6 @@ export function AdvancedSearch() {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
-
           {/* Quick Filters */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Quick filters:</span>

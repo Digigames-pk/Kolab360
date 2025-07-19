@@ -23,7 +23,11 @@ import {
   Laugh,
   Clock,
   Check,
-  CheckCheck
+  CheckCheck,
+  Phone,
+  Video,
+  Users,
+  Upload
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,6 +35,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -80,9 +89,13 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showCallOptions, setShowCallOptions] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // WebSocket connection
   const { isConnected, sendMessage } = useWebSocket({
@@ -291,6 +304,85 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       }
     } catch (error) {
       console.error('Failed to delete message:', error);
+    }
+  };
+
+  // Emoji functions
+  const addEmoji = (emoji: string) => {
+    setMessageText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
+  };
+
+  // File upload functions
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('channelId', channelId || '');
+    formData.append('recipientId', recipientId?.toString() || '');
+
+    try {
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const fileData = await response.json();
+        
+        // Send file message
+        const fileMessage = `📎 Shared file: ${file.name}`;
+        setMessageText(fileMessage);
+        sendChatMessage();
+      }
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+    }
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Call functions
+  const startVoiceCall = () => {
+    if (recipientId) {
+      // Simulate starting voice call
+      const callMessage = `📞 Started voice call with ${recipientName}`;
+      setMessageText(callMessage);
+      sendChatMessage();
+    } else {
+      // Channel voice call
+      const callMessage = `📞 Started voice call in #${channelId}`;
+      setMessageText(callMessage);
+      sendChatMessage();
+    }
+    setShowCallOptions(false);
+  };
+
+  const startVideoCall = () => {
+    if (recipientId) {
+      const callMessage = `📹 Started video call with ${recipientName}`;
+      setMessageText(callMessage);
+      sendChatMessage();
+    } else {
+      const callMessage = `📹 Started video call in #${channelId}`;
+      setMessageText(callMessage);
+      sendChatMessage();
+    }
+    setShowCallOptions(false);
+  };
+
+  const inviteUsers = () => {
+    if (channelId) {
+      const inviteMessage = `👥 Invited users to join #${channelId}`;
+      setMessageText(inviteMessage);
+      sendChatMessage();
     }
   };
 
@@ -563,9 +655,34 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       {/* Message Input */}
       <div className="p-4 border-t bg-background">
         <div className="flex items-end space-x-2">
-          <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-            <Plus className="h-4 w-4" />
-          </Button>
+          {/* Enhanced Action Buttons */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-blue-50">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload File
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={startVoiceCall}>
+                <Phone className="h-4 w-4 mr-2" />
+                Voice Call
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={startVideoCall}>
+                <Video className="h-4 w-4 mr-2" />
+                Video Call
+              </DropdownMenuItem>
+              {channelId && (
+                <DropdownMenuItem onClick={inviteUsers}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Invite Users
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <div className="flex-1 relative">
             <Input
@@ -581,12 +698,53 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
               autoFocus
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-gray-100">
-                <Smile className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-gray-100">
+              {/* Working Emoji Picker */}
+              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-gray-100">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-4" align="end">
+                  <div className="grid grid-cols-8 gap-2">
+                    {['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+                      '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+                      '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
+                      '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+                      '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+                      '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+                      '👍', '👎', '👏', '🙌', '🤝', '👋', '✋', '🖐️',
+                      '❤️', '💙', '💚', '💛', '🧡', '💜', '🖤', '🤍'].map((emoji) => (
+                      <Button
+                        key={emoji}
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-lg hover:bg-gray-100"
+                        onClick={() => addEmoji(emoji)}
+                      >
+                        {emoji}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              {/* Working File Upload */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0 hover:bg-gray-100"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <Paperclip className="h-4 w-4" />
               </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                hidden
+                onChange={handleFileUpload}
+                accept="*/*"
+              />
             </div>
           </div>
           
