@@ -75,14 +75,14 @@ import {
   Paperclip,
   Smile,
   Send,
+  Palette,
+  Trophy,
+  Rocket,
   FileText,
   BookOpen,
   Tag,
   Download,
   Edit3,
-  Trophy,
-  Palette,
-  Rocket,
   FolderOpen
 } from "lucide-react";
 
@@ -1241,6 +1241,72 @@ export default function Home() {
       {/* Layout Customizer Modal */}
       {showLayoutCustomizer && (
         <WorkspaceLayoutCustomizer onClose={() => setShowLayoutCustomizer(false)} />
+      )}
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={showTaskModal}
+        onClose={() => {
+          setShowTaskModal(false);
+          setSelectedTask(null);
+        }}
+        onUpdate={(updatedTask) => {
+          console.log('Task updated:', updatedTask);
+          // Handle task update logic here
+        }}
+      />
+
+      {/* File Viewer Modal */}
+      <FileViewer
+        file={selectedFile}
+        isOpen={showFileModal}
+        onClose={() => {
+          setShowFileModal(false);
+          setSelectedFile(null);
+        }}
+      />
+
+      {/* Voice/Video Call Modal */}
+      <VoiceVideoCall
+        isOpen={showVoiceCall}
+        onClose={() => setShowVoiceCall(false)}
+        callType={callType}
+        initialParticipants={selectedDM ? [selectedDM] : []}
+      />
+
+      {/* Interactive Onboarding */}
+      <InteractiveOnboarding
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={() => {
+          setShowOnboarding(false);
+          // Could trigger achievement unlock here
+        }}
+      />
+
+      {/* Gamification System */}
+      <GamificationSystem
+        isOpen={showGamification}
+        onClose={() => setShowGamification(false)}
+      />
+
+      {/* Workspace Theme Customizer */}
+      <WorkspaceThemeCustomizer
+        isOpen={showThemeCustomizer}
+        onClose={() => setShowThemeCustomizer(false)}
+        onThemeChange={(theme) => {
+          // Apply theme changes
+          console.log('Theme changed:', theme);
+        }}
+      />
+
+      {/* Enterprise Admin Panel */}
+      {user.role === 'super_admin' && (
+        <EnterpriseAdminPanel
+          isOpen={showEnterprisePanel}
+          onClose={() => setShowEnterprisePanel(false)}
+        />
       )}
     </div>
   );
