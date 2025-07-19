@@ -63,6 +63,7 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
 
@@ -226,11 +227,11 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
     }
   };
 
-  const addEvent = () => {
+  const saveEvent = () => {
     if (!newEvent.title.trim()) return;
     
-    const event: CalendarEvent = {
-      id: Date.now().toString(),
+    const eventData: CalendarEvent = {
+      id: isEditMode ? selectedEvent!.id : Date.now().toString(),
       title: newEvent.title,
       description: newEvent.description,
       date: newEvent.date,
@@ -250,7 +251,23 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
       status: "scheduled"
     };
 
-    setEvents([...events, event]);
+    if (isEditMode) {
+      // Update existing event
+      setEvents(prevEvents => prevEvents.map(event => 
+        event.id === selectedEvent!.id ? eventData : event
+      ));
+    } else {
+      // Add new event
+      setEvents([...events, eventData]);
+    }
+
+    // Set reminders for the event
+    setEventReminders(eventData);
+
+    resetForm();
+  };
+
+  const resetForm = () => {
     setNewEvent({
       title: "",
       description: "",
@@ -268,7 +285,68 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
       tags: ""
     });
     setIsDialogOpen(false);
+    setIsEditMode(false);
+    setSelectedEvent(null);
   };
+
+  const editEvent = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsEditMode(true);
+    setNewEvent({
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      type: event.type,
+      priority: event.priority,
+      attendees: event.attendees.join(', '),
+      location: event.location || "",
+      isVirtual: event.isVirtual,
+      meetingLink: event.meetingLink || "",
+      reminders: event.reminders.join(', '),
+      recurring: event.recurring || "none",
+      tags: event.tags.join(', ')
+    });
+    setIsDialogOpen(true);
+  };
+
+  const deleteEvent = (eventId: string) => {
+    setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+  };
+
+  const setEventReminders = (event: CalendarEvent) => {
+    const eventDateTime = new Date(`${event.date}T${event.startTime}`);
+    const now = new Date();
+
+    event.reminders.forEach(minutes => {
+      const reminderTime = new Date(eventDateTime.getTime() - (minutes * 60000));
+      
+      if (reminderTime > now) {
+        const timeUntilReminder = reminderTime.getTime() - now.getTime();
+        
+        setTimeout(() => {
+          // Show browser notification if permission granted
+          if (Notification.permission === 'granted') {
+            new Notification(`Event Reminder: ${event.title}`, {
+              body: `Event starts in ${minutes} minutes at ${event.startTime}`,
+              icon: '/favicon.ico'
+            });
+          }
+          
+          // Show alert as fallback
+          alert(`Reminder: ${event.title} starts in ${minutes} minutes at ${event.startTime}`);
+        }, timeUntilReminder);
+      }
+    });
+  };
+
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -403,7 +481,10 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
               </TabsList>
             </Tabs>
             
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              if (!open) resetForm();
+              setIsDialogOpen(open);
+            }}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg">
                   <Plus className="h-4 w-4 mr-2" />
@@ -412,7 +493,9 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-bold">Create New Event</DialogTitle>
+                  <DialogTitle className="text-xl font-bold">
+                    {isEditMode ? 'Edit Event' : 'Create New Event'}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -553,11 +636,11 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
                   </div>
                   
                   <div className="flex justify-end space-x-2 pt-4 border-t">
-                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    <Button variant="outline" onClick={resetForm}>
                       Cancel
                     </Button>
-                    <Button onClick={addEvent} className="bg-gradient-to-r from-indigo-500 to-purple-500">
-                      Create Event
+                    <Button onClick={saveEvent} className="bg-gradient-to-r from-indigo-500 to-purple-500">
+                      {isEditMode ? 'Update Event' : 'Create Event'}
                     </Button>
                   </div>
                 </div>
@@ -629,7 +712,7 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
                                 <div 
                                   key={event.id} 
                                   className={`text-xs p-1 rounded-md text-white cursor-pointer hover:opacity-80 flex items-center space-x-1 ${getEventTypeColor(event.type, event.priority)}`}
-                                  onClick={() => setSelectedEvent(event)}
+                                  onClick={() => editEvent(event)}
                                 >
                                   {getEventIcon(event.type)}
                                   <span className="truncate">{event.title}</span>
@@ -779,7 +862,7 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
                     <div 
                       key={event.id} 
                       className="p-3 border rounded-xl hover:shadow-md transition-all cursor-pointer bg-gradient-to-r from-white to-gray-50"
-                      onClick={() => setSelectedEvent(event)}
+                      onClick={() => editEvent(event)}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-sm line-clamp-2">{event.title}</h4>
@@ -825,7 +908,7 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
                   <div 
                     key={event.id} 
                     className="p-3 border rounded-xl hover:shadow-md transition-all cursor-pointer bg-gradient-to-r from-white to-gray-50"
-                    onClick={() => setSelectedEvent(event)}
+                    onClick={() => editEvent(event)}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-semibold text-sm line-clamp-1">{event.title}</h4>

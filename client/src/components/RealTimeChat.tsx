@@ -174,47 +174,89 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   const sendChatMessage = async () => {
     if (!messageText.trim() || !user) return;
 
-    const content = messageText.trim();
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content: messageText.trim(),
+      authorId: user.id,
+      channelId: channelId,
+      recipientId: recipientId,
+      createdAt: new Date().toISOString(),
+      author: {
+        id: user.id,
+        firstName: user.firstName || 'You',
+        lastName: user.lastName || ''
+      }
+    };
+
+    // Optimistically add message to UI immediately
+    setMessages(prev => [...prev, optimisticMessage]);
+    const currentMessage = messageText;
     setMessageText('');
+
+    // Send to WebSocket for real-time updates
+    if (isConnected) {
+      sendMessage({
+        type: channelId ? 'send_message' : 'send_direct_message',
+        channelId,
+        recipientId,
+        content: currentMessage,
+        authorId: user.id
+      });
+    }
 
     try {
       const endpoint = channelId 
         ? `/api/channels/${channelId}/messages`
         : `/api/users/${recipientId}/messages`;
         
-      const payload = {
-        content,
-        ...(replyingTo && { replyTo: replyingTo.id })
-      };
-
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          content: currentMessage,
+          authorId: user.id,
+          channelId: channelId,
+          recipientId: recipientId
+        })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
+      if (response.ok) {
+        const newMessage = await response.json();
+        
+        // Replace optimistic message with real message
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === optimisticMessage.id ? newMessage : msg
+          )
+        );
+      } else {
+        // Remove optimistic message on failure
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
+        setMessageText(currentMessage); // Restore text
       }
-
-      setReplyingTo(null);
-      // Message will be added via WebSocket
+      
+      // Stop typing indicator
+      if (isConnected) {
+        sendMessage({ type: 'user_stop_typing', channelId, userId: user.id });
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
-      setMessageText(content); // Restore message on error
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
+      setMessageText(currentMessage); // Restore text
     }
   };
 
   const handleTyping = () => {
-    if (channelId && isConnected) {
-      sendMessage({ type: 'typing', channelId });
+    if (channelId && isConnected && user) {
+      sendMessage({ type: 'user_typing', channelId, userId: user.id });
       
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
       
       typingTimeoutRef.current = setTimeout(() => {
-        sendMessage({ type: 'stop_typing', channelId });
+        sendMessage({ type: 'user_stop_typing', channelId, userId: user.id });
       }, 2000);
     }
   };
@@ -535,13 +577,14 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                 handleTyping();
               }}
               onKeyPress={handleKeyPress}
-              className="pr-20"
+              className="pr-20 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+              autoFocus
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-gray-100">
                 <Smile className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-gray-100">
                 <Paperclip className="h-4 w-4" />
               </Button>
             </div>
@@ -550,18 +593,32 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           <Button 
             onClick={sendChatMessage}
             disabled={!messageText.trim()}
-            className="h-9"
+            className="h-9 transition-all duration-200 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
+        
+        {/* Enhanced typing indicators and connection status */}
+        {typingUsers.length > 0 && (
+          <div className="mt-2 text-xs text-muted-foreground animate-pulse">
+            <div className="flex items-center space-x-1">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+              <span>{typingUsers.map(u => u.userName).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...</span>
+            </div>
+          </div>
+        )}
         
         <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
           <div className="flex items-center space-x-2">
             <span>Press Enter to send</span>
             {!isConnected && (
               <Badge variant="destructive" className="text-xs">
-                Disconnected
+                Offline Mode
               </Badge>
             )}
           </div>
@@ -571,7 +628,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             ) : (
               <Clock className="h-3 w-3 text-orange-500" />
             )}
-            <span>{isConnected ? 'Connected' : 'Connecting...'}</span>
+            <span>{isConnected ? 'Real-time' : 'Local'}</span>
           </div>
         </div>
       </div>
