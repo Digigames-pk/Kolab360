@@ -10,6 +10,8 @@ import { WorkspaceLayoutCustomizer } from "@/components/WorkspaceLayoutCustomize
 import { EnhancedSearch } from "@/components/EnhancedSearch";
 import { EnhancedAI } from "@/components/EnhancedAI";
 import { RealTimeChat } from "@/components/RealTimeChat";
+import { AdvancedThemeCustomizer } from "@/components/AdvancedThemeCustomizer";
+import { IntegrationHub } from "@/components/IntegrationHub";
 import { X } from "lucide-react";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { FileViewer } from "@/components/FileViewer";
@@ -342,8 +344,60 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2 sidebar-text">
+            <div className="flex items-center space-x-1 sidebar-text">
               <SimpleThemeSelector />
+              <AdvancedThemeCustomizer
+                currentTheme={{
+                  id: 'current-theme',
+                  name: 'Current Theme',
+                  colors: {
+                    primary: '#8b5cf6',
+                    secondary: '#a78bfa',
+                    accent: '#ec4899',
+                    background: '#ffffff',
+                    foreground: '#1f2937',
+                    muted: '#f3f4f6',
+                    mutedForeground: '#6b7280',
+                    popover: '#ffffff',
+                    card: '#ffffff',
+                    border: '#e5e7eb',
+                    input: '#f3f4f6',
+                    ring: '#8b5cf6',
+                    destructive: '#ef4444',
+                    warning: '#f59e0b',
+                    success: '#10b981'
+                  },
+                  darkMode: false,
+                  gradients: {
+                    primary: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
+                    secondary: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)'
+                  },
+                  typography: {
+                    fontFamily: 'Inter',
+                    headingFont: 'Poppins',
+                    fontSize: 'medium'
+                  },
+                  spacing: {
+                    compact: false,
+                    borderRadius: 'medium'
+                  },
+                  effects: {
+                    glassmorphism: true,
+                    animations: true,
+                    shadows: 'soft'
+                  }
+                }}
+                onThemeChange={(theme) => {
+                  console.log('Advanced theme applied:', theme);
+                  // Apply the complete theme to the workspace
+                  setWorkspaceSettings(prev => ({
+                    ...prev,
+                    advancedTheme: theme
+                  }));
+                }}
+                workspaceId={selectedWorkspace}
+              />
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </div>
           </div>
@@ -849,10 +903,13 @@ export default function Home() {
           {activeView === "search" && <EnhancedSearch />}
 
           {activeView === "integrations" && (
-            <IntegrationCenter 
-              userRole={user.role}
-              onShowAdminPanel={() => setShowIntegrationPanel(true)}
-            />
+            <div className="p-6">
+              <IntegrationHub 
+                onIntegrationToggle={(integrationId, isConnected) => {
+                  console.log(`Integration ${integrationId} ${isConnected ? 'connected' : 'disconnected'}`);
+                }}
+              />
+            </div>
           )}
 
           {activeView === "files" && (
