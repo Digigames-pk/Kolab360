@@ -782,7 +782,7 @@ export default function Home() {
 
           {activeView === "tasks" && (
             <div className="flex-1">
-              <StunningTaskBoard 
+              <EnhancedTaskBoard 
                 selectedChannel={selectedChannel} 
                 workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
                 onTaskClick={(task) => {

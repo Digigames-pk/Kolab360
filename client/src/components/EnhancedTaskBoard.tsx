@@ -430,11 +430,38 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
                           {task.title}
                         </h4>
                         <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-blue-100">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 hover:bg-blue-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTaskClick?.(task);
+                            }}
+                          >
                             <Edit3 className="h-3 w-3 text-blue-600" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-green-100">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 hover:bg-green-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onTaskClick?.(task);
+                            }}
+                          >
                             <Eye className="h-3 w-3 text-green-600" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 w-7 p-0 hover:bg-red-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Add favorite functionality
+                            }}
+                          >
+                            <MoreHorizontal className="h-3 w-3 text-gray-600" />
                           </Button>
                         </div>
                       </div>

@@ -56,7 +56,7 @@ export function EnhancedDocumentSystem({ workspaceName, documents, onDocumentsCh
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(documentSearchTerm.toLowerCase()) ||
                          doc.content.toLowerCase().includes(documentSearchTerm.toLowerCase()) ||
-                         doc.tags.some(tag => tag.toLowerCase().includes(documentSearchTerm.toLowerCase()));
+                         (doc.tags && doc.tags.length > 0 && doc.tags.some(tag => tag.toLowerCase().includes(documentSearchTerm.toLowerCase())));
     const matchesCategory = selectedCategory === "All" || doc.category === selectedCategory;
     const matchesFolder = selectedFolder === "All" || doc.folder === selectedFolder;
     return matchesSearch && matchesCategory && matchesFolder;
@@ -379,7 +379,7 @@ export function EnhancedDocumentSystem({ workspaceName, documents, onDocumentsCh
                     {doc.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
                   </p>
                   
-                  {doc.tags.length > 0 && (
+                  {doc.tags && doc.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-2">
                       {doc.tags.slice(0, 3).map((tag, index) => (
                         <Badge key={index} variant="outline" className="text-xs">

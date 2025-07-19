@@ -354,13 +354,44 @@ export function EnhancedFileUpload({
                       <Eye className="h-3 w-3 mr-1" />
                       View
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = file.url;
+                        link.download = file.name;
+                        link.click();
+                      }}
+                    >
                       <Download className="h-3 w-3 mr-1" />
                       Download
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(file.url);
+                        alert('File link copied!');
+                      }}
+                    >
                       <Share2 className="h-3 w-3" />
                     </Button>
+                    {file.uploadedBy === "You" && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-red-600 hover:bg-red-50"
+                        onClick={() => {
+                          if (confirm('Delete this file?')) {
+                            setRecentFiles(prev => prev.filter(f => f.id !== file.id));
+                          }
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
