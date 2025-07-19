@@ -1,525 +1,476 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Bell, 
-  BellOff, 
-  Moon, 
-  Settings, 
-  MessageSquare, 
-  AtSign, 
-  Hash, 
-  Users, 
-  File, 
-  Calendar,
-  Clock,
-  Check,
-  X,
-  Volume2,
-  VolumeX,
-  Smartphone,
-  Mail,
-  Monitor
-} from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Bell, Check, X, Settings, Mail, MessageSquare, Calendar, User, FileText, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/hooks/use-toast';
 
-interface Notification {
+interface InAppNotification {
   id: string;
-  type: "mention" | "message" | "file" | "calendar" | "system";
+  type: string;
   title: string;
-  content: string;
-  channel?: string;
-  author: string;
-  timestamp: string;
+  message: string;
   read: boolean;
-  priority: "low" | "medium" | "high";
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   actionUrl?: string;
+  createdAt: string;
 }
 
-interface NotificationSettings {
-  desktop: boolean;
-  mobile: boolean;
+interface NotificationPreferences {
   email: boolean;
-  sound: boolean;
-  dndEnabled: boolean;
-  dndStart: string;
-  dndEnd: string;
-  channels: Record<string, boolean>;
-  keywords: string[];
   mentions: boolean;
-  directMessages: boolean;
-  files: boolean;
+  tasks: boolean;
   calendar: boolean;
+  directMessages: boolean;
+  workspaceUpdates: boolean;
+  dailyDigest: boolean;
+  weeklyReport: boolean;
 }
 
-export function NotificationCenter() {
+const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-  
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      type: "mention",
-      title: "You were mentioned in #general",
-      content: "@you Could you review the latest design mockups when you have a chance?",
-      channel: "general",
-      author: "Sarah Wilson",
-      timestamp: "2024-01-24T10:30:00Z",
-      read: false,
-      priority: "high"
-    },
-    {
-      id: "2",
-      type: "message",
-      title: "New message in #dev-team",
-      content: "The API endpoints are ready for testing. Let me know if you encounter any issues.",
-      channel: "dev-team",
-      author: "Mike Chen",
-      timestamp: "2024-01-24T09:45:00Z",
-      read: false,
-      priority: "medium"
-    },
-    {
-      id: "3",
-      type: "file",
-      title: "File shared in #general",
-      content: "project-proposal.pdf shared by Alex Johnson",
-      channel: "general",
-      author: "Alex Johnson",
-      timestamp: "2024-01-24T09:15:00Z",
-      read: true,
-      priority: "low"
-    },
-    {
-      id: "4",
-      type: "calendar",
-      title: "Meeting reminder",
-      content: "Sprint Planning meeting starts in 15 minutes",
-      author: "Calendar",
-      timestamp: "2024-01-24T08:45:00Z",
-      read: false,
-      priority: "high"
-    },
-    {
-      id: "5",
-      type: "system",
-      title: "System update",
-      content: "New features have been added to the task board. Check them out!",
-      author: "System",
-      timestamp: "2024-01-23T16:00:00Z",
-      read: true,
-      priority: "low"
-    }
-  ]);
+  const queryClient = useQueryClient();
 
-  const [settings, setSettings] = useState<NotificationSettings>({
-    desktop: true,
-    mobile: true,
-    email: false,
-    sound: true,
-    dndEnabled: false,
-    dndStart: "22:00",
-    dndEnd: "08:00",
-    channels: {
-      general: true,
-      "dev-team": true,
-      random: false,
-      announcements: true
-    },
-    keywords: ["urgent", "bug", "deploy"],
-    mentions: true,
-    directMessages: true,
-    files: true,
-    calendar: true
+  // Fetch notifications
+  const { data: notifications = [], isLoading: notificationsLoading } = useQuery({
+    queryKey: ['/api/notifications/in-app'],
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const isDNDActive = settings.dndEnabled && isWithinDNDHours();
+  // Fetch preferences
+  const { data: preferences, isLoading: preferencesLoading } = useQuery({
+    queryKey: ['/api/notifications/preferences'],
+  });
 
-  function isWithinDNDHours(): boolean {
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const [startHour, startMin] = settings.dndStart.split(':').map(Number);
-    const [endHour, endMin] = settings.dndEnd.split(':').map(Number);
-    const startTime = startHour * 60 + startMin;
-    const endTime = endHour * 60 + endMin;
-    
-    if (startTime <= endTime) {
-      return currentTime >= startTime && currentTime <= endTime;
-    } else {
-      return currentTime >= startTime || currentTime <= endTime;
-    }
-  }
+  // Mark notification as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      const response = await fetch(`/api/notifications/in-app/${notificationId}/read`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to mark as read');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/in-app'] });
+    },
+  });
+
+  // Update preferences mutation
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (newPreferences: Partial<NotificationPreferences>) => {
+      const response = await fetch('/api/notifications/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPreferences)
+      });
+      if (!response.ok) throw new Error('Failed to update preferences');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/preferences'] });
+      toast({
+        title: "Preferences Updated",
+        description: "Your notification preferences have been saved.",
+      });
+    },
+  });
+
+  const unreadCount = notifications.filter((n: InAppNotification) => !n.read).length;
+
+  const handleMarkAsRead = (notificationId: string) => {
+    markAsReadMutation.mutate(notificationId);
+  };
+
+  const handlePreferenceChange = (key: keyof NotificationPreferences, value: boolean) => {
+    updatePreferencesMutation.mutate({ [key]: value });
+  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "mention": return <AtSign className="h-4 w-4" />;
-      case "message": return <MessageSquare className="h-4 w-4" />;
-      case "file": return <File className="h-4 w-4" />;
-      case "calendar": return <Calendar className="h-4 w-4" />;
-      case "system": return <Settings className="h-4 w-4" />;
-      default: return <Bell className="h-4 w-4" />;
+      case 'mention':
+        return <MessageSquare className="h-4 w-4" />;
+      case 'task_assigned':
+      case 'task_completed':
+        return <FileText className="h-4 w-4" />;
+      case 'calendar_invite':
+      case 'calendar_reminder':
+        return <Calendar className="h-4 w-4" />;
+      case 'direct_message':
+        return <Mail className="h-4 w-4" />;
+      default:
+        return <Bell className="h-4 w-4" />;
     }
   };
 
-  const getTypeColor = (type: string, priority: string) => {
-    const colors = {
-      mention: priority === "high" ? "bg-red-500" : "bg-blue-500",
-      message: "bg-green-500",
-      file: "bg-purple-500",
-      calendar: "bg-orange-500",
-      system: "bg-gray-500"
-    };
-    return colors[type as keyof typeof colors] || "bg-gray-500";
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent':
+        return 'bg-red-500';
+      case 'high':
+        return 'bg-orange-500';
+      case 'medium':
+        return 'bg-blue-500';
+      case 'low':
+        return 'bg-gray-500';
+      default:
+        return 'bg-gray-500';
+    }
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const filteredNotifications = notifications.filter(notification => {
-    if (activeTab === "all") return true;
-    if (activeTab === "unread") return !notification.read;
-    return notification.type === activeTab;
-  });
 
   return (
-    <div className="relative">
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <Button variant="ghost" size="sm" className="relative">
-            {isDNDActive ? (
-              <BellOff className="h-5 w-5" />
-            ) : (
-              <Bell className="h-5 w-5" />
-            )}
-            {unreadCount > 0 && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
-              >
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </Badge>
-            )}
-            {isDNDActive && (
-              <Moon className="absolute -bottom-1 -right-1 h-3 w-3 text-purple-500" />
-            )}
-          </Button>
-        </DialogTrigger>
-        
-        <DialogContent className="max-w-2xl h-[80vh] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="flex items-center space-x-2">
-                <Bell className="h-5 w-5" />
-                <span>Notifications</span>
-                {isDNDActive && (
-                  <Badge variant="outline" className="ml-2">
-                    <Moon className="h-3 w-3 mr-1" />
-                    Do Not Disturb
-                  </Badge>
-                )}
-              </DialogTitle>
-              
-              <div className="flex items-center space-x-2">
-                {unreadCount > 0 && (
-                  <Button variant="outline" size="sm" onClick={markAllAsRead}>
-                    <Check className="h-3 w-3 mr-1" />
-                    Mark all read
-                  </Button>
-                )}
-                
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Settings className="h-3 w-3 mr-1" />
-                      Settings
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="relative">
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+            >
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notification Center
+          </DialogTitle>
+          <DialogDescription>
+            Manage your notifications and communication preferences
+          </DialogDescription>
+        </DialogHeader>
+
+        <Tabs defaultValue="notifications" className="h-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="notifications">
+              Notifications
+              {unreadCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {unreadCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="notifications" className="h-full">
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Recent Notifications</CardTitle>
+                  {unreadCount > 0 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        notifications
+                          .filter((n: InAppNotification) => !n.read)
+                          .forEach((n: InAppNotification) => handleMarkAsRead(n.id));
+                      }}
+                    >
+                      Mark all read
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Notification Settings</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-6">
-                      {/* General Settings */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium">General</h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Monitor className="h-4 w-4" />
-                              <span>Desktop notifications</span>
-                            </div>
-                            <Switch 
-                              checked={settings.desktop}
-                              onCheckedChange={(checked) => setSettings({...settings, desktop: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Smartphone className="h-4 w-4" />
-                              <span>Mobile push notifications</span>
-                            </div>
-                            <Switch 
-                              checked={settings.mobile}
-                              onCheckedChange={(checked) => setSettings({...settings, mobile: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Mail className="h-4 w-4" />
-                              <span>Email notifications</span>
-                            </div>
-                            <Switch 
-                              checked={settings.email}
-                              onCheckedChange={(checked) => setSettings({...settings, email: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              {settings.sound ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                              <span>Sound alerts</span>
-                            </div>
-                            <Switch 
-                              checked={settings.sound}
-                              onCheckedChange={(checked) => setSettings({...settings, sound: checked})}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Do Not Disturb */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium">Do Not Disturb</h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Moon className="h-4 w-4" />
-                              <span>Enable Do Not Disturb</span>
-                            </div>
-                            <Switch 
-                              checked={settings.dndEnabled}
-                              onCheckedChange={(checked) => setSettings({...settings, dndEnabled: checked})}
-                            />
-                          </div>
-                          
-                          {settings.dndEnabled && (
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <label className="text-sm text-muted-foreground">Start time</label>
-                                <Select 
-                                  value={settings.dndStart} 
-                                  onValueChange={(value) => setSettings({...settings, dndStart: value})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Array.from({length: 24}, (_, i) => (
-                                      <SelectItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                                        {i.toString().padStart(2, '0')}:00
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <label className="text-sm text-muted-foreground">End time</label>
-                                <Select 
-                                  value={settings.dndEnd} 
-                                  onValueChange={(value) => setSettings({...settings, dndEnd: value})}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Array.from({length: 24}, (_, i) => (
-                                      <SelectItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                                        {i.toString().padStart(2, '0')}:00
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Content Types */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium">Notification Types</h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <AtSign className="h-4 w-4" />
-                              <span>@mentions and replies</span>
-                            </div>
-                            <Switch 
-                              checked={settings.mentions}
-                              onCheckedChange={(checked) => setSettings({...settings, mentions: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <MessageSquare className="h-4 w-4" />
-                              <span>Direct messages</span>
-                            </div>
-                            <Switch 
-                              checked={settings.directMessages}
-                              onCheckedChange={(checked) => setSettings({...settings, directMessages: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <File className="h-4 w-4" />
-                              <span>File uploads</span>
-                            </div>
-                            <Switch 
-                              checked={settings.files}
-                              onCheckedChange={(checked) => setSettings({...settings, files: checked})}
-                            />
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="h-4 w-4" />
-                              <span>Calendar reminders</span>
-                            </div>
-                            <Switch 
-                              checked={settings.calendar}
-                              onCheckedChange={(checked) => setSettings({...settings, calendar: checked})}
-                            />
-                          </div>
-                        </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-96">
+                  {notificationsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
                       </div>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 flex flex-col p-6 pt-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <TabsList className="grid w-full grid-cols-6">
-                <TabsTrigger value="all">All ({notifications.length})</TabsTrigger>
-                <TabsTrigger value="unread">Unread ({unreadCount})</TabsTrigger>
-                <TabsTrigger value="mention">Mentions</TabsTrigger>
-                <TabsTrigger value="message">Messages</TabsTrigger>
-                <TabsTrigger value="file">Files</TabsTrigger>
-                <TabsTrigger value="calendar">Calendar</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab} className="flex-1 mt-4">
-                <ScrollArea className="h-[500px]">
-                  <div className="space-y-3">
-                    {filteredNotifications.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-muted-foreground">No notifications to show</p>
-                      </div>
-                    ) : (
-                      filteredNotifications.map((notification) => (
-                        <Card 
-                          key={notification.id} 
-                          className={`cursor-pointer transition-all hover:shadow-md ${
-                            !notification.read ? 'border-l-4 border-l-blue-500 bg-blue-50/50' : ''
+                  ) : notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Bell className="h-12 w-12 text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
+                      <p className="text-sm text-gray-500">You're all caught up!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {notifications.map((notification: InAppNotification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-4 border-l-4 hover:bg-gray-50 transition-colors ${
+                            notification.read ? 'bg-white border-l-gray-200' : 'bg-blue-50 border-l-blue-500'
                           }`}
-                          onClick={() => markAsRead(notification.id)}
                         >
-                          <CardContent className="p-4">
-                            <div className="flex items-start space-x-3">
-                              <div className={`p-2 rounded-lg ${getTypeColor(notification.type, notification.priority)} text-white`}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3 flex-1">
+                              <div className={`p-2 rounded-full ${getPriorityColor(notification.priority)} text-white`}>
                                 {getNotificationIcon(notification.type)}
                               </div>
                               
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <h4 className="font-medium text-sm">{notification.title}</h4>
-                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                      {notification.content}
-                                    </p>
-                                    <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
-                                      <span>{notification.author}</span>
-                                      {notification.channel && (
-                                        <>
-                                          <span>•</span>
-                                          <Hash className="h-3 w-3" />
-                                          <span>{notification.channel}</span>
-                                        </>
-                                      )}
-                                      <span>•</span>
-                                      <Clock className="h-3 w-3" />
-                                      <span>{formatTime(notification.timestamp)}</span>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="flex items-center space-x-1 ml-2">
-                                    {!notification.read && (
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                                    )}
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteNotification(notification.id);
-                                      }}
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </Button>
-                                  </div>
+                                <div className="flex items-center justify-between">
+                                  <h4 className={`text-sm font-medium ${
+                                    notification.read ? 'text-gray-700' : 'text-gray-900'
+                                  }`}>
+                                    {notification.title}
+                                  </h4>
+                                  <span className="text-xs text-gray-500">
+                                    {formatTimeAgo(notification.createdAt)}
+                                  </span>
                                 </div>
+                                <p className={`text-sm mt-1 ${
+                                  notification.read ? 'text-gray-500' : 'text-gray-700'
+                                }`}>
+                                  {notification.message}
+                                </p>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </div>
+                            
+                            <div className="flex items-center space-x-2 ml-4">
+                              {!notification.read && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleMarkAsRead(notification.id)}
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {notification.actionUrl && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    // Navigate to the action URL
+                                    window.location.href = notification.actionUrl!;
+                                    handleMarkAsRead(notification.id);
+                                  }}
+                                >
+                                  View
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="preferences" className="h-full">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Notification Preferences</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Choose how you want to be notified about different types of activity
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-96">
+                  {preferencesLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-gray-900">Real-time Notifications</h3>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <MessageSquare className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="mentions" className="text-sm font-medium">
+                                Mentions & Replies
+                              </Label>
+                              <p className="text-xs text-gray-500">When someone mentions you or replies to your message</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="mentions"
+                            checked={preferences?.mentions ?? true}
+                            onCheckedChange={(checked) => handlePreferenceChange('mentions', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <FileText className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="tasks" className="text-sm font-medium">
+                                Tasks & Assignments
+                              </Label>
+                              <p className="text-xs text-gray-500">Task assignments, completions, and deadlines</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="tasks"
+                            checked={preferences?.tasks ?? true}
+                            onCheckedChange={(checked) => handlePreferenceChange('tasks', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Calendar className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="calendar" className="text-sm font-medium">
+                                Calendar Events
+                              </Label>
+                              <p className="text-xs text-gray-500">Meeting invites, reminders, and updates</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="calendar"
+                            checked={preferences?.calendar ?? true}
+                            onCheckedChange={(checked) => handlePreferenceChange('calendar', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Mail className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="directMessages" className="text-sm font-medium">
+                                Direct Messages
+                              </Label>
+                              <p className="text-xs text-gray-500">Private messages and conversations</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="directMessages"
+                            checked={preferences?.directMessages ?? true}
+                            onCheckedChange={(checked) => handlePreferenceChange('directMessages', checked)}
+                          />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-gray-900">Email Notifications</h3>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Mail className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="email" className="text-sm font-medium">
+                                Email Notifications
+                              </Label>
+                              <p className="text-xs text-gray-500">Receive notifications via email</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="email"
+                            checked={preferences?.email ?? true}
+                            onCheckedChange={(checked) => handlePreferenceChange('email', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <User className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="workspaceUpdates" className="text-sm font-medium">
+                                Workspace Updates
+                              </Label>
+                              <p className="text-xs text-gray-500">New members, channels, and announcements</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="workspaceUpdates"
+                            checked={preferences?.workspaceUpdates ?? true}
+                            onCheckedChange={(checked) => handlePreferenceChange('workspaceUpdates', checked)}
+                          />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-medium text-gray-900">Digest & Reports</h3>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <AlertCircle className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="dailyDigest" className="text-sm font-medium">
+                                Daily Digest
+                              </Label>
+                              <p className="text-xs text-gray-500">Summary of daily activity and updates</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="dailyDigest"
+                            checked={preferences?.dailyDigest ?? false}
+                            onCheckedChange={(checked) => handlePreferenceChange('dailyDigest', checked)}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Calendar className="h-5 w-5 text-gray-500" />
+                            <div>
+                              <Label htmlFor="weeklyReport" className="text-sm font-medium">
+                                Weekly Report
+                              </Label>
+                              <p className="text-xs text-gray-500">Weekly summary of team progress and metrics</p>
+                            </div>
+                          </div>
+                          <Switch
+                            id="weeklyReport"
+                            checked={preferences?.weeklyReport ?? false}
+                            onCheckedChange={(checked) => handlePreferenceChange('weeklyReport', checked)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
   );
-}
+};
+
+export default NotificationCenter;

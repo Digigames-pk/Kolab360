@@ -151,6 +151,51 @@ export const integrations = pgTable("integrations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Notification preferences table
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  email: boolean("email").default(true),
+  mentions: boolean("mentions").default(true),
+  tasks: boolean("tasks").default(true),
+  calendar: boolean("calendar").default(true),
+  directMessages: boolean("direct_messages").default(true),
+  workspaceUpdates: boolean("workspace_updates").default(true),
+  dailyDigest: boolean("daily_digest").default(false),
+  weeklyReport: boolean("weekly_report").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// In-app notifications table
+export const inAppNotifications = pgTable("in_app_notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  data: jsonb("data"),
+  read: boolean("read").default(false),
+  priority: varchar("priority", { length: 20 }).default("medium"),
+  actionUrl: text("action_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  readAt: timestamp("read_at"),
+});
+
+// Email notification log table
+export const emailNotifications = pgTable("email_notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("sent"),
+  messageId: varchar("message_id", { length: 255 }),
+  error: text("error"),
+  sentAt: timestamp("sent_at").defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   workspaces: many(workspaces),
@@ -257,3 +302,12 @@ export type Reaction = typeof reactions.$inferSelect;
 
 export type Integration = typeof integrations.$inferSelect;
 export type InsertIntegration = z.infer<typeof insertIntegrationSchema>;
+
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreferences = typeof notificationPreferences.$inferInsert;
+
+export type InAppNotification = typeof inAppNotifications.$inferSelect;
+export type InsertInAppNotification = typeof inAppNotifications.$inferInsert;
+
+export type EmailNotification = typeof emailNotifications.$inferSelect;
+export type InsertEmailNotification = typeof emailNotifications.$inferInsert;
