@@ -2,28 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme Variables */
+/* Modern Slack-inspired Theme Variables */
 :root {
-  /* Default theme - Dark Purple */
-  --primary: hsl(265, 69%, 58%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222.2, 84%, 4.9%);
-  --muted: hsl(210, 40%, 96%);
-  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  /* Slack-inspired Light Theme */
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 16%, 82%);
+  --secondary-foreground: hsl(215, 20%, 65%);
+  --muted: hsl(210, 40%, 98%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --accent: hsl(346, 100%, 56%);
+  --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --border: hsl(214.3, 31.8%, 91.4%);
-  --input: hsl(214.3, 31.8%, 91.4%);
-  --ring: hsl(221.2, 83.2%, 53.3%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --ring: hsl(262, 83%, 58%);
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(222.2, 84%, 4.9%);
+  --foreground: hsl(220, 13%, 18%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --card-foreground: hsl(220, 13%, 18%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --popover-foreground: hsl(220, 13%, 18%);
+  
+  /* Slack-specific colors */
+  --slack-purple: hsl(262, 83%, 58%);
+  --slack-dark-purple: hsl(272, 100%, 25%);
+  --slack-accent: hsl(346, 100%, 56%);
+  --slack-blue: hsl(195, 100%, 58%);
+  --slack-green: hsl(162, 75%, 40%);
+  --slack-sidebar: hsl(210, 33%, 97%);
+  --slack-sidebar-hover: hsl(210, 33%, 95%);
+  --slack-text: hsl(220, 13%, 18%);
+  --slack-text-muted: hsl(215, 16%, 47%);
 }
 
 .dark {

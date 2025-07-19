@@ -30,54 +30,54 @@ interface WorkspaceThemeCustomizerProps {
 
 const predefinedThemes: WorkspaceTheme[] = [
   {
-    id: 'professional-blue',
-    name: 'Professional Blue',
-    primary: '#2563eb',
-    secondary: '#3b82f6',
-    accent: '#60a5fa',
-    background: '#f8fafc',
-    sidebar: '#e2e8f0',
-    text: '#1e293b'
-  },
-  {
-    id: 'elegant-dark',
-    name: 'Elegant Dark',
-    primary: '#6366f1',
-    secondary: '#8b5cf6',
-    accent: '#a78bfa',
-    background: '#0f172a',
-    sidebar: '#1e293b',
-    text: '#f1f5f9'
-  },
-  {
-    id: 'warm-neutral',
-    name: 'Warm Neutral',
-    primary: '#059669',
-    secondary: '#10b981',
-    accent: '#34d399',
-    background: '#fefefe',
-    sidebar: '#f3f4f6',
-    text: '#374151'
-  },
-  {
-    id: 'modern-purple',
-    name: 'Modern Purple',
-    primary: '#7c3aed',
-    secondary: '#8b5cf6',
-    accent: '#a78bfa',
-    background: '#faf5ff',
-    sidebar: '#f3e8ff',
-    text: '#581c87'
-  },
-  {
-    id: 'clean-slate',
-    name: 'Clean Slate',
-    primary: '#475569',
-    secondary: '#64748b',
-    accent: '#94a3b8',
+    id: 'slack-light',
+    name: 'Slack Light',
+    primary: '#611f69',
+    secondary: '#4a154b',
+    accent: '#e01e5a',
     background: '#ffffff',
-    sidebar: '#f1f5f9',
-    text: '#334155'
+    sidebar: '#f8f9fa',
+    text: '#1d1c1d'
+  },
+  {
+    id: 'modern-blue',
+    name: 'Modern Blue',
+    primary: '#1264a3',
+    secondary: '#0084ff',
+    accent: '#36c5f0',
+    background: '#ffffff',
+    sidebar: '#f7f8fc',
+    text: '#2c2d30'
+  },
+  {
+    id: 'fresh-green',
+    name: 'Fresh Green',
+    primary: '#2eb67d',
+    secondary: '#36c5f0',
+    accent: '#e01e5a',
+    background: '#ffffff',
+    sidebar: '#f4fcf8',
+    text: '#1d1c1d'
+  },
+  {
+    id: 'warm-orange',
+    name: 'Warm Orange',
+    primary: '#ecb22e',
+    secondary: '#e01e5a',
+    accent: '#36c5f0',
+    background: '#ffffff',
+    sidebar: '#fffcf7',
+    text: '#1d1c1d'
+  },
+  {
+    id: 'cool-night',
+    name: 'Cool Night',
+    primary: '#36c5f0',
+    secondary: '#2eb67d',
+    accent: '#e01e5a',
+    background: '#1a1d29',
+    sidebar: '#232740',
+    text: '#ffffff'
   }
 ];
 
