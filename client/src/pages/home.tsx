@@ -32,6 +32,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -72,7 +79,8 @@ import {
   Edit3,
   Trophy,
   Palette,
-  Rocket
+  Rocket,
+  FolderOpen
 } from "lucide-react";
 
 export default function Home() {
@@ -336,7 +344,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Navigation Items */}
+        {/* Core Navigation - Clean and Essential */}
         <div className="px-4 py-3 space-y-1">
           <div 
             className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
@@ -361,10 +369,10 @@ export default function Home() {
           </div>
           <div 
             className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-            onClick={() => setActiveView("people")}
+            onClick={() => setActiveView("files")}
           >
-            <Users className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm sidebar-text">People & user groups</span>
+            <FolderOpen className="h-4 w-4 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Browse all files</span>
           </div>
           <div 
             className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
@@ -373,52 +381,6 @@ export default function Home() {
             <Zap className="h-4 w-4 text-purple-400 flex-shrink-0" />
             <span className="text-sm sidebar-text">AI Assistant</span>
           </div>
-          {(user.role === 'admin' || user.role === 'super_admin') && (
-            <div 
-              className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-              onClick={() => setLocation("/email-test")}
-            >
-              <Mail className="h-4 w-4 text-blue-400 flex-shrink-0" />
-              <span className="text-sm sidebar-text">Email Templates</span>
-            </div>
-          )}
-          <div 
-            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-            onClick={() => setShowGamification(true)}
-          >
-            <Trophy className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-            <span className="text-sm sidebar-text">Achievements</span>
-          </div>
-          <div 
-            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-            onClick={() => setShowThemeCustomizer(true)}
-          >
-            <Palette className="h-4 w-4 text-purple-400 flex-shrink-0" />
-            <span className="text-sm sidebar-text">Customize Theme</span>
-          </div>
-          <div 
-            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-            onClick={() => setShowWorkspaceCustomizer(true)}
-          >
-            <Settings2 className="h-4 w-4 text-blue-400 flex-shrink-0" />
-            <span className="text-sm sidebar-text">Workspace Settings</span>
-          </div>
-          <div 
-            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-            onClick={() => setShowOnboarding(true)}
-          >
-            <Rocket className="h-4 w-4 text-green-400 flex-shrink-0" />
-            <span className="text-sm sidebar-text">Getting Started</span>
-          </div>
-          {user.role === 'super_admin' && (
-            <div 
-              className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
-              onClick={() => setShowEnterprisePanel(true)}
-            >
-              <Shield className="h-4 w-4 text-red-400 flex-shrink-0" />
-              <span className="text-sm sidebar-text">Admin Panel</span>
-            </div>
-          )}
         </div>
 
         <Separator className="bg-slate-700" />
@@ -581,20 +543,66 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
-                onClick={() => setActiveView("integrations")}
-                title="Settings & Integrations"
+                onClick={() => setActiveView("people")}
+                title="People & Teams"
               >
-                <Settings className="h-4 w-4" />
+                <Users className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
-                onClick={() => logoutMutation.mutate()}
-                disabled={logoutMutation.isPending}
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+                    title="Settings & More"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => setActiveView("integrations")}>
+                    <Zap className="h-4 w-4 mr-2" />
+                    Integrations
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowThemeCustomizer(true)}>
+                    <Palette className="h-4 w-4 mr-2" />
+                    Customize Theme
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowWorkspaceCustomizer(true)}>
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    Workspace Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowGamification(true)}>
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Achievements
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowOnboarding(true)}>
+                    <Rocket className="h-4 w-4 mr-2" />
+                    Getting Started
+                  </DropdownMenuItem>
+                  {(user.role === 'admin' || user.role === 'super_admin') && (
+                    <DropdownMenuItem onClick={() => setLocation("/email-test")}>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email Templates
+                    </DropdownMenuItem>
+                  )}
+                  {user.role === 'super_admin' && (
+                    <DropdownMenuItem onClick={() => setShowEnterprisePanel(true)}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
+                  <Separator />
+                  <DropdownMenuItem 
+                    onClick={() => logoutMutation.mutate()}
+                    disabled={logoutMutation.isPending}
+                    className="text-red-600"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -621,7 +629,6 @@ export default function Home() {
                     <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
                   <h1 className="font-semibold text-lg">{selectedDM}</h1>
-                  <Badge variant="outline" className="text-xs">Direct Message</Badge>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
@@ -632,9 +639,6 @@ export default function Home() {
                   )}
                   <h1 className="font-semibold text-lg">{selectedChannel}</h1>
                   <Star className="h-4 w-4 text-muted-foreground hover:text-yellow-500 cursor-pointer transition-colors" />
-                  <Badge variant="outline" className="text-xs">
-                    {channels.find(c => c.name === selectedChannel)?.type === "private" ? "Private" : "Public"} Channel
-                  </Badge>
                 </div>
               )}
             </div>
@@ -695,15 +699,7 @@ export default function Home() {
                 <Search className="h-4 w-4" />
                 <span>Search</span>
               </Button>
-              <Button 
-                variant={activeView === "integrations" ? "default" : "ghost"} 
-                size="sm"
-                onClick={() => setActiveView("integrations")}
-                className="flex items-center space-x-2"
-              >
-                <Zap className="h-4 w-4" />
-                <span>Integrations</span>
-              </Button>
+
             </div>
           </div>
           
