@@ -462,8 +462,17 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                 </DropdownMenu>
               </div>
 
-              {/* Task Title */}
-              <h3 className="font-medium text-sm mb-2 line-clamp-2">{task.title}</h3>
+              {/* Task Title - Clickable */}
+              <h3 
+                className="font-medium text-sm mb-2 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedTask(task);
+                  setShowEditTask(true);
+                }}
+              >
+                {task.title}
+              </h3>
 
               {/* Task Description */}
               {task.description && (
@@ -635,7 +644,16 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                       <Badge variant="outline" className="text-xs">
                         {task.columnTitle}
                       </Badge>
-                      <h3 className="font-medium text-sm truncate">{task.title}</h3>
+                      <h3 
+                        className="font-medium text-sm truncate cursor-pointer hover:text-blue-600 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTask(task);
+                          setShowEditTask(true);
+                        }}
+                      >
+                        {task.title}
+                      </h3>
                     </div>
                     {task.description && (
                       <p className="text-xs text-gray-500 mt-1 truncate">{task.description}</p>

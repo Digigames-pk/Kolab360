@@ -46,6 +46,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DocumentEditModal } from '@/components/DocumentEditModal';
+import { CategoryManagerModal } from '@/components/CategoryManagerModal';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 
@@ -157,6 +159,9 @@ export function DocumentManager({ channelId, workspaceId }: DocumentManagerProps
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [showCreateDoc, setShowCreateDoc] = useState(false);
+  const [showEditDoc, setShowEditDoc] = useState(false);
+  const [editingDoc, setEditingDoc] = useState<Document | null>(null);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const { toast } = useToast();
 
   const filteredDocuments = documents.filter(doc => {
@@ -239,7 +244,11 @@ export function DocumentManager({ channelId, workspaceId }: DocumentManagerProps
                   <Eye className="h-4 w-4 mr-2" />
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={e => e.stopPropagation()}>
+                <DropdownMenuItem onClick={e => {
+                  e.stopPropagation();
+                  setEditingDoc(doc);
+                  setShowEditDoc(true);
+                }}>
                   <Edit3 className="h-4 w-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
@@ -307,14 +316,21 @@ export function DocumentManager({ channelId, workspaceId }: DocumentManagerProps
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => setShowCreateDoc(true)}
+              onClick={() => {
+                setEditingDoc(null);
+                setShowEditDoc(true);
+              }}
             >
               <Plus className="h-4 w-4 mr-2" />
               New Document
             </Button>
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowCategoryManager(true)}
+            >
+              <Folder className="h-4 w-4 mr-2" />
+              Manage Categories
             </Button>
           </div>
         </div>
@@ -514,6 +530,48 @@ export function DocumentManager({ channelId, workspaceId }: DocumentManagerProps
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Document Edit Modal */}
+      <DocumentEditModal
+        isOpen={showEditDoc}
+        document={editingDoc}
+        onClose={() => {
+          setShowEditDoc(false);
+          setEditingDoc(null);
+        }}
+        onSave={(docData) => {
+          if (editingDoc) {
+            // Update existing document
+            setDocuments(prev => prev.map(doc => 
+              doc.id === editingDoc.id ? { ...editingDoc, ...docData } : doc
+            ));
+          } else {
+            // Create new document
+            const newDoc = {
+              ...docData,
+              id: Date.now().toString(),
+              author: { id: '1', name: 'Current User', email: 'user@example.com' },
+              createdAt: new Date().toISOString(),
+              fileType: 'document' as const,
+              isStarred: false,
+              downloadCount: 0,
+              version: 1
+            };
+            setDocuments(prev => [newDoc as Document, ...prev]);
+          }
+        }}
+        categories={categories.map(c => c.name)}
+      />
+
+      {/* Category Manager Modal */}
+      <CategoryManagerModal
+        isOpen={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
+        categories={categories}
+        onCategoriesChange={(newCategories) => {
+          setCategories(newCategories);
+        }}
+      />
     </div>
   );
 }
