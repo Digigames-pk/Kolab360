@@ -206,16 +206,7 @@ export function ModernTopBar({
             <Zap className="h-4 w-4 mr-2 text-purple-500" />
             AI Assistant
           </Button>
-          
-          {/* Debug Test Button - Remove in production */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewChange && onViewChange('test')}
-            className="h-8 ml-4 border-red-200 text-red-600"
-          >
-            Debug Test
-          </Button>
+
         </div>
       </div>
     </div>
