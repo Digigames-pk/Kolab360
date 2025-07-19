@@ -26,7 +26,7 @@ const mockFiles = [
     uploadedBy: 1,
     uploadedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     workspaceId: '1',
-    channelId: 'general',
+    channelId: '550e8400-e29b-41d4-a716-446655440000',
     category: 'documents',
     url: '/uploads/project-specs.pdf'
   },
@@ -39,7 +39,7 @@ const mockFiles = [
     uploadedBy: 3,
     uploadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
     workspaceId: '1',
-    channelId: 'general',
+    channelId: '550e8400-e29b-41d4-a716-446655440000',
     category: 'images',
     url: '/uploads/team-photo.jpg'
   },
@@ -52,7 +52,7 @@ const mockFiles = [
     uploadedBy: 1,
     uploadedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
     workspaceId: '1',
-    channelId: 'general',
+    channelId: '550e8400-e29b-41d4-a716-446655440000',
     category: 'documents',
     url: '/uploads/budget-analysis.xlsx'
   }

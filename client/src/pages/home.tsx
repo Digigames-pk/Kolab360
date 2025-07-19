@@ -891,7 +891,7 @@ export default function Home() {
 
           {activeView === "tasks" && (
             <RobustTaskBoard 
-              selectedChannel={selectedChannel}
+              selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
               workspaceId={selectedWorkspace}
             />
           )}
@@ -920,7 +920,7 @@ export default function Home() {
               </div>
               <div className="flex-1">
                 <WasabiFileUpload 
-                  channelId={selectedChannel || 'general'}
+                  channelId={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
                   workspaceId={selectedWorkspace.toString()}
                 />
               </div>

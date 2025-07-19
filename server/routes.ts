@@ -225,7 +225,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/channels/:id/messages', async (req: any, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const messages = await storage.getChannelMessages(req.params.id, limit);
+      
+      // Handle "general" channel as UUID
+      let channelId = req.params.id;
+      if (channelId === 'general') {
+        channelId = '550e8400-e29b-41d4-a716-446655440000'; // Default UUID for general channel
+      }
+      
+      const messages = await storage.getChannelMessages(channelId, limit);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -236,9 +243,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/channels/:id/messages', async (req: any, res) => {
     try {
       const userId = req.user?.id || 3; // Default to user ID 3 for development
+      
+      // Handle "general" channel as UUID
+      let channelId = req.params.id;
+      if (channelId === 'general') {
+        channelId = '550e8400-e29b-41d4-a716-446655440000'; // Default UUID for general channel
+      }
+      
       const messageData = insertMessageSchema.parse({
         ...req.body,
-        channelId: req.params.id,
+        channelId: channelId,
       });
       
       const message = await storage.createMessage({
@@ -254,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       connections.forEach((ws) => {
-        if (ws.readyState === WebSocket.OPEN && ws.channelId === req.params.id) {
+        if (ws.readyState === WebSocket.OPEN && ws.channelId === channelId) {
           ws.send(JSON.stringify({
             type: 'new_message',
             data: messageWithAuthor,
@@ -782,7 +796,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             break;
             
           case 'join_channel':
-            ws.channelId = message.channelId;
+            // Handle "general" channel as UUID
+            let channelId = message.channelId;
+            if (channelId === 'general') {
+              channelId = '550e8400-e29b-41d4-a716-446655440000';
+            }
+            ws.channelId = channelId;
             break;
             
           case 'typing':

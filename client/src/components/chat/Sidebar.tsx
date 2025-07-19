@@ -323,7 +323,7 @@ export default function Sidebar({
                       ) : (
                         <Hash className="h-4 w-4" />
                       )}
-                      <span className="text-sm truncate flex-1">{channel.name || 'Unnamed Channel'}</span>
+                      <span className="text-sm truncate flex-1">{channel.name || 'general'}</span>
                     </div>
                   </div>
                 ))}
