@@ -24,7 +24,12 @@ import {
   Phone,
   Video,
   UserPlus,
-  Shield
+  Shield,
+  MessageSquare,
+  CheckSquare,
+  Calendar as CalendarIcon,
+  Upload,
+  Zap
 } from 'lucide-react';
 
 interface ModernTopBarProps {
@@ -32,13 +37,15 @@ interface ModernTopBarProps {
   currentView: string;
   onShowSearch: () => void;
   onShowNotifications: () => void;
+  onViewChange?: (view: string) => void;
 }
 
 export function ModernTopBar({
   selectedChannel,
   currentView,
   onShowSearch,
-  onShowNotifications
+  onShowNotifications,
+  onViewChange
 }: ModernTopBarProps) {
   const getChannelInfo = () => {
     const channels = {
@@ -64,56 +71,43 @@ export function ModernTopBar({
   };
 
   return (
-    <div className="h-16 border-b border-gray-200 bg-white">
-      <div className="h-full flex items-center justify-between px-6">
-        {/* Left side - Channel/View info */}
+    <div className="border-b border-gray-200 bg-white">
+      {/* Main Header */}
+      <div className="h-16 flex items-center justify-between px-6">
+        {/* Left side - Channel info */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            {currentView === 'chat' ? (
-              <>
-                {channelInfo.isPrivate ? (
-                  <Lock className="h-5 w-5 text-gray-500" />
-                ) : (
-                  <Hash className="h-5 w-5 text-gray-500" />
-                )}
-                <h1 className="text-xl font-bold text-gray-900">
-                  {channelInfo.name}
-                </h1>
-              </>
+            {channelInfo.isPrivate ? (
+              <Lock className="h-5 w-5 text-gray-500" />
             ) : (
-              <h1 className="text-xl font-bold text-gray-900">
-                {getViewTitle()}
-              </h1>
+              <Hash className="h-5 w-5 text-gray-500" />
             )}
+            <h1 className="text-xl font-bold text-gray-900">
+              {channelInfo.name}
+            </h1>
             <Star className="h-4 w-4 text-gray-400 hover:text-yellow-500 cursor-pointer transition-colors" />
           </div>
           
-          {currentView === 'chat' && (
-            <div className="hidden md:flex items-center space-x-4 text-sm text-gray-500">
-              <span>{channelInfo.description}</span>
-              <Badge variant="secondary" className="text-xs">
-                <Users className="h-3 w-3 mr-1" />
-                {channelInfo.members}
-              </Badge>
-            </div>
-          )}
+          <div className="hidden md:flex items-center space-x-4 text-sm text-gray-500">
+            <span>{channelInfo.description}</span>
+            <Badge variant="secondary" className="text-xs">
+              <Users className="h-3 w-3 mr-1" />
+              {channelInfo.members}
+            </Badge>
+          </div>
         </div>
 
         {/* Right side - Actions */}
         <div className="flex items-center space-x-2">
-          {currentView === 'chat' && (
-            <>
-              <Button variant="ghost" size="sm">
-                <Phone className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Video className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <UserPlus className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+          <Button variant="ghost" size="sm">
+            <Phone className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Video className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <UserPlus className="h-4 w-4" />
+          </Button>
           
           <Button variant="ghost" size="sm" onClick={onShowSearch}>
             <Search className="h-4 w-4" />
@@ -157,6 +151,61 @@ export function ModernTopBar({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+      </div>
+      
+      {/* Channel Navigation Tabs */}
+      <div className="px-6 py-2 border-t border-gray-100 bg-gray-50">
+        <div className="flex items-center space-x-1">
+          <Button
+            variant={currentView === 'chat' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onViewChange && onViewChange('chat')}
+            className="h-8"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Messages
+          </Button>
+          
+          <Button
+            variant={currentView === 'tasks' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onViewChange && onViewChange('tasks')}
+            className="h-8"
+          >
+            <CheckSquare className="h-4 w-4 mr-2" />
+            Tasks
+          </Button>
+          
+          <Button
+            variant={currentView === 'calendar' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onViewChange && onViewChange('calendar')}
+            className="h-8"
+          >
+            <CalendarIcon className="h-4 w-4 mr-2" />
+            Calendar
+          </Button>
+          
+          <Button
+            variant={currentView === 'files' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onViewChange && onViewChange('files')}
+            className="h-8"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Files
+          </Button>
+          
+          <Button
+            variant={currentView === 'ai' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onViewChange && onViewChange('ai')}
+            className="h-8"
+          >
+            <Zap className="h-4 w-4 mr-2 text-purple-500" />
+            AI Assistant
+          </Button>
         </div>
       </div>
     </div>

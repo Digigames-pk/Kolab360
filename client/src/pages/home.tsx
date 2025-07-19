@@ -130,6 +130,7 @@ export default function Home() {
           currentView={activeView}
           onShowSearch={() => setShowSearch(true)}
           onShowNotifications={() => setShowNotifications(true)}
+          onViewChange={setActiveView}
         />
 
         {/* Content Area */}

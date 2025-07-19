@@ -136,58 +136,7 @@ export function ModernSlackSidebar({
         </DropdownMenu>
       </div>
 
-      {/* Navigation Icons */}
-      <div className="px-4 py-3 space-y-1">
-        <Button
-          variant={currentView === 'chat' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-          onClick={() => onViewChange('chat')}
-        >
-          <MessageSquare className="h-4 w-4 mr-3" />
-          Messages
-          <Badge variant="secondary" className="ml-auto">12</Badge>
-        </Button>
-        
-        <Button
-          variant={currentView === 'tasks' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-          onClick={() => onViewChange('tasks')}
-        >
-          <CheckSquare className="h-4 w-4 mr-3" />
-          Tasks
-        </Button>
-        
-        <Button
-          variant={currentView === 'calendar' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-          onClick={() => onViewChange('calendar')}
-        >
-          <CalendarIcon className="h-4 w-4 mr-3" />
-          Calendar
-        </Button>
-        
-        <Button
-          variant={currentView === 'files' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-          onClick={() => onViewChange('files')}
-        >
-          <Upload className="h-4 w-4 mr-3" />
-          Files
-        </Button>
-        
-        <Button
-          variant={currentView === 'ai' ? 'default' : 'ghost'}
-          className="w-full justify-start"
-          onClick={() => onViewChange('ai')}
-        >
-          <Zap className="h-4 w-4 mr-3 text-purple-500" />
-          AI Assistant
-        </Button>
-        
 
-      </div>
-
-      <Separator />
 
       {/* Quick Actions */}
       <div className="px-4 py-3 space-y-1">
