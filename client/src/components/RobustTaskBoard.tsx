@@ -43,6 +43,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CreateTaskModal, EditTaskModal } from './TaskModals';
 import { EnhancedTaskCategoryManager } from './EnhancedTaskCategoryManager';
+import { logger } from './DebugLogger';
 
 interface Task {
   id: string;
@@ -224,12 +225,29 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activeView, setActiveView] = useState<'board' | 'categories'>('board');
 
+  // Logging
+  useEffect(() => {
+    logger.log('info', 'RobustTaskBoard', 'Component mounted', { 
+      channelId, 
+      workspaceId, 
+      viewMode,
+      activeView,
+      columnsCount: columns.length
+    });
+  }, []);
+
+  useEffect(() => {
+    logger.log('info', 'RobustTaskBoard', 'View mode changed', { viewMode, activeView });
+  }, [viewMode, activeView]);
+
   // API functions
   const loadTasks = async () => {
     try {
-      const response = await fetch(`/api/simple-tasks?workspaceId=${workspaceId}`);
+      logger.log('info', 'RobustTaskBoard', 'Loading tasks', { channelId, workspaceId });
+      const response = await fetch(`/api/tasks?workspaceId=${workspaceId}`);
       if (response.ok) {
         const tasks = await response.json();
+        logger.log('info', 'RobustTaskBoard', 'Tasks loaded', { tasksCount: tasks.length });
         
         // Convert API tasks to our format and organize by status
         const tasksByStatus = {
@@ -239,7 +257,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
           'done': []
         };
         
-        tasks.forEach(task => {
+        tasks.forEach((task: any) => {
           const formattedTask = {
             id: task.id,
             title: task.title,
@@ -262,9 +280,11 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
           ...col,
           tasks: tasksByStatus[col.id] || []
         })));
+      } else {
+        logger.log('error', 'RobustTaskBoard', 'Failed to load tasks', { status: response.status });
       }
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      logger.log('error', 'RobustTaskBoard', 'Error loading tasks', error);
     }
   };
 
@@ -543,33 +563,37 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
     );
   };
 
-  const KanbanView = () => (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full"
-           style={{ gridTemplateRows: 'minmax(0, 1fr)' }}>
-        {columns.map((column) => {
-          const filteredTasks = getFilteredTasks(column.tasks);
-          
-          return (
-            <div key={column.id} className="flex flex-col h-full min-w-0">
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-700 flex items-center">
-                    {column.title}
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      {filteredTasks.length}
-                    </Badge>
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedColumn(column.id);
-                      setShowCreateTask(true);
-                    }}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+  const KanbanView = () => {
+    logger.log('info', 'RobustTaskBoard', 'Rendering Kanban view', { columnsCount: columns.length });
+    
+    return (
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="h-full flex space-x-6 overflow-x-auto overflow-y-hidden">
+          {columns.map((column) => {
+            const filteredTasks = getFilteredTasks(column.tasks);
+            
+            return (
+              <div key={column.id} className="min-w-80 flex flex-col h-full">
+                <div className="flex-shrink-0 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-700 flex items-center">
+                      {column.title}
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {filteredTasks.length}
+                      </Badge>
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        logger.log('info', 'RobustTaskBoard', 'Creating new task', { column: column.id });
+                        setSelectedColumn(column.id);
+                        setShowCreateTask(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 
                 <Droppable droppableId={column.id}>
@@ -577,11 +601,12 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className={`flex-1 min-h-0 p-3 rounded-lg border-2 border-dashed transition-colors overflow-y-auto ${
+                      className={`flex-1 p-3 rounded-lg border-2 border-dashed transition-colors overflow-y-auto ${
                         snapshot.isDraggingOver 
                           ? 'border-blue-400 bg-blue-50' 
                           : `${column.color}`
                       }`}
+                      style={{ minHeight: '400px', maxHeight: 'calc(100vh - 350px)' }}
                     >
                       {filteredTasks.map((task, index) => (
                         <TaskCard key={task.id} task={task} index={index} />
@@ -598,21 +623,24 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                   )}
                 </Droppable>
               </div>
-            </div>
-          );
-        })}
-      </div>
-    </DragDropContext>
-  );
+            );
+          })}
+        </div>
+      </DragDropContext>
+    );
+  };
 
   const ListView = () => {
     const allTasks = columns.flatMap(column => 
       getFilteredTasks(column.tasks).map(task => ({ ...task, columnTitle: column.title }))
     );
 
+    logger.log('info', 'RobustTaskBoard', 'Rendering List view', { tasksCount: allTasks.length });
+
     return (
-      <div className="space-y-2 h-full overflow-y-auto">
-        {allTasks.map((task) => {
+      <div className="h-full overflow-y-auto">
+        <div className="space-y-2 pb-6">
+          {allTasks.map((task) => {
           const PriorityIcon = PRIORITY_ICONS[task.priority];
           
           return (
@@ -684,13 +712,14 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
           );
         })}
         
-        {allTasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-            <CheckCircle2 className="h-12 w-12 mb-4" />
-            <h3 className="text-lg font-medium mb-2">No tasks found</h3>
-            <p className="text-sm">Try adjusting your search or filters</p>
-          </div>
-        )}
+          {allTasks.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <CheckCircle2 className="h-12 w-12 mb-4" />
+              <h3 className="text-lg font-medium mb-2">No tasks found</h3>
+              <p className="text-sm">Try adjusting your search or filters</p>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -709,7 +738,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="border-b bg-white p-6">
+      <div className="border-b bg-white p-6 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div>
             {activeView === 'categories' && (
@@ -813,18 +842,21 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
       </div>
 
       {/* Task Board Content */}
-      <div className="flex-1 overflow-hidden p-6">
+      <div className="flex-1 overflow-hidden">
         {activeView === 'categories' ? (
-          <EnhancedTaskCategoryManager 
-            channelId={selectedChannel || 'general'}
-            onCategoriesChange={(cats) => {
-              // Update categories and refresh tasks
-              loadTasks();
-            }}
-            onBack={() => setActiveView('board')}
-          />
+          <div className="h-full p-6 overflow-y-auto">
+            <EnhancedTaskCategoryManager 
+              channelId={selectedChannel || 'general'}
+              onCategoriesChange={(cats) => {
+                logger.log('info', 'RobustTaskBoard', 'Categories updated', cats);
+                // Update categories and refresh tasks
+                loadTasks();
+              }}
+              onBack={() => setActiveView('board')}
+            />
+          </div>
         ) : (
-          <div className="h-full">
+          <div className="h-full p-6">
             {viewMode === 'kanban' ? <KanbanView /> : <ListView />}
           </div>
         )}

@@ -21,6 +21,8 @@ import { InteractiveOnboarding } from '@/components/InteractiveOnboarding';
 import { GamificationSystem } from '@/components/GamificationSystem';
 import { EnterpriseAdminPanel } from '@/components/EnterpriseAdminPanel';
 import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
+import { DebugLogger, logger } from '@/components/DebugLogger';
+import { SystemTester } from '@/components/SystemTester';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -29,6 +31,20 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [currentTheme, setCurrentTheme] = useState('slack-light');
+
+  // Component mount logging
+  useEffect(() => {
+    logger.log('info', 'Home', 'Component mounted', { 
+      selectedChannel, 
+      activeView, 
+      selectedWorkspace 
+    });
+  }, []);
+
+  // View change logging
+  useEffect(() => {
+    logger.log('info', 'Home', 'View changed', { activeView, selectedChannel });
+  }, [activeView, selectedChannel]);
   
   // Modal states
   const [showSearch, setShowSearch] = useState(false);
@@ -123,7 +139,7 @@ export default function Home() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col bg-white overflow-hidden">
         {/* Modern Top Bar */}
         <ModernTopBar
           selectedChannel={selectedChannel}
@@ -156,7 +172,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-hidden bg-gray-50">
                 <RobustTaskBoard 
                   selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
                   workspaceId={selectedWorkspace}
@@ -212,9 +228,52 @@ export default function Home() {
             </div>
           )}
 
-          {activeView === "ai" && <EnhancedAI />}
+          {activeView === "ai" && (
+            <div className="h-full">
+              <div className="p-6 border-b bg-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">AI Assistant - #{selectedChannel}</h2>
+                    <p className="text-gray-600">AI-powered features and automation for this channel</p>
+                  </div>
+                  <Badge variant="secondary" className="text-sm">
+                    Channel: {selectedChannel}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <EnhancedAI
+                  channelId={selectedChannel}
+                  workspaceId={selectedWorkspace}
+                />
+              </div>
+            </div>
+          )}
 
-          {activeView === "search" && <EnhancedSearch />}
+          {activeView === "search" && (
+            <div className="h-full">
+              <div className="p-6 border-b bg-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-2">Search Results</h2>
+                    <p className="text-gray-600">Find messages, files, and content across channels</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <EnhancedSearch />
+              </div>
+            </div>
+          )}
+
+          {activeView === "test" && (
+            <div className="h-full p-6">
+              <SystemTester 
+                onViewChange={setActiveView}
+                activeView={activeView}
+              />
+            </div>
+          )}
 
           {activeView === "integrations" && (
             <div className="p-6">
@@ -360,6 +419,9 @@ export default function Home() {
           onClose={() => setShowEnterprisePanel(false)}
         />
       )}
+
+      {/* Debug Logger */}
+      <DebugLogger />
     </div>
   );
 }

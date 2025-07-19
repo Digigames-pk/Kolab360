@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { logger } from './DebugLogger';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +74,19 @@ export function WasabiFileUpload({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("upload");
+
+  // Logging
+  useEffect(() => {
+    logger.log('info', 'WasabiFileUpload', 'Component mounted', { 
+      channelId, 
+      workspaceId, 
+      filesCount: files.length 
+    });
+  }, []);
+
+  useEffect(() => {
+    logger.log('info', 'WasabiFileUpload', 'Tab changed', { activeTab, filesCount: files.length });
+  }, [activeTab, files.length]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 

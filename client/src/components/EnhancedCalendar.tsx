@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { logger } from './DebugLogger';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,19 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+
+  // Logging
+  useEffect(() => {
+    logger.log('info', 'EnhancedCalendar', 'Component mounted', { 
+      selectedChannel, 
+      view, 
+      eventsCount: events.length 
+    });
+  }, []);
+
+  useEffect(() => {
+    logger.log('info', 'EnhancedCalendar', 'View changed', { view, currentDate });
+  }, [view, currentDate]);
   
   const [events, setEvents] = useState<CalendarEvent[]>([
     {
