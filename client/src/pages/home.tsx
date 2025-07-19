@@ -18,6 +18,7 @@ import { FileViewer } from "@/components/FileViewer";
 import { EnhancedDocumentSystem } from "@/components/EnhancedDocumentSystem";
 import { EnhancedCalendar } from "@/components/EnhancedCalendar";
 import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
+import { UnifiedThemeProvider } from "@/components/UnifiedThemeProvider";
 import { IntegrationCenter } from "@/components/IntegrationCenter";
 import { AdminIntegrationPanel } from "@/components/AdminIntegrationPanel";
 import { StunningTaskBoard } from "@/components/StunningTaskBoard";
@@ -279,7 +280,8 @@ export default function Home() {
   );
 
   return (
-    <div className="flex h-screen bg-background">
+    <UnifiedThemeProvider>
+      <div className="flex h-screen bg-background">
       {/* Workspace Switcher Sidebar */}
       <div className="w-16 bg-slate-900 flex flex-col items-center py-3 space-y-2">
         {workspaces.map((workspace) => (
@@ -644,6 +646,9 @@ export default function Home() {
                   <DropdownMenuItem onClick={() => setShowThemeCustomizer(true)}>
                     <Palette className="h-4 w-4 mr-2" />
                     Customize Theme
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <SimpleThemeSelector />
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowLayoutCustomizer(true)}>
                     <Settings2 className="h-4 w-4 mr-2" />
@@ -1262,5 +1267,6 @@ export default function Home() {
         />
       )}
     </div>
+    </UnifiedThemeProvider>
   );
 }

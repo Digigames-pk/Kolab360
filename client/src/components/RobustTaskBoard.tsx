@@ -672,11 +672,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                         <DropdownMenuItem 
                           className="text-red-600"
                           onClick={() => {
-                            // Delete task from columns
-                            setColumns(prev => prev.map(col => ({
-                              ...col,
-                              tasks: col.tasks.filter(t => t.id !== task.id)
-                            })));
+                            onTaskDelete(task.id);
                           }}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />

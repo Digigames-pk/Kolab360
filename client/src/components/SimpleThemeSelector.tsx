@@ -1,70 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Palette, Check } from "lucide-react";
-
-const themes = [
-  {
-    id: "dark-purple",
-    name: "Dark Purple",
-    primary: "#8b5cf6",
-    preview: "bg-purple-500"
-  },
-  {
-    id: "ocean-blue",
-    name: "Ocean Blue", 
-    primary: "#3b82f6",
-    preview: "bg-blue-500"
-  },
-  {
-    id: "forest-green",
-    name: "Forest Green",
-    primary: "#10b981",
-    preview: "bg-emerald-500"
-  },
-  {
-    id: "sunset-orange",
-    name: "Sunset Orange",
-    primary: "#f97316",
-    preview: "bg-orange-500"
-  },
-  {
-    id: "midnight-blue",
-    name: "Midnight Blue",
-    primary: "#1e40af",
-    preview: "bg-blue-700"
-  }
-];
+import { useTheme } from "./UnifiedThemeProvider";
 
 export function SimpleThemeSelector() {
-  const [currentTheme, setCurrentTheme] = useState(() => {
-    return localStorage.getItem("theme") || "dark-purple";
-  });
-
-  const applyTheme = (themeId: string) => {
-    const theme = themes.find(t => t.id === themeId);
-    if (!theme) return;
-
-    const root = document.documentElement;
-    
-    // Apply primary color to CSS variables
-    root.style.setProperty('--primary-color', theme.primary);
-    
-    // Apply to button styles directly
-    const buttons = document.querySelectorAll('[data-theme-target="primary"]');
-    buttons.forEach(button => {
-      (button as HTMLElement).style.backgroundColor = theme.primary;
-    });
-
-    localStorage.setItem("theme", themeId);
-    setCurrentTheme(themeId);
-  };
-
-  useEffect(() => {
-    applyTheme(currentTheme);
-  }, [currentTheme]);
-
-  const currentThemeData = themes.find(t => t.id === currentTheme);
+  const { theme: currentTheme, setTheme, availableThemes } = useTheme();
 
   return (
     <Popover>
@@ -83,19 +24,27 @@ export function SimpleThemeSelector() {
           </div>
           
           <div className="grid grid-cols-1 gap-2">
-            {themes.map((theme) => (
+            {availableThemes.map((themeOption) => (
               <div
-                key={theme.id}
+                key={themeOption.id}
                 className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-accent ${
-                  currentTheme === theme.id ? 'border-primary bg-accent' : 'border-border'
+                  currentTheme === themeOption.id ? 'border-primary bg-accent' : 'border-border'
                 }`}
-                onClick={() => applyTheme(theme.id)}
+                onClick={() => setTheme(themeOption.id)}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-6 h-6 rounded-full ${theme.preview}`} />
-                  <span className="font-medium">{theme.name}</span>
+                  <div 
+                    className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                    style={{ backgroundColor: themeOption.primary }}
+                  />
+                  <div>
+                    <p className="font-medium text-sm">{themeOption.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Primary color theme
+                    </p>
+                  </div>
                 </div>
-                {currentTheme === theme.id && (
+                {currentTheme === themeOption.id && (
                   <Check className="h-4 w-4 text-primary" />
                 )}
               </div>

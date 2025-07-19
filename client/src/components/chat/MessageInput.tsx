@@ -21,13 +21,17 @@ interface MessageInputProps {
   onSendMessage: (content: string, messageType?: string, metadata?: any) => void;
   onTyping: (isTyping: boolean) => void;
   workspaceId: string;
+  channelId?: string;
+  selectedUserId?: string;
 }
 
 export default function MessageInput({ 
   placeholder, 
   onSendMessage, 
   onTyping, 
-  workspaceId 
+  workspaceId,
+  channelId,
+  selectedUserId
 }: MessageInputProps) {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
@@ -156,10 +160,36 @@ export default function MessageInput({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message.trim());
+    if (!message.trim()) return;
+
+    const trimmedMessage = message.trim();
+    
+    try {
+      // Send the message via API
+      const endpoint = selectedUserId ? '/api/messages/direct' : `/api/channels/${channelId}/messages`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: trimmedMessage,
+          recipientId: selectedUserId,
+          channelId: channelId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      // Also call the parent handler
+      onSendMessage(trimmedMessage);
+      
+      // Clear the input
       setMessage("");
       setShowAiSuggestion(false);
       setIsTyping(false);
@@ -168,6 +198,13 @@ export default function MessageInput({
       if (inputRef.current) {
         inputRef.current.style.height = "auto";
       }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
