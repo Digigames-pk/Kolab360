@@ -15,6 +15,7 @@ import { AdvancedSearch } from '@/components/AdvancedSearch';
 import { IntegrationHub } from '@/components/IntegrationHub';
 import NotificationCenter from '@/components/NotificationCenter';
 import EmailTestCenter from '@/components/EmailTestCenter';
+import PinningSystem, { PinButton } from '@/components/PinningSystem';
 import { WorkspaceThemeCustomizer } from '@/components/WorkspaceThemeCustomizer';
 import { TaskDetailModal } from '@/components/TaskDetailModal';
 import { FileViewer } from '@/components/FileViewer';

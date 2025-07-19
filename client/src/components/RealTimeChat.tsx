@@ -382,7 +382,14 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       });
 
       if (response.ok) {
-        const fileData = await response.json();
+        const responseText = await response.text();
+        let fileData;
+        try {
+          fileData = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Invalid JSON response:', responseText);
+          throw new Error('Invalid response from server');
+        }
         
         // Create message with file attachment using the actual file data
         const endpoint = channelId 
