@@ -17,7 +17,7 @@ import { IntegrationHub } from '@/components/IntegrationHub';
 import { WorkspaceThemeCustomizer } from '@/components/WorkspaceThemeCustomizer';
 import { TaskDetailModal } from '@/components/TaskDetailModal';
 import { FileViewer } from '@/components/FileViewer';
-import { VoiceVideoCall } from '@/components/VoiceVideoCall';
+import { WebRTCVoiceVideoCall } from '@/components/WebRTCVoiceVideoCall';
 import { InteractiveOnboarding } from '@/components/InteractiveOnboarding';
 import { GamificationSystem } from '@/components/GamificationSystem';
 import { EnterpriseAdminPanel } from '@/components/EnterpriseAdminPanel';
@@ -407,11 +407,11 @@ export default function Home() {
       />
 
       {/* Voice/Video Call Modal */}
-      <VoiceVideoCall
+      <WebRTCVoiceVideoCall
         isOpen={showVoiceCall}
         onClose={() => setShowVoiceCall(false)}
         callType={callType}
-        initialParticipants={selectedDM ? [selectedDM] : []}
+        channelName={selectedChannel}
       />
 
       {/* Interactive Onboarding */}

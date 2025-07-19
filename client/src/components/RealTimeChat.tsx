@@ -334,10 +334,39 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       if (response.ok) {
         const fileData = await response.json();
         
-        // Send file message
-        const fileMessage = `📎 Shared file: ${file.name}`;
-        setMessageText(fileMessage);
-        sendChatMessage();
+        // Send file message with file data
+        const fileMessage = {
+          content: `📎 Shared file: ${file.name}`,
+          fileUrl: fileData.url || `/api/files/${fileData.id}`,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size
+        };
+        
+        // Create message with file attachment
+        const endpoint = channelId 
+          ? `/api/channels/${channelId}/messages`
+          : `/api/messages/direct`;
+          
+        const messageResponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: fileMessage.content,
+            authorId: user.id,
+            channelId: channelId,
+            recipientId: recipientId,
+            fileUrl: fileMessage.fileUrl,
+            fileName: fileMessage.fileName,
+            fileType: fileMessage.fileType,
+            fileSize: fileMessage.fileSize
+          })
+        });
+        
+        if (messageResponse.ok) {
+          const newMessage = await messageResponse.json();
+          setMessages(prev => [...prev, newMessage]);
+        }
       }
     } catch (error) {
       console.error('Failed to upload file:', error);
@@ -562,7 +591,71 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm break-words">{message.content}</p>
+                            <div className="space-y-2">
+                              <p className="text-sm break-words">{message.content}</p>
+                              {/* File Preview */}
+                              {message.fileUrl && (
+                                <div className="mt-2">
+                                  {message.fileType?.startsWith('image/') ? (
+                                    <div className="max-w-xs">
+                                      <img 
+                                        src={message.fileUrl} 
+                                        alt={message.fileName || 'Shared image'}
+                                        className="rounded-lg border max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => window.open(message.fileUrl, '_blank')}
+                                      />
+                                      <p className="text-xs text-gray-500 mt-1">{message.fileName}</p>
+                                    </div>
+                                  ) : message.fileType?.startsWith('video/') ? (
+                                    <div className="max-w-md">
+                                      <video 
+                                        controls 
+                                        className="rounded-lg border max-w-full h-auto"
+                                        preload="metadata"
+                                      >
+                                        <source src={message.fileUrl} type={message.fileType} />
+                                        Your browser does not support the video tag.
+                                      </video>
+                                      <p className="text-xs text-gray-500 mt-1">{message.fileName}</p>
+                                    </div>
+                                  ) : message.fileType?.startsWith('audio/') ? (
+                                    <div className="max-w-sm">
+                                      <audio 
+                                        controls 
+                                        className="w-full"
+                                        preload="metadata"
+                                      >
+                                        <source src={message.fileUrl} type={message.fileType} />
+                                        Your browser does not support the audio tag.
+                                      </audio>
+                                      <p className="text-xs text-gray-500 mt-1">{message.fileName}</p>
+                                    </div>
+                                  ) : message.fileUrl ? (
+                                    <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border max-w-sm">
+                                      <div className="flex-shrink-0">
+                                        <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 truncate">{message.fileName}</p>
+                                        <p className="text-xs text-gray-500">
+                                          {message.fileSize ? `${(message.fileSize / 1024).toFixed(1)} KB` : 'Unknown size'}
+                                        </p>
+                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => window.open(message.fileUrl, '_blank')}
+                                        className="flex-shrink-0"
+                                      >
+                                        Download
+                                      </Button>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                         
