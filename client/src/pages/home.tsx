@@ -171,7 +171,7 @@ export default function Home() {
         />
 
         {/* Content Area */}
-        <div className="flex-1 bg-white overflow-y-auto">
+        <div className="flex-1 bg-white overflow-y-auto w-full">
           {activeView === "chat" && (
             <RealTimeChat
               channelId={selectedDM ? undefined : selectedChannel}
@@ -193,7 +193,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="flex-1 bg-gray-50 min-h-0">
+              <div className="flex-1 bg-gray-50 min-h-0 w-full">
                 <RobustTaskBoard 
                   selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
                   workspaceId={selectedWorkspace}
@@ -215,7 +215,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto w-full">
                 <EnhancedCalendar selectedChannel={selectedChannel} />
               </div>
             </div>
@@ -234,7 +234,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="p-6 flex-1 overflow-y-auto">
+              <div className="p-6 flex-1 overflow-y-auto w-full">
                 <WasabiFileUpload
                   onFileUpload={(files) => {
                     console.log('Files uploaded:', files);
@@ -250,7 +250,7 @@ export default function Home() {
           )}
 
           {activeView === "documents" && (
-            <div className="h-full">
+            <div className="h-full w-full">
               <DocumentManager 
                 channelId={selectedChannel}
                 workspaceId={selectedWorkspace.toString()}
@@ -259,7 +259,7 @@ export default function Home() {
           )}
 
           {activeView === "ai" && (
-            <div className="h-full">
+            <div className="h-full w-full">
               <AIAssistant
                 channelId={selectedChannel}
                 workspaceId={selectedWorkspace.toString()}
@@ -277,14 +277,14 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto w-full">
                 <EnhancedSearch />
               </div>
             </div>
           )}
 
           {activeView === "test" && (
-            <div className="h-full p-6">
+            <div className="h-full w-full p-6">
               <SystemTester 
                 onViewChange={setActiveView}
                 activeView={activeView}
@@ -293,7 +293,7 @@ export default function Home() {
           )}
 
           {activeView === "integrations" && (
-            <div className="p-6 overflow-y-auto">
+            <div className="p-6 overflow-y-auto w-full">
               <IntegrationHub 
                 onIntegrationToggle={(integrationId, isConnected) => {
                   console.log(`Integration ${integrationId} ${isConnected ? 'connected' : 'disconnected'}`);
@@ -303,7 +303,7 @@ export default function Home() {
           )}
 
           {(activeView === "threads" || activeView === "mentions" || activeView === "saved" || activeView === "people") && (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center w-full">
               <div className="text-center space-y-4">
                 <div className="p-4 bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
                   {activeView === "threads" && <MessageSquare className="h-8 w-8 text-gray-500" />}

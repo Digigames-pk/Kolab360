@@ -561,7 +561,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
     
     return (
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="h-full flex space-x-6 overflow-x-auto overflow-y-hidden">
+        <div className="h-full w-full flex space-x-6 overflow-x-auto overflow-y-hidden">
           {columns.map((column) => {
             const filteredTasks = getFilteredTasks(column.tasks);
             
@@ -636,8 +636,8 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
     logger.log('info', 'RobustTaskBoard', 'Rendering List view', { tasksCount: allTasks.length });
 
     return (
-      <div className="h-full overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-        <div className="space-y-2 pb-6">
+      <div className="h-full w-full overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="space-y-2 pb-6 w-full">
           {allTasks.map((task) => {
           const PriorityIcon = PRIORITY_ICONS[task.priority];
           
@@ -743,9 +743,9 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   }
 
   return (
-    <div className="h-full flex flex-col bg-white" data-testid="task-board">
+    <div className="h-full w-full flex flex-col bg-white" data-testid="task-board">
       {/* Header */}
-      <div className="border-b bg-white p-6 flex-shrink-0">
+      <div className="border-b bg-white p-6 flex-shrink-0 w-full">
         <div className="flex items-center justify-between mb-4">
           <div>
             {activeView === 'categories' && (
@@ -849,9 +849,9 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
       </div>
 
       {/* Task Board Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto w-full">
         {activeView === 'categories' ? (
-          <div className="h-full p-6 overflow-y-auto">
+          <div className="h-full w-full p-6 overflow-y-auto">
             <EnhancedTaskCategoryManager 
               channelId={selectedChannel || 'general'}
               onCategoriesChange={(cats) => {
@@ -863,7 +863,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
             />
           </div>
         ) : (
-          <div className="h-full p-6">
+          <div className="h-full w-full p-6">
             {viewMode === 'kanban' ? <KanbanView /> : <ListView />}
           </div>
         )}
