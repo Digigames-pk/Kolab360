@@ -116,6 +116,19 @@ export function setupAuth(app: Express) {
 
   // Login endpoint
   app.post("/api/login", (req, res, next) => {
+    // In development, always allow login with mock user
+    if (process.env.NODE_ENV === 'development') {
+      const mockUser = {
+        id: 3,
+        email: 'user@test.com',
+        firstName: 'Regular',
+        lastName: 'User',
+        role: 'user'
+      };
+      req.user = mockUser;
+      return res.json(mockUser);
+    }
+
     try {
       loginSchema.parse(req.body);
     } catch (error) {
@@ -149,6 +162,20 @@ export function setupAuth(app: Express) {
 
   // Get current user
   app.get("/api/user", (req, res) => {
+    // In development, always return mock user
+    if (process.env.NODE_ENV === 'development') {
+      const mockUser = {
+        id: 3,
+        email: 'user@test.com',
+        firstName: 'Regular',
+        lastName: 'User',
+        role: 'user',
+        lastLoginAt: new Date(),
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+      };
+      return res.json(mockUser);
+    }
+
     if (!req.isAuthenticated() || !req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -168,6 +195,18 @@ export function setupAuth(app: Express) {
 
 // Middleware for protecting routes
 export function requireAuth(req: any, res: any, next: any) {
+  // In development, bypass auth and use mock user
+  if (process.env.NODE_ENV === 'development') {
+    req.user = {
+      id: 3,
+      email: 'user@test.com',
+      firstName: 'Regular',
+      lastName: 'User',
+      role: 'user'
+    };
+    return next();
+  }
+
   if (!req.isAuthenticated()) {
     return res.status(401).json({ message: "Unauthorized" });
   }

@@ -1,213 +1,181 @@
-import { Router } from "express";
+import { Router } from 'express';
 
 const router = Router();
 
-// Mock task data
-let mockTasks = [
+// Mock tasks data for development
+const mockTasks = [
   {
-    id: "1",
-    title: "Setup Project",
-    description: "Initialize the new project repository and basic structure",
-    status: "todo",
-    priority: "high",
-    assignee: "John Doe",
-    dueDate: "2025-01-25",
-    tags: ["setup", "initialization"],
-    subtasks: [
-      { id: "1-1", title: "Create repository", completed: true },
-      { id: "1-2", title: "Setup CI/CD", completed: false }
-    ],
-    comments: 3,
-    attachments: 1,
-    createdAt: "2025-01-18T00:00:00Z",
-    channelId: "general",
-    categoryId: "development"
+    id: '1',
+    title: 'Set up project structure',
+    description: 'Initialize the basic project structure with components and routing',
+    status: 'completed',
+    priority: 'high',
+    assignedUserId: 3,
+    createdBy: 1,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
+    workspaceId: '1',
+    category: 'Development'
   },
   {
-    id: "2", 
-    title: "Design System Review",
-    description: "Review and update the design system components",
-    status: "in-progress",
-    priority: "medium",
-    assignee: "Jane Smith",
-    dueDate: "2025-01-30",
-    tags: ["design", "review"],
-    subtasks: [
-      { id: "2-1", title: "Audit current components", completed: true },
-      { id: "2-2", title: "Update documentation", completed: false }
-    ],
-    comments: 5,
-    attachments: 2,
-    createdAt: "2025-01-17T00:00:00Z",
-    channelId: "general",
-    categoryId: "design"
+    id: '2',
+    title: 'Implement user authentication',
+    description: 'Create login/logout functionality with session management',
+    status: 'in-progress',
+    priority: 'high',
+    assignedUserId: 3,
+    createdBy: 1,
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+    workspaceId: '1',
+    category: 'Development'
   },
   {
-    id: "3",
-    title: "Testing Framework",
-    description: "Implement comprehensive testing framework",
-    status: "review",
-    priority: "urgent",
-    assignee: "Mike Chen",
-    dueDate: "2025-01-22",
-    tags: ["testing", "framework"],
-    subtasks: [],
-    comments: 2,
-    attachments: 0,
-    createdAt: "2025-01-16T00:00:00Z",
-    channelId: "general", 
-    categoryId: "testing"
+    id: '3',
+    title: 'Design task management interface',
+    description: 'Create intuitive UI for task creation, editing, and tracking',
+    status: 'todo',
+    priority: 'medium',
+    assignedUserId: 3,
+    createdBy: 1,
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+    updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+    dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
+    workspaceId: '1',
+    category: 'Design'
   },
   {
-    id: "4",
-    title: "Documentation Update",
-    description: "Update project documentation",
-    status: "done",
-    priority: "low",
-    assignee: "Sarah Wilson",
-    dueDate: "2025-01-20",
-    tags: ["documentation"],
-    subtasks: [
-      { id: "4-1", title: "Update README", completed: true },
-      { id: "4-2", title: "API documentation", completed: true }
-    ],
-    comments: 1,
-    attachments: 0,
-    createdAt: "2025-01-15T00:00:00Z",
-    channelId: "general",
-    categoryId: "documentation"
+    id: '4',
+    title: 'Set up file upload system',
+    description: 'Implement secure file upload with cloud storage integration',
+    status: 'todo',
+    priority: 'medium',
+    assignedUserId: 3,
+    createdBy: 1,
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    updatedAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 2 weeks from now
+    workspaceId: '1',
+    category: 'Development'
+  },
+  {
+    id: '5',
+    title: 'Write documentation',
+    description: 'Document API endpoints and component usage',
+    status: 'todo',
+    priority: 'low',
+    assignedUserId: 3,
+    createdBy: 1,
+    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+    updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+    dueDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000), // 3 weeks from now
+    workspaceId: '1',
+    category: 'Documentation'
   }
 ];
 
-// Mock categories
-let mockCategories = [
-  { id: "development", name: "Development", color: "bg-blue-100 border-blue-300", order: 0 },
-  { id: "design", name: "Design", color: "bg-purple-100 border-purple-300", order: 1 },
-  { id: "testing", name: "Testing", color: "bg-green-100 border-green-300", order: 2 },
-  { id: "documentation", name: "Documentation", color: "bg-yellow-100 border-yellow-300", order: 3 }
-];
-
-// Get all tasks
-router.get("/", async (req, res) => {
+// GET /api/simple-tasks - Get all tasks
+router.get('/simple-tasks', async (req, res) => {
   try {
-    const { channelId, categoryId, status, priority } = req.query;
+    const workspaceId = req.query.workspaceId || '1';
+    const filteredTasks = mockTasks.filter(task => task.workspaceId === workspaceId);
     
-    let filteredTasks = [...mockTasks];
+    // Add creator and assignee information
+    const tasksWithUsers = filteredTasks.map(task => ({
+      ...task,
+      creator: { id: 1, firstName: 'System', lastName: 'Admin', email: 'admin@demo.com' },
+      assignedUser: { id: 3, firstName: 'Regular', lastName: 'User', email: 'user@test.com' }
+    }));
     
-    // Apply filters
-    if (channelId) {
-      filteredTasks = filteredTasks.filter(task => task.channelId === channelId);
-    }
-    
-    if (categoryId) {
-      filteredTasks = filteredTasks.filter(task => task.categoryId === categoryId);
-    }
-    
-    if (status) {
-      filteredTasks = filteredTasks.filter(task => task.status === status);
-    }
-    
-    if (priority) {
-      filteredTasks = filteredTasks.filter(task => task.priority === priority);
-    }
-
-    res.json({ tasks: filteredTasks });
+    res.json(tasksWithUsers);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
-    res.status(500).json({ error: "Failed to fetch tasks" });
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({ message: 'Failed to fetch tasks' });
   }
 });
 
-// Create new task
-router.post("/", async (req, res) => {
+// POST /api/simple-tasks - Create a new task
+router.post('/simple-tasks', async (req, res) => {
   try {
-    const taskData = req.body;
+    const { title, description, priority = 'medium', category = 'General', workspaceId = '1', assignedUserId = 3 } = req.body;
     
     const newTask = {
-      id: Date.now().toString(),
-      title: taskData.title,
-      description: taskData.description || "",
-      status: taskData.status || "todo",
-      priority: taskData.priority || "medium",
-      assignee: taskData.assignee || "",
-      dueDate: taskData.dueDate || "",
-      tags: taskData.tags || [],
-      subtasks: taskData.subtasks || [],
-      comments: 0,
-      attachments: 0,
-      createdAt: new Date().toISOString(),
-      channelId: taskData.channelId || "general",
-      categoryId: taskData.categoryId || "development"
+      id: (mockTasks.length + 1).toString(),
+      title,
+      description,
+      status: 'todo',
+      priority,
+      assignedUserId,
+      createdBy: 1, // Mock user ID
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
+      workspaceId,
+      category
     };
     
     mockTasks.push(newTask);
     
-    res.json({ success: true, task: newTask });
+    const taskWithUsers = {
+      ...newTask,
+      creator: { id: 1, firstName: 'System', lastName: 'Admin', email: 'admin@demo.com' },
+      assignedUser: { id: 3, firstName: 'Regular', lastName: 'User', email: 'user@test.com' }
+    };
+    
+    res.status(201).json(taskWithUsers);
   } catch (error) {
-    console.error("Error creating task:", error);
-    res.status(500).json({ error: "Failed to create task" });
+    console.error('Error creating task:', error);
+    res.status(500).json({ message: 'Failed to create task' });
   }
 });
 
-// Update task
-router.put("/:taskId", async (req, res) => {
+// PUT /api/simple-tasks/:id - Update a task
+router.put('/simple-tasks/:id', async (req, res) => {
   try {
-    const { taskId } = req.params;
+    const taskId = req.params.id;
     const updates = req.body;
     
     const taskIndex = mockTasks.findIndex(task => task.id === taskId);
     if (taskIndex === -1) {
-      return res.status(404).json({ error: "Task not found" });
+      return res.status(404).json({ message: 'Task not found' });
     }
     
-    mockTasks[taskIndex] = { ...mockTasks[taskIndex], ...updates };
+    mockTasks[taskIndex] = {
+      ...mockTasks[taskIndex],
+      ...updates,
+      updatedAt: new Date()
+    };
     
-    res.json({ success: true, task: mockTasks[taskIndex] });
+    const updatedTaskWithUsers = {
+      ...mockTasks[taskIndex],
+      creator: { id: 1, firstName: 'System', lastName: 'Admin', email: 'admin@demo.com' },
+      assignedUser: { id: 3, firstName: 'Regular', lastName: 'User', email: 'user@test.com' }
+    };
+    
+    res.json(updatedTaskWithUsers);
   } catch (error) {
-    console.error("Error updating task:", error);
-    res.status(500).json({ error: "Failed to update task" });
+    console.error('Error updating task:', error);
+    res.status(500).json({ message: 'Failed to update task' });
   }
 });
 
-// Delete task
-router.delete("/:taskId", async (req, res) => {
+// DELETE /api/simple-tasks/:id - Delete a task
+router.delete('/simple-tasks/:id', async (req, res) => {
   try {
-    const { taskId } = req.params;
-    
+    const taskId = req.params.id;
     const taskIndex = mockTasks.findIndex(task => task.id === taskId);
+    
     if (taskIndex === -1) {
-      return res.status(404).json({ error: "Task not found" });
+      return res.status(404).json({ message: 'Task not found' });
     }
     
     mockTasks.splice(taskIndex, 1);
-    
-    res.json({ success: true, message: "Task deleted successfully" });
+    res.json({ message: 'Task deleted successfully' });
   } catch (error) {
-    console.error("Error deleting task:", error);
-    res.status(500).json({ error: "Failed to delete task" });
-  }
-});
-
-// Get categories
-router.get("/categories", async (req, res) => {
-  try {
-    const { channelId } = req.query;
-    res.json({ categories: mockCategories });
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    res.status(500).json({ error: "Failed to fetch categories" });
-  }
-});
-
-// Update categories
-router.put("/categories", async (req, res) => {
-  try {
-    const { categories } = req.body;
-    mockCategories = categories;
-    res.json({ success: true, categories: mockCategories });
-  } catch (error) {
-    console.error("Error updating categories:", error);
-    res.status(500).json({ error: "Failed to update categories" });
+    console.error('Error deleting task:', error);
+    res.status(500).json({ message: 'Failed to delete task' });
   }
 });
 

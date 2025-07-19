@@ -90,7 +90,7 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const { user, logoutMutation } = useAuth();
+  const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const [activeView, setActiveView] = useState("chat");
   const [selectedChannel, setSelectedChannel] = useState("general");
@@ -671,8 +671,8 @@ export default function Home() {
                   )}
                   <Separator />
                   <DropdownMenuItem 
-                    onClick={() => logoutMutation.mutate()}
-                    disabled={logoutMutation.isPending}
+                    onClick={() => logout()}
+                    disabled={false}
                     className="text-red-600"
                   >
                     <LogOut className="h-4 w-4 mr-2" />

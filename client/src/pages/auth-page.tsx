@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, MessageSquare, Users, Zap, Shield } from "lucide-react";
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, login } = useAuth();
   const [, setLocation] = useLocation();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({
@@ -19,6 +19,8 @@ export default function AuthPage() {
     firstName: "",
     lastName: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Redirect if already logged in
   useEffect(() => {
@@ -31,14 +33,42 @@ export default function AuthPage() {
     return <div className="flex items-center justify-center min-h-screen">Redirecting...</div>;
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate(loginData);
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      const success = await login(loginData.email, loginData.password);
+      if (success) {
+        setLocation("/");
+      } else {
+        setError("Login failed. Please check your credentials.");
+      }
+    } catch (err) {
+      setError("An error occurred during login.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    registerMutation.mutate(registerData);
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      const success = await login(registerData.email, registerData.password);
+      if (success) {
+        setLocation("/");
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } catch (err) {
+      setError("An error occurred during registration.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const demoCredentials = [

@@ -1,156 +1,222 @@
-import { Router } from "express";
-import multer from "multer";
-import { storage } from "../storage";
+import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const router = Router();
 
-// Configure multer for simple file upload
+// Configure multer for file uploads
 const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    // Allow all file types for now
+    cb(null, true);
+  }
+});
+
+// Mock files data for development
+const mockFiles = [
+  {
+    id: '1',
+    filename: 'project-specs.pdf',
+    originalName: 'Project Specifications.pdf',
+    size: 245760, // ~240KB
+    mimetype: 'application/pdf',
+    uploadedBy: 1,
+    uploadedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    workspaceId: '1',
+    channelId: 'general',
+    category: 'documents',
+    url: '/uploads/project-specs.pdf'
   },
-});
+  {
+    id: '2',
+    filename: 'team-photo.jpg',
+    originalName: 'Team Photo 2024.jpg',
+    size: 1048576, // 1MB
+    mimetype: 'image/jpeg',
+    uploadedBy: 3,
+    uploadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+    workspaceId: '1',
+    channelId: 'general',
+    category: 'images',
+    url: '/uploads/team-photo.jpg'
+  },
+  {
+    id: '3',
+    filename: 'budget-analysis.xlsx',
+    originalName: 'Q4 Budget Analysis.xlsx',
+    size: 512000, // ~500KB
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    uploadedBy: 1,
+    uploadedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+    workspaceId: '1',
+    channelId: 'general',
+    category: 'documents',
+    url: '/uploads/budget-analysis.xlsx'
+  }
+];
 
-// Get files
-router.get("/", async (req, res) => {
+// GET /api/simple-files - Get all files
+router.get('/simple-files', async (req, res) => {
   try {
-    const { workspaceId, channelId, category } = req.query;
+    const workspaceId = req.query.workspaceId || '1';
+    const category = req.query.category;
     
-    // For now, return mock data to get it working
-    const mockFiles = [
-      {
-        id: "1",
-        filename: "document.pdf",
-        originalName: "Project Requirements.pdf",
-        mimeType: "application/pdf",
-        category: "document",
-        size: 1024000,
-        uploadedAt: new Date().toISOString(),
-        downloadCount: 5,
-        uploadedBy: {
-          id: 1,
-          firstName: "John",
-          lastName: "Doe"
-        }
-      },
-      {
-        id: "2", 
-        filename: "image.jpg",
-        originalName: "Team Photo.jpg",
-        mimeType: "image/jpeg",
-        category: "image",
-        size: 2048000,
-        uploadedAt: new Date().toISOString(),
-        downloadCount: 12,
-        uploadedBy: {
-          id: 2,
-          firstName: "Jane",
-          lastName: "Smith"
-        }
-      }
-    ];
-
-    let filteredFiles = mockFiles;
+    let filteredFiles = mockFiles.filter(file => file.workspaceId === workspaceId);
     
-    // Apply category filter
     if (category && category !== 'all') {
-      filteredFiles = mockFiles.filter(file => file.category === category);
+      filteredFiles = filteredFiles.filter(file => file.category === category);
     }
-
-    res.json({ files: filteredFiles });
-  } catch (error) {
-    console.error("Error fetching files:", error);
-    res.status(500).json({ error: "Failed to fetch files" });
-  }
-});
-
-// Upload single file
-router.post("/upload", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const { workspaceId, channelId } = req.body;
     
-    // For now, return mock successful response
-    const mockFile = {
-      id: Date.now().toString(),
-      filename: req.file.originalname,
-      originalName: req.file.originalname,
-      mimeType: req.file.mimetype,
-      category: req.file.mimetype.startsWith('image/') ? 'image' : 
-                req.file.mimetype.startsWith('video/') ? 'video' : 'document',
-      size: req.file.size,
-      uploadedAt: new Date().toISOString(),
-      downloadCount: 0,
-      uploadedBy: {
-        id: 1,
-        firstName: "Current",
-        lastName: "User"
-      }
-    };
-
-    res.json({
-      success: true,
-      file: mockFile
-    });
-  } catch (error) {
-    console.error("File upload error:", error);
-    res.status(500).json({ error: "Failed to upload file" });
-  }
-});
-
-// Upload multiple files
-router.post("/upload-multiple", upload.array("files", 10), async (req, res) => {
-  try {
-    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-      return res.status(400).json({ error: "No files uploaded" });
-    }
-
-    const { workspaceId, channelId } = req.body;
-    
-    // For now, return mock successful response
-    const mockFiles = req.files.map((file, index) => ({
-      id: (Date.now() + index).toString(),
-      filename: file.originalname,
-      originalName: file.originalname,
-      mimeType: file.mimetype,
-      category: file.mimetype.startsWith('image/') ? 'image' : 
-                file.mimetype.startsWith('video/') ? 'video' : 'document',
-      size: file.size,
-      uploadedAt: new Date().toISOString(),
-      downloadCount: 0,
-      uploadedBy: {
-        id: 1,
-        firstName: "Current",
-        lastName: "User"
+    // Add uploader information
+    const filesWithUploaders = filteredFiles.map(file => ({
+      ...file,
+      uploader: {
+        id: file.uploadedBy,
+        firstName: file.uploadedBy === 1 ? 'System' : 'Regular',
+        lastName: file.uploadedBy === 1 ? 'Admin' : 'User',
+        email: file.uploadedBy === 1 ? 'admin@demo.com' : 'user@test.com'
       }
     }));
-
-    res.json({
-      success: true,
-      files: mockFiles,
-      totalUploaded: mockFiles.length,
-      totalRequested: req.files.length
-    });
+    
+    res.json(filesWithUploaders);
   } catch (error) {
-    console.error("Multiple file upload error:", error);
-    res.status(500).json({ error: "Failed to upload files" });
+    console.error('Error fetching files:', error);
+    res.status(500).json({ message: 'Failed to fetch files' });
   }
 });
 
-// Delete file
-router.delete("/:fileId", async (req, res) => {
+// POST /api/simple-files/upload - Upload a file
+router.post('/simple-files/upload', upload.single('file'), async (req, res) => {
   try {
-    const { fileId } = req.params;
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
     
-    // For now, return mock successful response
-    res.json({ success: true, message: "File deleted successfully" });
+    const { workspaceId = '1', channelId = 'general' } = req.body;
+    
+    // Determine file category based on MIME type
+    let category = 'documents';
+    if (req.file.mimetype.startsWith('image/')) {
+      category = 'images';
+    } else if (req.file.mimetype.startsWith('video/')) {
+      category = 'videos';
+    } else if (req.file.mimetype.startsWith('audio/')) {
+      category = 'audio';
+    }
+    
+    const newFile = {
+      id: (mockFiles.length + 1).toString(),
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      uploadedBy: 3, // Mock user ID
+      uploadedAt: new Date(),
+      workspaceId,
+      channelId,
+      category,
+      url: `/uploads/${req.file.filename}`
+    };
+    
+    mockFiles.push(newFile);
+    
+    const fileWithUploader = {
+      ...newFile,
+      uploader: {
+        id: 3,
+        firstName: 'Regular',
+        lastName: 'User',
+        email: 'user@test.com'
+      }
+    };
+    
+    res.status(201).json(fileWithUploader);
   } catch (error) {
-    console.error("File deletion error:", error);
-    res.status(500).json({ error: "Failed to delete file" });
+    console.error('Error uploading file:', error);
+    res.status(500).json({ message: 'Failed to upload file' });
+  }
+});
+
+// GET /api/simple-files/:id - Get a specific file
+router.get('/simple-files/:id', async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const file = mockFiles.find(f => f.id === fileId);
+    
+    if (!file) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+    
+    const fileWithUploader = {
+      ...file,
+      uploader: {
+        id: file.uploadedBy,
+        firstName: file.uploadedBy === 1 ? 'System' : 'Regular',
+        lastName: file.uploadedBy === 1 ? 'Admin' : 'User',
+        email: file.uploadedBy === 1 ? 'admin@demo.com' : 'user@test.com'
+      }
+    };
+    
+    res.json(fileWithUploader);
+  } catch (error) {
+    console.error('Error fetching file:', error);
+    res.status(500).json({ message: 'Failed to fetch file' });
+  }
+});
+
+// DELETE /api/simple-files/:id - Delete a file
+router.delete('/simple-files/:id', async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const fileIndex = mockFiles.findIndex(f => f.id === fileId);
+    
+    if (fileIndex === -1) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+    
+    const file = mockFiles[fileIndex];
+    
+    // Try to delete the actual file from disk
+    try {
+      const filePath = path.join(process.cwd(), 'uploads', file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch (fsError) {
+      console.warn('Could not delete file from disk:', fsError);
+    }
+    
+    mockFiles.splice(fileIndex, 1);
+    res.json({ message: 'File deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ message: 'Failed to delete file' });
+  }
+});
+
+// GET /api/simple-files/:id/download - Download a file
+router.get('/simple-files/:id/download', async (req, res) => {
+  try {
+    const fileId = req.params.id;
+    const file = mockFiles.find(f => f.id === fileId);
+    
+    if (!file) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+    
+    const filePath = path.join(process.cwd(), 'uploads', file.filename);
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'File not found on disk' });
+    }
+    
+    res.download(filePath, file.originalName);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    res.status(500).json({ message: 'Failed to download file' });
   }
 });
 

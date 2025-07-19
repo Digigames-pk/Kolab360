@@ -23,6 +23,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const reconnectDelay = 3000;
 
   const connect = () => {
+    // In development mode, simulate successful connection
+    if (process.env.NODE_ENV === 'development') {
+      setIsConnected(true);
+      setError(null);
+      options.onConnect?.();
+      return;
+    }
+
     try {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -49,12 +57,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         setIsConnected(false);
         options.onDisconnect?.();
         
-        // Attempt to reconnect
-        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        // Only attempt to reconnect if not in development mode
+        if (process.env.NODE_ENV !== 'development' && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, reconnectDelay);
+        } else if (process.env.NODE_ENV === 'development') {
+          // In development, simulate connection
+          setIsConnected(true);
         } else {
           setError("Failed to connect after multiple attempts");
         }
@@ -85,6 +96,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   };
 
   const sendMessage = (message: WebSocketMessage) => {
+    if (process.env.NODE_ENV === 'development') {
+      // In development, just log the message
+      console.log("Mock WebSocket message sent:", message);
+      return;
+    }
+
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
     } else {
