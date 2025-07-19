@@ -144,6 +144,8 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
   const [selectedTaskForActions, setSelectedTaskForActions] = useState<Task | null>(null);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryColor, setNewCategoryColor] = useState("purple");
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -674,6 +676,64 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
                   </div>
                 ))}
               </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-medium">Add New Category</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Category Name</Label>
+                  <Input 
+                    placeholder="e.g., Testing, Blocked" 
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Color</Label>
+                  <Select value={newCategoryColor} onValueChange={setNewCategoryColor}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="purple">Purple</SelectItem>
+                      <SelectItem value="pink">Pink</SelectItem>
+                      <SelectItem value="red">Red</SelectItem>
+                      <SelectItem value="orange">Orange</SelectItem>
+                      <SelectItem value="teal">Teal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button 
+                className="w-full"
+                onClick={() => {
+                  if (newCategoryName.trim()) {
+                    const colorMap = {
+                      purple: { color: "bg-purple-500", bgColor: "bg-gradient-to-br from-purple-50 to-purple-100", borderColor: "border-purple-200" },
+                      pink: { color: "bg-pink-500", bgColor: "bg-gradient-to-br from-pink-50 to-pink-100", borderColor: "border-pink-200" },
+                      red: { color: "bg-red-500", bgColor: "bg-gradient-to-br from-red-50 to-red-100", borderColor: "border-red-200" },
+                      orange: { color: "bg-orange-500", bgColor: "bg-gradient-to-br from-orange-50 to-orange-100", borderColor: "border-orange-200" },
+                      teal: { color: "bg-teal-500", bgColor: "bg-gradient-to-br from-teal-50 to-teal-100", borderColor: "border-teal-200" }
+                    };
+                    
+                    const newColumn = {
+                      id: newCategoryName.toLowerCase().replace(/\s+/g, '-'),
+                      title: newCategoryName,
+                      icon: <Target className="h-4 w-4" />,
+                      ...colorMap[newCategoryColor as keyof typeof colorMap]
+                    };
+                    
+                    setTaskColumns(prev => [...prev, newColumn]);
+                    setNewCategoryName("");
+                    setNewCategoryColor("purple");
+                  }
+                }}
+                disabled={!newCategoryName.trim()}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Category
+              </Button>
             </div>
           </div>
         </DialogContent>

@@ -1,0 +1,45 @@
+
+Cookie warnings 2
+[vite] connecting... client:495:9
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=bCNXS7YTsnoE. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+client:536
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+Uncaught TypeError: (intermediate value).map is not a function
+    TaskDetailModal TaskDetailModal.tsx:216
+    React 13
+TaskDetailModal.tsx:216:47
+Uncaught TypeError: (intermediate value).map is not a function
+    TaskDetailModal TaskDetailModal.tsx:216
+    React 14
+TaskDetailModal.tsx:216:47
+The above error occurred in the <TaskDetailModal> component:
+
+TaskDetailModal@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/TaskDetailModal.tsx:30:32
+div
+Home@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/pages/home.tsx:81:36
+Route@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=478c3a11:323:13
+ProtectedRoute@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/lib/protected-route.tsx:21:31
+Switch@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=478c3a11:379:14
+Router@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/App.tsx?v=to3oet-vVsGCvFCqWrAID:33:31
+AuthProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/hooks/useAuth.tsx:26:29
+Provider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=478c3a11:38:47
+TooltipProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=478c3a11:69:7
+ThemeProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/ThemeProvider.tsx:67:30
+QueryClientProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=478c3a11:2804:27
+App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. react-dom.development.js:18704:15
+Uncaught TypeError: (intermediate value).map is not a function
+    TaskDetailModal TaskDetailModal.tsx:216
+    React 11
+TaskDetailModal.tsx:216:47
+    TaskDetailModal TaskDetailModal.tsx:216
+    React 11
+
+​
+

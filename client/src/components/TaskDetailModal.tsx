@@ -40,7 +40,11 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate }: TaskDetailM
 
   if (!task) return null;
 
-  const currentTask = editingTask || task;
+  const currentTask = editingTask || {
+    ...task,
+    comments: task.comments || [],
+    subtasks: task.subtasks || []
+  };
 
   const handleEdit = () => {
     setEditingTask({ ...task });
