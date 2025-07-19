@@ -179,22 +179,24 @@ export function WasabiFileUpload({
         if (workspaceId) formData.append('workspaceId', workspaceId);
         if (channelId) formData.append('channelId', channelId);
 
-        const response = await fetch('/api/files/upload', {
+        const response = await fetch('/api/simple-files/upload', {
           method: 'POST',
           body: formData,
         });
 
         if (response.ok) {
-          const data = await response.json();
-          const newFiles = [data.file];
-          setFiles(prev => [data.file, ...prev]);
+          const fileData = await response.json();
+          // The simple-files endpoint returns the file directly, not wrapped in data.file
+          const newFiles = [fileData];
+          setFiles(prev => [fileData, ...prev]);
           onFileUpload?.(newFiles);
           toast({
             title: "File uploaded",
-            description: `${data.file.originalName} uploaded successfully`,
+            description: `${fileData.originalName} uploaded successfully`,
           });
         } else {
-          throw new Error('Upload failed');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Upload failed');
         }
       } else {
         // Upload files one by one to the simple-files endpoint
@@ -205,7 +207,7 @@ export function WasabiFileUpload({
           if (workspaceId) singleFormData.append('workspaceId', workspaceId);
           if (channelId) singleFormData.append('channelId', channelId);
 
-          const response = await fetch('/api/files/upload', {
+          const response = await fetch('/api/simple-files/upload-multiple', {
             method: 'POST',
             body: singleFormData,
           });
@@ -311,9 +313,11 @@ export function WasabiFileUpload({
   };
 
   const filteredFiles = files.filter(file => {
+    const firstName = file.uploadedBy?.firstName || file.uploader?.firstName || '';
+    const lastName = file.uploadedBy?.lastName || file.uploader?.lastName || '';
     const matchesSearch = file.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         file.uploadedBy.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         file.uploadedBy.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+                         firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         lastName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || file.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
