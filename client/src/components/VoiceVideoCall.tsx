@@ -23,7 +23,7 @@ import {
   Headphones,
   Camera,
   Share,
-  Record,
+
   Grid3X3,
   Sidebar,
   Hand,
