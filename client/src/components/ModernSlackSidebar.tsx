@@ -59,6 +59,9 @@ interface ModernSlackSidebarProps {
   workspaces: any[];
   selectedWorkspace: number;
   onWorkspaceSelect: (id: number) => void;
+  onShowProfile?: () => void;
+  onStartCall?: (type: 'voice' | 'video') => void;
+  onShowSettings?: () => void;
 }
 
 export function ModernSlackSidebar({
@@ -71,7 +74,10 @@ export function ModernSlackSidebar({
   onShowNotifications,
   workspaces,
   selectedWorkspace,
-  onWorkspaceSelect
+  onWorkspaceSelect,
+  onShowProfile,
+  onStartCall,
+  onShowSettings
 }: ModernSlackSidebarProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
@@ -351,7 +357,7 @@ export function ModernSlackSidebar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={onShowProfile}>
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </DropdownMenuItem>
@@ -368,7 +374,7 @@ export function ModernSlackSidebar({
                 Integrations
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => alert('Signing out...')}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out
               </DropdownMenuItem>
@@ -396,9 +402,27 @@ export function ModernSlackSidebar({
             {isDeafened ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
           </Button>
           
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Settings className="h-3 w-3" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Settings className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={onShowSettings}>
+                <Settings className="h-4 w-4 mr-2" />
+                Audio Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onStartCall?.('voice')}>
+                <Phone className="h-4 w-4 mr-2" />
+                Test Voice
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onStartCall?.('video')}>
+                <Video className="h-4 w-4 mr-2" />
+                Test Video
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

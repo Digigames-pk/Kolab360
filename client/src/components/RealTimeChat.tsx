@@ -692,6 +692,12 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
               onChange={(e) => {
                 setMessageText(e.target.value);
                 handleTyping();
+                
+                // Handle @mentions
+                const text = e.target.value;
+                if (text.includes('@')) {
+                  console.log('User typing @mention:', text);
+                }
               }}
               onKeyPress={handleKeyPress}
               className="pr-20 transition-all duration-200 focus:ring-2 focus:ring-blue-500"

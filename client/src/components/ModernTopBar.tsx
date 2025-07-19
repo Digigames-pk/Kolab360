@@ -39,6 +39,10 @@ interface ModernTopBarProps {
   onShowSearch: () => void;
   onShowNotifications: () => void;
   onViewChange?: (view: string) => void;
+  onStartCall?: (type: 'voice' | 'video') => void;
+  onInviteUsers?: () => void;
+  onShowChannelInfo?: () => void;
+  onShowSettings?: () => void;
 }
 
 export function ModernTopBar({
@@ -46,7 +50,11 @@ export function ModernTopBar({
   currentView,
   onShowSearch,
   onShowNotifications,
-  onViewChange
+  onViewChange,
+  onStartCall,
+  onInviteUsers,
+  onShowChannelInfo,
+  onShowSettings
 }: ModernTopBarProps) {
   const getChannelInfo = () => {
     const channels = {
@@ -100,13 +108,13 @@ export function ModernTopBar({
 
         {/* Right side - Actions */}
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={() => onStartCall?.('voice')}>
             <Phone className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={() => onStartCall?.('video')}>
             <Video className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={onInviteUsers}>
             <UserPlus className="h-4 w-4" />
           </Button>
           
@@ -127,26 +135,26 @@ export function ModernTopBar({
             <DropdownMenuContent align="end" className="w-56">
               {currentView === 'chat' && (
                 <>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => alert('Viewing pinned messages...')}>
                     <Pin className="h-4 w-4 mr-2" />
                     View pinned messages
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={onShowChannelInfo}>
                     <Info className="h-4 w-4 mr-2" />
                     Channel details
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={onInviteUsers}>
                     <Users className="h-4 w-4 mr-2" />
                     Manage members
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => alert('Archiving channel...')}>
                     <Archive className="h-4 w-4 mr-2" />
                     Archive channel
                   </DropdownMenuItem>
                 </>
               )}
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={onShowSettings}>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>

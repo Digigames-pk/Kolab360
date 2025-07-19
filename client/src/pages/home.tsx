@@ -21,6 +21,7 @@ import { VoiceVideoCall } from '@/components/VoiceVideoCall';
 import { InteractiveOnboarding } from '@/components/InteractiveOnboarding';
 import { GamificationSystem } from '@/components/GamificationSystem';
 import { EnterpriseAdminPanel } from '@/components/EnterpriseAdminPanel';
+import { ProfileModal } from '@/components/ProfileModal';
 import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DebugLogger, logger } from '@/components/DebugLogger';
@@ -58,6 +59,7 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showGamification, setShowGamification] = useState(false);
   const [showEnterprisePanel, setShowEnterprisePanel] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   
   // Selected items for modals
   const [selectedTask, setSelectedTask] = useState(null);
@@ -137,6 +139,12 @@ export default function Home() {
           workspaces={workspaces}
           selectedWorkspace={selectedWorkspace}
           onWorkspaceSelect={setSelectedWorkspace}
+          onShowProfile={() => setShowProfile(true)}
+          onStartCall={(type) => {
+            setCallType(type);
+            setShowVoiceCall(true);
+          }}
+          onShowSettings={() => alert('Opening audio settings...')}
         />
       </div>
 
@@ -149,6 +157,13 @@ export default function Home() {
           onShowSearch={() => setShowSearch(true)}
           onShowNotifications={() => setShowNotifications(true)}
           onViewChange={setActiveView}
+          onStartCall={(type) => {
+            setCallType(type);
+            setShowVoiceCall(true);
+          }}
+          onInviteUsers={() => alert('Inviting users to ' + selectedChannel + '...')}
+          onShowChannelInfo={() => alert('Showing channel info for ' + selectedChannel)}
+          onShowSettings={() => alert('Opening channel settings...')}
         />
 
         {/* Content Area */}
@@ -417,6 +432,12 @@ export default function Home() {
           onClose={() => setShowEnterprisePanel(false)}
         />
       )}
+
+      {/* Profile Modal */}
+      <ProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
 
       {/* Debug Logger */}
       <DebugLogger />
