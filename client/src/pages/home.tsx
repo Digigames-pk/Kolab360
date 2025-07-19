@@ -8,7 +8,8 @@ import { RealTimeChat } from '@/components/RealTimeChat';
 import { RobustTaskBoard } from '@/components/RobustTaskBoard';
 import { EnhancedCalendar } from '@/components/EnhancedCalendar';
 import { WasabiFileUpload } from '@/components/WasabiFileUpload';
-import { EnhancedAI } from '@/components/EnhancedAI';
+import { DocumentManager } from '@/components/DocumentManager';
+import { AIAssistant } from '@/components/AIAssistant';
 import { EnhancedSearch } from '@/components/EnhancedSearch';
 import { AdvancedSearch } from '@/components/AdvancedSearch';
 import { NotificationCenter } from '@/components/NotificationCenter';
@@ -29,7 +30,7 @@ export default function Home() {
   const [location, setLocation] = useLocation();
   const [selectedChannel, setSelectedChannel] = useState('general');
   const [selectedDM, setSelectedDM] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'test'>('chat');
+  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'test'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [currentTheme, setCurrentTheme] = useState('slack-light');
 
@@ -229,25 +230,21 @@ export default function Home() {
             </div>
           )}
 
+          {activeView === "documents" && (
+            <div className="h-full">
+              <DocumentManager 
+                channelId={selectedChannel}
+                workspaceId={selectedWorkspace.toString()}
+              />
+            </div>
+          )}
+
           {activeView === "ai" && (
             <div className="h-full">
-              <div className="p-6 border-b bg-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold mb-2">AI Assistant - #{selectedChannel}</h2>
-                    <p className="text-gray-600">AI-powered features and automation for this channel</p>
-                  </div>
-                  <Badge variant="secondary" className="text-sm">
-                    Channel: {selectedChannel}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <EnhancedAI
-                  channelId={selectedChannel}
-                  workspaceId={selectedWorkspace}
-                />
-              </div>
+              <AIAssistant
+                channelId={selectedChannel}
+                workspaceId={selectedWorkspace.toString()}
+              />
             </div>
           )}
 

@@ -102,7 +102,7 @@ export function WasabiFileUpload({
       if (channelId) params.append('channelId', channelId);
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
-      const response = await fetch(`/api/simple-files?${params}`);
+      const response = await fetch(`/api/files?${params}`);
       if (response.ok) {
         const data = await response.json();
         setFiles(data || []);
@@ -171,7 +171,7 @@ export function WasabiFileUpload({
         if (workspaceId) formData.append('workspaceId', workspaceId);
         if (channelId) formData.append('channelId', channelId);
 
-        const response = await fetch('/api/simple-files/upload', {
+        const response = await fetch('/api/files/upload', {
           method: 'POST',
           body: formData,
         });
@@ -197,7 +197,7 @@ export function WasabiFileUpload({
           if (workspaceId) singleFormData.append('workspaceId', workspaceId);
           if (channelId) singleFormData.append('channelId', channelId);
 
-          const response = await fetch('/api/simple-files/upload', {
+          const response = await fetch('/api/files/upload', {
             method: 'POST',
             body: singleFormData,
           });

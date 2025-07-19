@@ -821,7 +821,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
       </div>
 
       {/* Task Board Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {activeView === 'categories' ? (
           <div className="h-full p-6 overflow-y-auto">
             <EnhancedTaskCategoryManager 

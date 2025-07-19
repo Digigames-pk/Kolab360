@@ -29,7 +29,8 @@ import {
   CheckSquare,
   Calendar as CalendarIcon,
   Upload,
-  Zap
+  Zap,
+  FileText
 } from 'lucide-react';
 
 interface ModernTopBarProps {
@@ -196,6 +197,16 @@ export function ModernTopBar({
             <Upload className="h-4 w-4 mr-2" />
             Files
           </Button>
+
+          <Button
+            variant={currentView === 'documents' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onViewChange && onViewChange('documents')}
+            className="h-8"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Docs
+          </Button>
           
           <Button
             variant={currentView === 'ai' ? 'default' : 'ghost'}
@@ -206,6 +217,18 @@ export function ModernTopBar({
             <Zap className="h-4 w-4 mr-2 text-purple-500" />
             AI Assistant
           </Button>
+
+          {/* Superadmin Debug Button */}
+          {process.env.NODE_ENV === 'development' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViewChange && onViewChange('test')}
+              className="h-8 ml-4 border-red-200 text-red-600"
+            >
+              Debug Test
+            </Button>
+          )}
 
         </div>
       </div>
