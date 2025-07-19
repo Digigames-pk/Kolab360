@@ -141,51 +141,107 @@
     @apply transition-all duration-300 ease-in-out;
   }
 
-  /* Responsive sidebar collapse styles */
+  /* Enhanced responsive sidebar styles for better visibility */
   .sidebar-text {
     display: block;
+    transition: opacity 0.2s ease;
   }
 
   .sidebar-icon-only {
     display: none;
   }
 
-  /* When sidebar is collapsed - using CSS custom properties */
+  /* Sidebar container with improved collapse behavior */
   .sidebar-container {
     --sidebar-collapsed: 0;
+    transition: all 0.2s ease;
   }
 
+  /* Better visibility when semi-collapsed */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] {
+    min-width: 4.5rem;
+  }
+
+  /* Show tooltips for collapsed items */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .nav-item,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-item {
+    position: relative;
+    justify-content: center !important;
+    padding: 0.75rem !important;
+    border-radius: 0.5rem;
+  }
+
+  /* Better hover states for collapsed sidebar */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .nav-item:hover,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+  }
+
+  /* Hide text when fully collapsed but keep structure */
   .sidebar-container[style*="--sidebar-collapsed: 1"] .sidebar-text,
   .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-text,
   .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-text {
     display: none !important;
   }
 
+  /* Show icon-only layout when collapsed */
   .sidebar-container[style*="--sidebar-collapsed: 1"] .sidebar-icon-only {
     display: flex !important;
     justify-content: center;
+    align-items: center;
   }
 
-  /* Compact navigation when collapsed */
-  .sidebar-container[style*="--sidebar-collapsed: 1"] .nav-item {
-    justify-content: center !important;
-    padding: 0.75rem !important;
-  }
-
-  /* Compact channels when collapsed */
-  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-item {
-    justify-content: center !important;
-    padding: 0.5rem !important;
-  }
-
+  /* Compact badges positioning */
   .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-badge,
   .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-badge {
-    display: none !important;
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 1rem;
+    height: 1rem;
+    font-size: 0.6rem;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* Center the workspace header when collapsed */
+  /* Center and enhance workspace header when collapsed */
   .sidebar-container[style*="--sidebar-collapsed: 1"] .workspace-header {
     justify-content: center !important;
+    flex-direction: column;
+    padding: 0.5rem;
+  }
+
+  /* Improved channel and DM item styling */
+  .channel-item, .dm-item {
+    transition: all 0.15s ease;
+    position: relative;
+  }
+
+  /* Enhanced tooltip positioning for collapsed items */
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-item::before,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-item::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+  }
+
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .channel-item:hover::before,
+  .sidebar-container[style*="--sidebar-collapsed: 1"] .dm-item:hover::before {
+    opacity: 1;
   }
   
   .sidebar-item:hover {

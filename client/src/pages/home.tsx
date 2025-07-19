@@ -310,7 +310,7 @@ export default function Home() {
             setSidebarWidth(size * 15); // Approximate conversion
             
             // Track sidebar size for responsive behavior and save settings
-            const isCollapsed = size < 20;
+            const isCollapsed = size < 25;
             const sidebar = document.querySelector('.sidebar-container');
             if (sidebar) {
               sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
@@ -421,12 +421,14 @@ export default function Home() {
                 {filteredChannels.map((channel) => (
                 <div
                   key={channel.name}
-                  className={`channel-item flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group ${selectedChannel === channel.name ? 'bg-slate-700' : ''}`}
+                  className={`channel-item flex items-center justify-between px-2 py-2 rounded hover:bg-slate-700 cursor-pointer group transition-all duration-200 ${selectedChannel === channel.name ? 'bg-slate-700' : ''}`}
                   onClick={() => {
                     setActiveView("chat");
                     setSelectedChannel(channel.name);
                     setSelectedDM(null);
                   }}
+                  data-tooltip={`${channel.name} - ${channel.description}`}
+                  title={`${channel.name} - ${channel.description}`}
                 >
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     {channel.type === "public" ? (
@@ -436,7 +438,14 @@ export default function Home() {
                     )}
                     <div className="flex-1 min-w-0 channel-text">
                       <div className="text-sm font-medium truncate">{channel.name}</div>
-                      <div className="text-xs text-slate-500 truncate">{channel.description}</div>
+                      <div className="text-xs text-slate-400 truncate">{channel.description}</div>
+                    </div>
+                    <div className="sidebar-icon-only hidden">
+                      {channel.type === "public" ? (
+                        <Hash className="h-4 w-4 text-slate-400" />
+                      ) : (
+                        <Lock className="h-4 w-4 text-slate-400" />
+                      )}
                     </div>
                   </div>
                   {channel.unread > 0 && (
@@ -486,12 +495,14 @@ export default function Home() {
                 {directMessages.map((dm) => (
                 <div
                   key={dm.name}
-                  className={`flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer ${selectedDM === dm.name ? 'bg-slate-700' : ''}`}
+                  className={`dm-item flex items-center justify-between px-2 py-2 rounded hover:bg-slate-700 cursor-pointer transition-all duration-200 ${selectedDM === dm.name ? 'bg-slate-700' : ''}`}
                   onClick={() => {
                     setActiveView("chat");
                     setSelectedDM(dm.name);
                     setSelectedChannel(null);
                   }}
+                  data-tooltip={`${dm.name} - ${dm.lastMessage}`}
+                  title={`${dm.name} - ${dm.lastMessage}`}
                 >
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     <div className="relative flex-shrink-0">
@@ -505,13 +516,20 @@ export default function Home() {
                         dm.status === 'away' ? 'bg-yellow-500' : 'bg-slate-500'
                       }`} />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 dm-text">
                       <div className="text-sm font-medium truncate">{dm.name}</div>
-                      <div className="text-xs text-slate-500 truncate">{dm.lastMessage}</div>
+                      <div className="text-xs text-slate-400 truncate">{dm.lastMessage}</div>
+                    </div>
+                    <div className="sidebar-icon-only hidden">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs bg-slate-600">
+                          {dm.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
                   </div>
                   {dm.unread > 0 && (
-                    <Badge variant="destructive" className="h-5 text-xs px-1.5">
+                    <Badge variant="destructive" className="h-5 text-xs px-1.5 dm-badge">
                       {dm.unread}
                     </Badge>
                   )}
