@@ -9,6 +9,12 @@ import { EnhancedCalendar } from "@/components/EnhancedCalendar";
 import { SimpleThemeSelector } from "@/components/SimpleThemeSelector";
 import { IntegrationCenter } from "@/components/IntegrationCenter";
 import { AdminIntegrationPanel } from "@/components/AdminIntegrationPanel";
+import { StunningTaskBoard } from "@/components/StunningTaskBoard";
+import { VoiceVideoCall } from "@/components/VoiceVideoCall";
+import { InteractiveOnboarding } from "@/components/InteractiveOnboarding";
+import { GamificationSystem } from "@/components/GamificationSystem";
+import { WorkspaceThemeCustomizer } from "@/components/WorkspaceThemeCustomizer";
+import { EnterpriseAdminPanel } from "@/components/EnterpriseAdminPanel";
 import { EnhancedFileUpload } from "@/components/EnhancedFileUpload";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { NotificationCenter } from "@/components/NotificationCenter";
@@ -57,7 +63,10 @@ import {
   BookOpen,
   Tag,
   Download,
-  Edit3
+  Edit3,
+  Trophy,
+  Palette,
+  Rocket
 } from "lucide-react";
 
 export default function Home() {
@@ -86,6 +95,12 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
+  const [showVoiceCall, setShowVoiceCall] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showGamification, setShowGamification] = useState(false);
+  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
+  const [showEnterprisePanel, setShowEnterprisePanel] = useState(false);
+  const [callType, setCallType] = useState<"voice" | "video">("voice");
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -280,6 +295,36 @@ export default function Home() {
             >
               <Mail className="h-4 w-4 text-blue-400 flex-shrink-0" />
               <span className="text-sm sidebar-text">Email Templates</span>
+            </div>
+          )}
+          <div 
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setShowGamification(true)}
+          >
+            <Trophy className="h-4 w-4 text-yellow-400 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Achievements</span>
+          </div>
+          <div 
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setShowThemeCustomizer(true)}
+          >
+            <Palette className="h-4 w-4 text-purple-400 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Customize Theme</span>
+          </div>
+          <div 
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setShowOnboarding(true)}
+          >
+            <Rocket className="h-4 w-4 text-green-400 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Getting Started</span>
+          </div>
+          {user.role === 'super_admin' && (
+            <div 
+              className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+              onClick={() => setShowEnterprisePanel(true)}
+            >
+              <Shield className="h-4 w-4 text-red-400 flex-shrink-0" />
+              <span className="text-sm sidebar-text">Admin Panel</span>
             </div>
           )}
         </div>
@@ -539,10 +584,26 @@ export default function Home() {
             <SimpleThemeSelector />
             {selectedDM && (
               <>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-green-600 hover:text-green-700">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                  onClick={() => {
+                    setCallType("voice");
+                    setShowVoiceCall(true);
+                  }}
+                >
                   <Phone className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                  onClick={() => {
+                    setCallType("video");
+                    setShowVoiceCall(true);
+                  }}
+                >
                   <Video className="h-4 w-4" />
                 </Button>
               </>
@@ -720,8 +781,8 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <div className="flex-1 p-6">
-              <EnhancedTaskBoard 
+            <div className="flex-1">
+              <StunningTaskBoard 
                 selectedChannel={selectedChannel} 
                 workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
                 onTaskClick={(task) => {
@@ -1045,6 +1106,48 @@ export default function Home() {
           setSelectedFile(null);
         }}
       />
+
+      {/* Voice/Video Call Modal */}
+      <VoiceVideoCall
+        isOpen={showVoiceCall}
+        onClose={() => setShowVoiceCall(false)}
+        callType={callType}
+        initialParticipants={selectedDM ? [selectedDM] : []}
+      />
+
+      {/* Interactive Onboarding */}
+      <InteractiveOnboarding
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={() => {
+          setShowOnboarding(false);
+          // Could trigger achievement unlock here
+        }}
+      />
+
+      {/* Gamification System */}
+      <GamificationSystem
+        isOpen={showGamification}
+        onClose={() => setShowGamification(false)}
+      />
+
+      {/* Workspace Theme Customizer */}
+      <WorkspaceThemeCustomizer
+        isOpen={showThemeCustomizer}
+        onClose={() => setShowThemeCustomizer(false)}
+        onThemeChange={(theme) => {
+          // Apply theme changes
+          console.log('Theme changed:', theme);
+        }}
+      />
+
+      {/* Enterprise Admin Panel */}
+      {user.role === 'super_admin' && (
+        <EnterpriseAdminPanel
+          isOpen={showEnterprisePanel}
+          onClose={() => setShowEnterprisePanel(false)}
+        />
+      )}
     </div>
   );
 }
