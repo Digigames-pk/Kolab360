@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { EnhancedTaskBoard } from "@/components/EnhancedTaskBoard";
 import { MobileTaskBoard } from "@/components/MobileTaskBoard";
+import { RobustTaskBoard } from "@/components/RobustTaskBoard";
+import { WorkspaceCustomizer } from "@/components/WorkspaceCustomizer";
+import { CustomizableSidebar } from "@/components/CustomizableSidebar";
+import { X } from "lucide-react";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { FileViewer } from "@/components/FileViewer";
 import { EnhancedDocumentSystem } from "@/components/EnhancedDocumentSystem";
@@ -103,6 +107,42 @@ export default function Home() {
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   const [showEnterprisePanel, setShowEnterprisePanel] = useState(false);
   const [callType, setCallType] = useState<"voice" | "video">("voice");
+  
+  // Additional workspace customization state
+  const [workspaceTheme, setWorkspaceTheme] = useState({
+    primary: "#0066cc",
+    secondary: "#004499", 
+    accent: "#00aaff",
+    background: "#f0f8ff",
+    sidebar: "#e6f3ff",
+    header: "#cce7ff"
+  });
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showDescriptions, setShowDescriptions] = useState(true);
+  const [showWorkspaceCustomizer, setShowWorkspaceCustomizer] = useState(false);
+  const [sidebarVisibility, setSidebarVisibility] = useState({
+    threads: true,
+    channels: true,
+    directMessages: true,
+    files: true,
+    integrations: true,
+    quickActions: true
+  });
+  const [sidebarLayout, setSidebarLayout] = useState({
+    sidebarWidth: 280,
+    collapsedSidebar: false,
+    compactMode: false,
+    showDescriptions: true,
+    sectionHeights: {
+      threads: 200,
+      channels: 300,
+      directMessages: 200,
+      files: 150,
+      integrations: 100
+    },
+    sectionOrder: ['threads', 'channels', 'directMessages', 'files', 'integrations']
+  });
   
   // Workspace customization persistence
   const [sidebarSizes, setSidebarSizes] = useState(() => {
@@ -248,12 +288,15 @@ export default function Home() {
 
       {/* Main Content with Resizable Panels */}
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        {/* Sidebar Panel */}
+        {/* Enhanced Customizable Sidebar */}
         <ResizablePanel 
           defaultSize={sidebarSizes[0]} 
           minSize={12} 
           maxSize={35} 
           onResize={(size) => {
+            setSidebarSizes([size, 100 - size]);
+            setSidebarWidth(size * 15); // Approximate conversion
+            
             // Track sidebar size for responsive behavior and save settings
             const isCollapsed = size < 16;
             const sidebar = document.querySelector('.sidebar-container');
@@ -352,6 +395,13 @@ export default function Home() {
           >
             <Palette className="h-4 w-4 text-purple-400 flex-shrink-0" />
             <span className="text-sm sidebar-text">Customize Theme</span>
+          </div>
+          <div 
+            className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
+            onClick={() => setShowWorkspaceCustomizer(true)}
+          >
+            <Settings2 className="h-4 w-4 text-blue-400 flex-shrink-0" />
+            <span className="text-sm sidebar-text">Workspace Settings</span>
           </div>
           <div 
             className="nav-item flex items-center space-x-3 px-2 py-1 rounded hover:bg-slate-700 cursor-pointer"
@@ -859,29 +909,10 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <div className="flex-1 h-full">
-              {/* Desktop: Enhanced Task Board, Mobile: Mobile Task Board */}
-              <div className="hidden md:block h-full">
-                <EnhancedTaskBoard 
-                  selectedChannel={selectedChannel} 
-                  workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
-                  onTaskClick={(task) => {
-                    setSelectedTask(task);
-                    setShowTaskModal(true);
-                  }}
-                />
-              </div>
-              <div className="block md:hidden h-full">
-                <MobileTaskBoard 
-                  selectedChannel={selectedChannel} 
-                  workspaceName={workspaces.find(w => w.id === selectedWorkspace)?.name || "Demo"}
-                  onTaskClick={(task) => {
-                    setSelectedTask(task);
-                    setShowTaskModal(true);
-                  }}
-                />
-              </div>
-            </div>
+            <RobustTaskBoard 
+              selectedChannel={selectedChannel}
+              workspaceId={selectedWorkspace}
+            />
           )}
 
           {activeView === "calendar" && (
@@ -1239,6 +1270,38 @@ export default function Home() {
           isOpen={showEnterprisePanel}
           onClose={() => setShowEnterprisePanel(false)}
         />
+      )}
+
+      {/* Workspace Customizer Modal */}
+      {showWorkspaceCustomizer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-6xl max-h-[95vh] overflow-hidden relative">
+            <button
+              onClick={() => setShowWorkspaceCustomizer(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10 bg-white dark:bg-gray-800 rounded-full p-2"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <WorkspaceCustomizer
+              workspaceId={selectedWorkspace.toString()}
+              currentTheme={workspaceTheme}
+              currentLayout={sidebarLayout}
+              currentVisibility={sidebarVisibility}
+              onThemeChange={setWorkspaceTheme}
+              onLayoutChange={setSidebarLayout}
+              onVisibilityChange={setSidebarVisibility}
+              onSave={() => {
+                const config = {
+                  theme: workspaceTheme,
+                  layout: sidebarLayout,
+                  visibility: sidebarVisibility
+                };
+                localStorage.setItem(`workspace-customization-${selectedWorkspace}`, JSON.stringify(config));
+                setShowWorkspaceCustomizer(false);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

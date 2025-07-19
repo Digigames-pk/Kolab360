@@ -40,6 +40,7 @@ import {
   Archive
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { TaskModals } from "./TaskModals";
 
 interface Task {
   id: string;
@@ -678,8 +679,21 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
         </div>
       </div>
 
-      {/* Modals would go here - Create, Edit, and View task modals */}
-      {/* For brevity, I'll add these in the next iteration */}
+      {/* Task Modals */}
+      <TaskModals
+        isCreateOpen={isCreateModalOpen}
+        setIsCreateOpen={setIsCreateModalOpen}
+        isEditOpen={isEditModalOpen}
+        setIsEditOpen={setIsEditModalOpen}
+        isViewOpen={isViewModalOpen}
+        setIsViewOpen={setIsViewModalOpen}
+        editingTask={editingTask}
+        selectedTask={selectedTask}
+        onCreateTask={(taskData) => createTaskMutation.mutate({ ...taskData, workspaceId, channelId: selectedChannel })}
+        onUpdateTask={(taskId, updates) => updateTaskMutation.mutate({ taskId, updates })}
+        onDeleteTask={(taskId) => deleteTaskMutation.mutate(taskId)}
+        workspaceMembers={[]} // Add actual workspace members here
+      />
     </div>
   );
 }
