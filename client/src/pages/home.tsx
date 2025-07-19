@@ -121,7 +121,7 @@ export default function Home() {
   return (
     <div className="h-screen bg-gray-50 flex">
       {/* Modern Slack-style Sidebar */}
-      <div className="w-80 border-r border-gray-200 bg-white">
+      <div className="w-80 border-r border-gray-200 bg-white overflow-hidden">
         <ModernSlackSidebar
           selectedChannel={selectedChannel}
           onChannelSelect={(channel) => {
@@ -141,7 +141,7 @@ export default function Home() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-white overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white">
         {/* Modern Top Bar */}
         <ModernTopBar
           selectedChannel={selectedChannel}
@@ -152,7 +152,7 @@ export default function Home() {
         />
 
         {/* Content Area */}
-        <div className="flex-1 bg-white overflow-hidden">
+        <div className="flex-1 bg-white overflow-y-auto">
           {activeView === "chat" && (
             <RealTimeChat
               channelId={selectedDM ? undefined : selectedChannel}
@@ -162,8 +162,8 @@ export default function Home() {
           )}
 
           {activeView === "tasks" && (
-            <div className="h-full">
-              <div className="p-6 border-b bg-white">
+            <div className="min-h-full flex flex-col">
+              <div className="p-6 border-b bg-white flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold mb-2">Tasks - #{selectedChannel}</h2>
@@ -174,7 +174,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="flex-1 bg-gray-50" style={{ height: 'calc(100vh - 160px)' }}>
+              <div className="flex-1 bg-gray-50 min-h-0">
                 <RobustTaskBoard 
                   selectedChannel={selectedChannel === 'general' ? '550e8400-e29b-41d4-a716-446655440000' : selectedChannel}
                   workspaceId={selectedWorkspace}
@@ -184,8 +184,8 @@ export default function Home() {
           )}
 
           {activeView === "calendar" && (
-            <div className="h-full">
-              <div className="p-6 border-b bg-white">
+            <div className="min-h-full flex flex-col">
+              <div className="p-6 border-b bg-white flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold mb-2">Calendar - #{selectedChannel}</h2>
@@ -196,15 +196,15 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto">
                 <EnhancedCalendar selectedChannel={selectedChannel} />
               </div>
             </div>
           )}
 
           {activeView === "files" && (
-            <div className="h-full">
-              <div className="p-6 border-b bg-white">
+            <div className="min-h-full flex flex-col">
+              <div className="p-6 border-b bg-white flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold mb-2">Files & Storage - #{selectedChannel}</h2>
@@ -215,7 +215,7 @@ export default function Home() {
                   </Badge>
                 </div>
               </div>
-              <div className="p-6 flex-1 overflow-hidden">
+              <div className="p-6 flex-1 overflow-y-auto">
                 <WasabiFileUpload
                   onFileUpload={(files) => {
                     console.log('Files uploaded:', files);
@@ -249,8 +249,8 @@ export default function Home() {
           )}
 
           {activeView === "search" && (
-            <div className="h-full">
-              <div className="p-6 border-b bg-white">
+            <div className="min-h-full flex flex-col">
+              <div className="p-6 border-b bg-white flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold mb-2">Search Results</h2>
@@ -258,7 +258,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto">
                 <EnhancedSearch />
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function Home() {
           )}
 
           {activeView === "integrations" && (
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto">
               <IntegrationHub 
                 onIntegrationToggle={(integrationId, isConnected) => {
                   console.log(`Integration ${integrationId} ${isConnected ? 'connected' : 'disconnected'}`);
