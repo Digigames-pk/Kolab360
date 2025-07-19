@@ -119,13 +119,19 @@ export const files = pgTable("files", {
   id: uuid("id").primaryKey().defaultRandom(),
   filename: varchar("filename", { length: 255 }).notNull(),
   originalName: varchar("original_name", { length: 255 }).notNull(),
+  wasabiKey: varchar("wasabi_key", { length: 500 }).notNull().unique(),
+  wasabiUrl: varchar("wasabi_url", { length: 500 }).notNull(),
   mimeType: varchar("mime_type", { length: 100 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(), // document, image, video, audio, other
   size: integer("size").notNull(),
   uploadedBy: integer("uploaded_by").references(() => users.id).notNull(),
   workspaceId: uuid("workspace_id").references(() => workspaces.id),
   channelId: uuid("channel_id").references(() => channels.id),
   messageId: uuid("message_id").references(() => messages.id),
+  isActive: boolean("is_active").default(true).notNull(),
+  downloadCount: integer("download_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Integration management for external services

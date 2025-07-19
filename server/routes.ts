@@ -15,6 +15,7 @@ import {
 import multer from "multer";
 import path from "path";
 import { z } from "zod";
+import filesRoutes from "./routes/files";
 
 const upload = multer({
   dest: "uploads/",
@@ -749,6 +750,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to export integrations" });
     }
   });
+
+  // Files routes - mount the files router
+  app.use('/api/files', filesRoutes);
 
   // Create HTTP server
   const httpServer = createServer(app);

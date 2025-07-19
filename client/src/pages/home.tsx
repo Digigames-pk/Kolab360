@@ -17,6 +17,7 @@ import { GamificationSystem } from "@/components/GamificationSystem";
 import { WorkspaceThemeCustomizer } from "@/components/WorkspaceThemeCustomizer";
 import { EnterpriseAdminPanel } from "@/components/EnterpriseAdminPanel";
 import { EnhancedFileUpload } from "@/components/EnhancedFileUpload";
+import { WasabiFileUpload } from "@/components/WasabiFileUpload";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
@@ -888,18 +889,19 @@ export default function Home() {
           )}
 
           {activeView === "files" && (
-            <div className="flex-1 p-6">
-              <EnhancedFileUpload 
-                channel={selectedChannel}
-                onFileUpload={(files) => {
-                  console.log('Files uploaded:', files);
-                }}
-                onFileClick={(file) => {
-                  setSelectedFile(file);
-                  setShowFileModal(true);
-                }}
-              />
-            </div>
+            <WasabiFileUpload 
+              channel={selectedChannel}
+              workspaceId={selectedWorkspace}
+              onFileUpload={(files) => {
+                console.log('Files uploaded to Wasabi:', files);
+              }}
+              onFileClick={(file) => {
+                // Open file in new tab for download/view
+                window.open(file.downloadUrl, '_blank');
+              }}
+              maxFiles={10}
+              maxSizeMB={100}
+            />
           )}
 
           {activeView === "documents" && (

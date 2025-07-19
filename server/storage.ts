@@ -71,7 +71,9 @@ export interface IStorage {
   
   // File operations
   createFile(fileData: InsertFile): Promise<File>;
+  getFile(fileId: string): Promise<File | undefined>;
   getWorkspaceFiles(workspaceId: string): Promise<(File & { uploader: User })[]>;
+  deleteFile(fileId: string): Promise<boolean>;
   
   // Reaction operations
   addReaction(messageId: string, userId: number, emoji: string): Promise<Reaction>;
@@ -382,6 +384,12 @@ export class DatabaseStorage implements IStorage {
     return file;
   }
 
+  async getFile(fileId: string): Promise<File | undefined> {
+    return await db.query.files.findFirst({
+      where: eq(files.id, fileId),
+    });
+  }
+
   async getWorkspaceFiles(workspaceId: string): Promise<(File & { uploader: User })[]> {
     const result = await db
       .select({
@@ -402,6 +410,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(files.workspaceId, workspaceId));
 
     return result;
+  }
+
+  async deleteFile(fileId: string): Promise<boolean> {
+    try {
+      await db.update(files)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(files.id, fileId));
+      return true;
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      return false;
+    }
   }
 
   // Reaction operations
