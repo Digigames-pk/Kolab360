@@ -101,6 +101,35 @@ export default function Home() {
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   const [showEnterprisePanel, setShowEnterprisePanel] = useState(false);
   const [callType, setCallType] = useState<"voice" | "video">("voice");
+  
+  // Workspace customization persistence
+  const [sidebarSizes, setSidebarSizes] = useState(() => {
+    const saved = localStorage.getItem(`workspace-sidebar-${selectedWorkspace}`);
+    return saved ? JSON.parse(saved) : [20, 80];
+  });
+  
+  const [workspaceSettings, setWorkspaceSettings] = useState(() => {
+    const saved = localStorage.getItem(`workspace-settings-${selectedWorkspace}`);
+    return saved ? JSON.parse(saved) : {
+      theme: 'dark-purple',
+      sidebarSize: 20,
+      channelSections: {
+        'channels': { collapsed: false, order: 0 },
+        'direct-messages': { collapsed: false, order: 1 },
+        'starred': { collapsed: false, order: 2 }
+      }
+    };
+  });
+
+  // Save settings when they change
+  useEffect(() => {
+    localStorage.setItem(`workspace-settings-${selectedWorkspace}`, JSON.stringify(workspaceSettings));
+  }, [workspaceSettings, selectedWorkspace]);
+
+  // Save sidebar sizes when they change
+  useEffect(() => {
+    localStorage.setItem(`workspace-sidebar-${selectedWorkspace}`, JSON.stringify(sidebarSizes));
+  }, [sidebarSizes, selectedWorkspace]);
 
   if (!user) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
@@ -218,14 +247,25 @@ export default function Home() {
       {/* Main Content with Resizable Panels */}
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Sidebar Panel */}
-        <ResizablePanel defaultSize={20} minSize={12} maxSize={35} onResize={(size) => {
-          // Track sidebar size for responsive behavior
-          const isCollapsed = size < 16;
-          const sidebar = document.querySelector('.sidebar-container');
-          if (sidebar) {
-            sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
-          }
-        }}>
+        <ResizablePanel 
+          defaultSize={sidebarSizes[0]} 
+          minSize={12} 
+          maxSize={35} 
+          onResize={(size) => {
+            // Track sidebar size for responsive behavior and save settings
+            const isCollapsed = size < 16;
+            const sidebar = document.querySelector('.sidebar-container');
+            if (sidebar) {
+              sidebar.style.setProperty('--sidebar-collapsed', isCollapsed ? '1' : '0');
+            }
+            
+            // Update workspace settings
+            setWorkspaceSettings(prev => ({
+              ...prev,
+              sidebarSize: size
+            }));
+          }}
+        >
           <div className="h-full bg-slate-800 text-slate-100 flex flex-col sidebar-container">
         {/* Workspace Header */}
         <div className="p-4 border-b border-slate-700">
@@ -331,19 +371,36 @@ export default function Home() {
 
         <Separator className="bg-slate-700" />
 
-        {/* Channels */}
+        {/* Channels Section */}
         <div className="flex-1 px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-300">Channels</span>
+          <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => {
+            setWorkspaceSettings(prev => ({
+              ...prev,
+              channelSections: {
+                ...prev.channelSections,
+                channels: {
+                  ...prev.channelSections.channels,
+                  collapsed: !prev.channelSections.channels.collapsed
+                }
+              }
+            }));
+          }}>
+            <span className="text-sm font-medium text-slate-300">
+              {workspaceSettings.channelSections.channels.collapsed ? '▶' : '▼'} Channels
+            </span>
             <Plus 
               className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer" 
-              onClick={() => setShowCreateChannel(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowCreateChannel(true);
+              }}
             />
           </div>
           
-          <ScrollArea className="h-32">
-            <div className="space-y-1">
-              {filteredChannels.map((channel) => (
+          {!workspaceSettings.channelSections.channels.collapsed && (
+            <ScrollArea className="h-32">
+              <div className="space-y-1">
+                {filteredChannels.map((channel) => (
                 <div
                   key={channel.name}
                   className={`channel-item flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer group ${selectedChannel === channel.name ? 'bg-slate-700' : ''}`}
@@ -370,18 +427,33 @@ export default function Home() {
                     </Badge>
                   )}
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
 
           <Separator className="bg-slate-700 my-3" />
 
           {/* Direct Messages */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-300">Direct messages</span>
+          <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => {
+            setWorkspaceSettings(prev => ({
+              ...prev,
+              channelSections: {
+                ...prev.channelSections,
+                'direct-messages': {
+                  ...prev.channelSections['direct-messages'],
+                  collapsed: !prev.channelSections['direct-messages'].collapsed
+                }
+              }
+            }));
+          }}>
+            <span className="text-sm font-medium text-slate-300">
+              {workspaceSettings.channelSections['direct-messages'].collapsed ? '▶' : '▼'} Direct messages
+            </span>
             <Plus 
               className="h-4 w-4 text-slate-400 hover:text-white cursor-pointer"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 const userName = prompt("Enter username to start a conversation:");
                 if (userName) {
                   alert(`Direct message with ${userName} would be started`);
@@ -390,9 +462,10 @@ export default function Home() {
             />
           </div>
           
-          <ScrollArea className="h-24">
-            <div className="space-y-1">
-              {directMessages.map((dm) => (
+          {!workspaceSettings.channelSections['direct-messages'].collapsed && (
+            <ScrollArea className="h-24">
+              <div className="space-y-1">
+                {directMessages.map((dm) => (
                 <div
                   key={dm.name}
                   className={`flex items-center justify-between px-2 py-1 rounded hover:bg-slate-700 cursor-pointer ${selectedDM === dm.name ? 'bg-slate-700' : ''}`}
@@ -425,9 +498,10 @@ export default function Home() {
                     </Badge>
                   )}
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
         </div>
 
         {/* User Profile Section */}

@@ -69,6 +69,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.style.setProperty(property, value);
     });
 
+    // Apply theme to body classes for better coverage
+    document.body.className = document.body.className.replace(/theme-\w+/g, '');
+    document.body.classList.add(`theme-${themeName}`);
+
     localStorage.setItem("theme", themeName);
     setTheme(themeName);
   };
@@ -76,6 +80,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    applyTheme(theme);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme: applyTheme }}>
