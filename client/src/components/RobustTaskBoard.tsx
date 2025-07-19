@@ -44,6 +44,7 @@ import { Separator } from '@/components/ui/separator';
 import { CreateTaskModal, EditTaskModal } from './TaskModals';
 import { EnhancedTaskCategoryManager } from './EnhancedTaskCategoryManager';
 import { logger } from './DebugLogger';
+import { api } from '@/lib/api';
 
 interface Task {
   id: string;
@@ -244,10 +245,8 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   const loadTasks = async () => {
     try {
       logger.log('info', 'RobustTaskBoard', 'Loading tasks', { channelId, workspaceId });
-      const response = await fetch(`/api/tasks?workspaceId=${workspaceId}`);
-      if (response.ok) {
-        const tasks = await response.json();
-        logger.log('info', 'RobustTaskBoard', 'Tasks loaded', { tasksCount: tasks.length });
+      const tasks = await api.getTasks({ workspaceId: workspaceId.toString() });
+      logger.log('info', 'RobustTaskBoard', 'Tasks loaded', { tasksCount: tasks.length });
         
         // Convert API tasks to our format and organize by status
         const tasksByStatus = {
@@ -280,9 +279,6 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
           ...col,
           tasks: tasksByStatus[col.id] || []
         })));
-      } else {
-        logger.log('error', 'RobustTaskBoard', 'Failed to load tasks', { status: response.status });
-      }
     } catch (error) {
       logger.log('error', 'RobustTaskBoard', 'Error loading tasks', error);
     }
@@ -290,57 +286,40 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
 
   const onTaskCreate = async (task: Partial<Task>) => {
     try {
-      const response = await fetch('/api/simple-tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: task.title,
-          description: task.description,
-          priority: task.priority || 'medium',
-          category: task.tags?.[0] || 'General',
-          workspaceId: workspaceId.toString()
-        }),
+      logger.log('info', 'RobustTaskBoard', 'Creating task', task);
+      await api.createTask({
+        title: task.title,
+        description: task.description,
+        priority: task.priority || 'medium',
+        category: task.tags?.[0] || 'General',
+        workspaceId: workspaceId.toString()
       });
-      
-      if (response.ok) {
-        loadTasks();
-      }
+      logger.log('success', 'RobustTaskBoard', 'Task created successfully');
+      loadTasks();
     } catch (error) {
-      console.error('Error creating task:', error);
+      logger.log('error', 'RobustTaskBoard', 'Error creating task', error);
     }
   };
   
   const onTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
     try {
-      const response = await fetch(`/api/simple-tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
-      });
-      
-      if (response.ok) {
-        loadTasks();
-      }
+      logger.log('info', 'RobustTaskBoard', 'Updating task', { taskId, updates });
+      await api.updateTask(taskId, updates);
+      logger.log('success', 'RobustTaskBoard', 'Task updated successfully');
+      loadTasks();
     } catch (error) {
-      console.error('Error updating task:', error);
+      logger.log('error', 'RobustTaskBoard', 'Error updating task', error);
     }
   };
   
   const onTaskDelete = async (taskId: string) => {
     try {
-      const response = await fetch(`/api/simple-tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        loadTasks();
-      }
+      logger.log('info', 'RobustTaskBoard', 'Deleting task', { taskId });
+      await api.deleteTask(taskId);
+      logger.log('success', 'RobustTaskBoard', 'Task deleted successfully');
+      loadTasks();
     } catch (error) {
-      console.error('Error deleting task:', error);
+      logger.log('error', 'RobustTaskBoard', 'Error deleting task', error);
     }
   };
 
@@ -736,7 +715,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white" data-testid="task-board">
       {/* Header */}
       <div className="border-b bg-white p-6 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">

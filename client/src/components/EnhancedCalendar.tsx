@@ -353,7 +353,7 @@ export function EnhancedCalendar({ selectedChannel = "general" }: EnhancedCalend
     .slice(0, 5);
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="h-full flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50" data-testid="calendar">
       {/* Header */}
       <div className="p-6 bg-white/90 backdrop-blur-md border-b shadow-sm">
         <div className="flex items-center justify-between">

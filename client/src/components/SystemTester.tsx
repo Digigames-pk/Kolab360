@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, AlertCircle, Play } from 'lucide-react';
 import { logger } from './DebugLogger';
+import { api } from '@/lib/api';
 
 interface TestResult {
   name: string;
@@ -38,25 +39,19 @@ export function SystemTester({ onViewChange, activeView }: SystemTesterProps) {
         { 
           name: 'Messages API', 
           action: async () => {
-            const response = await fetch('/api/channels/general/messages');
-            if (!response.ok) throw new Error(`Status: ${response.status}`);
-            return await response.json();
+            return await api.getMessages('general');
           }
         },
         { 
           name: 'Tasks API', 
           action: async () => {
-            const response = await fetch('/api/tasks?channelId=general');
-            if (!response.ok) throw new Error(`Status: ${response.status}`);
-            return await response.json();
+            return await api.getTasks({ channelId: 'general' });
           }
         },
         { 
           name: 'Files API', 
           action: async () => {
-            const response = await fetch('/api/files');
-            if (!response.ok) throw new Error(`Status: ${response.status}`);
-            return await response.json();
+            return await api.getFiles();
           }
         },
       ]

@@ -21,6 +21,7 @@ import { InteractiveOnboarding } from '@/components/InteractiveOnboarding';
 import { GamificationSystem } from '@/components/GamificationSystem';
 import { EnterpriseAdminPanel } from '@/components/EnterpriseAdminPanel';
 import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { DebugLogger, logger } from '@/components/DebugLogger';
 import { SystemTester } from '@/components/SystemTester';
 
@@ -28,7 +29,7 @@ export default function Home() {
   const [location, setLocation] = useLocation();
   const [selectedChannel, setSelectedChannel] = useState('general');
   const [selectedDM, setSelectedDM] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people'>('chat');
+  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'test'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [currentTheme, setCurrentTheme] = useState('slack-light');
 
