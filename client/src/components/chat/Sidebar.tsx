@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { ChannelInviteModal } from "@/components/ChannelInviteModal";
 import { 
   Home, 
   MessageSquare, 
@@ -22,7 +23,8 @@ import {
   ChevronDown,
   Users,
   Settings,
-  LogOut
+  LogOut,
+  Send
 } from "lucide-react";
 
 interface Channel {
@@ -87,6 +89,7 @@ export default function Sidebar({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [channelName, setChannelName] = useState("");
   const [channelDescription, setChannelDescription] = useState("");
   const [isPrivateChannel, setIsPrivateChannel] = useState(false);
@@ -223,12 +226,22 @@ export default function Sidebar({
           <div className="pt-4">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-gray-400 text-sm font-semibold uppercase tracking-wide">Channels</h4>
-              <Dialog open={showCreateChannel} onOpenChange={setShowCreateChannel}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white h-6 w-6 p-0">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-400 hover:text-white h-6 w-6 p-0"
+                  onClick={() => setShowInviteModal(true)}
+                  title="Invite to workspace"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+                <Dialog open={showCreateChannel} onOpenChange={setShowCreateChannel}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white h-6 w-6 p-0">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="glassmorphism-dark border-white/10">
                   <DialogHeader>
                     <DialogTitle className="text-white">Create Channel</DialogTitle>
@@ -284,7 +297,8 @@ export default function Sidebar({
                     </div>
                   </div>
                 </DialogContent>
-              </Dialog>
+                </Dialog>
+              </div>
             </div>
             
             {isLoading ? (
@@ -309,7 +323,7 @@ export default function Sidebar({
                       ) : (
                         <Hash className="h-4 w-4" />
                       )}
-                      <span className="text-sm">{channel.name}</span>
+                      <span className="text-sm truncate flex-1">{channel.name || 'Unnamed Channel'}</span>
                     </div>
                   </div>
                 ))}
@@ -398,6 +412,15 @@ export default function Sidebar({
           Logout
         </Button>
       </div>
+
+      {/* Channel Invite Modal */}
+      <ChannelInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        channelName={selectedChannelId ? channels.find(c => c.id === selectedChannelId)?.name || 'general' : 'general'}
+        workspaceName={workspace.name}
+        inviteCode={workspace.inviteCode}
+      />
     </div>
   );
 }

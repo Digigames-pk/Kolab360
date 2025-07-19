@@ -301,7 +301,7 @@ export function WasabiFileUpload({
                 File Management
               </h1>
               <p className="text-muted-foreground">
-                {channel ? `Channel: #${channel}` : workspaceId ? 'Workspace Files' : 'All Files'} • {files.length} total files
+                {channelId ? `Channel: #${channelId}` : workspaceId ? 'Workspace Files' : 'All Files'} • {files.length} total files
               </p>
             </div>
           </div>

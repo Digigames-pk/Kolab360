@@ -42,7 +42,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CreateTaskModal, EditTaskModal } from './TaskModals';
-import { TaskCategoryManager } from './TaskCategoryManager';
+import { EnhancedTaskCategoryManager } from './EnhancedTaskCategoryManager';
 
 interface Task {
   id: string;
@@ -821,11 +821,22 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
 
       {/* Task Board Content */}
       <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="p-6">
-            {viewMode === 'kanban' ? <KanbanView /> : <ListView />}
-          </div>
-        </ScrollArea>
+        {activeView === 'categories' ? (
+          <EnhancedTaskCategoryManager 
+            channelId={selectedChannel || 'general'}
+            onCategoriesChange={(cats) => {
+              // Update categories and refresh tasks
+              loadTasks();
+            }}
+            onBack={() => setActiveView('board')}
+          />
+        ) : (
+          <ScrollArea className="h-full">
+            <div className="p-6">
+              {viewMode === 'kanban' ? <KanbanView /> : <ListView />}
+            </div>
+          </ScrollArea>
+        )}
       </div>
 
       {/* Modals */}
