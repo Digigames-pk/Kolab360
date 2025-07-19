@@ -203,19 +203,6 @@ const services: ServiceDefinition[] = [
       { key: "api_token", label: "Loom API Token", type: "password", required: true },
       { key: "workspace_id", label: "Workspace ID", type: "text", required: false }
     ]
-  },
-  {
-    id: "slack",
-    name: "Slack",
-    description: "Cross-platform messaging and notifications",
-    icon: <MessageSquare className="h-6 w-6 text-green-600" />,
-    category: "communication",
-    features: ["Message sync", "Channel bridging", "Notification forwarding"],
-    authType: "oauth",
-    configFields: [
-      { key: "workspace_url", label: "Slack Workspace URL", type: "url", required: true },
-      { key: "default_channel", label: "Default Channel", type: "text", required: false, placeholder: "#general" }
-    ]
   }
 ];
 

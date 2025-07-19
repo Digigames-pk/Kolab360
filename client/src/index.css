@@ -48,31 +48,8 @@
   --ring: hsl(265, 69%, 58%);
 }
 
-/* Custom CSS Variables for Dynamic Theming */
+/* Additional Theme Variables */
 :root {
-  --primary: 261 83% 58%;
-  --secondary: 262 83% 15%;
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
-  --muted: 223 47% 11%;
-  --accent: 262 83% 15%;
-  --border: 216 34% 17%;
-}
-
-:root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(263, 85%, 67%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
   --secondary-foreground: hsl(24, 9.8%, 10%);
   --accent: hsl(151, 55%, 41.5%);
   --accent-foreground: hsl(24, 9.8%, 10%);

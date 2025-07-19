@@ -455,6 +455,8 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700"
+                onClick={() => setActiveView("integrations")}
+                title="Settings & Integrations"
               >
                 <Settings className="h-4 w-4" />
               </Button>

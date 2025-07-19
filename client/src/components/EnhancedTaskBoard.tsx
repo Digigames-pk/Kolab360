@@ -141,6 +141,9 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskForActions, setSelectedTaskForActions] = useState<Task | null>(null);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -149,45 +152,17 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
     dueDate: "",
     tags: ""
   });
+  const [taskColumns, setTaskColumns] = useState([
+    { id: "todo", title: "To Do", icon: <Circle className="h-4 w-4" />, color: "bg-slate-500", bgColor: "bg-gradient-to-br from-slate-50 to-slate-100", borderColor: "border-slate-200" },
+    { id: "in-progress", title: "In Progress", icon: <Timer className="h-4 w-4" />, color: "bg-blue-500", bgColor: "bg-gradient-to-br from-blue-50 to-blue-100", borderColor: "border-blue-200" },
+    { id: "review", title: "Review", icon: <Eye className="h-4 w-4" />, color: "bg-amber-500", bgColor: "bg-gradient-to-br from-amber-50 to-amber-100", borderColor: "border-amber-200" },
+    { id: "done", title: "Done", icon: <CheckCircle className="h-4 w-4" />, color: "bg-green-500", bgColor: "bg-gradient-to-br from-green-50 to-green-100", borderColor: "border-green-200" }
+  ]);
 
-  const columns = [
-    { 
-      id: "todo", 
-      title: "To Do", 
-      icon: <Circle className="h-4 w-4" />,
-      color: "bg-slate-500", 
-      bgColor: "bg-gradient-to-br from-slate-50 to-slate-100",
-      borderColor: "border-slate-200",
-      tasks: tasks.filter(t => t.status === "todo") 
-    },
-    { 
-      id: "in-progress", 
-      title: "In Progress", 
-      icon: <Timer className="h-4 w-4" />,
-      color: "bg-blue-500", 
-      bgColor: "bg-gradient-to-br from-blue-50 to-blue-100",
-      borderColor: "border-blue-200",
-      tasks: tasks.filter(t => t.status === "in-progress") 
-    },
-    { 
-      id: "review", 
-      title: "Review", 
-      icon: <Eye className="h-4 w-4" />,
-      color: "bg-amber-500", 
-      bgColor: "bg-gradient-to-br from-amber-50 to-amber-100",
-      borderColor: "border-amber-200",
-      tasks: tasks.filter(t => t.status === "review") 
-    },
-    { 
-      id: "done", 
-      title: "Done", 
-      icon: <CheckCircle className="h-4 w-4" />,
-      color: "bg-green-500", 
-      bgColor: "bg-gradient-to-br from-green-50 to-green-100",
-      borderColor: "border-green-200",
-      tasks: tasks.filter(t => t.status === "done") 
-    }
-  ];
+  const columns = taskColumns.map(col => ({
+    ...col,
+    tasks: tasks.filter(t => t.status === col.id)
+  }));
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -455,11 +430,13 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-7 w-7 p-0 hover:bg-red-100"
+                            className="h-7 w-7 p-0 hover:bg-purple-100"
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Add favorite functionality
+                              setSelectedTaskForActions(task);
+                              setShowActionsMenu(true);
                             }}
+                            title="More actions"
                           >
                             <MoreHorizontal className="h-3 w-3 text-gray-600" />
                           </Button>
@@ -572,6 +549,135 @@ export function EnhancedTaskBoard({ selectedChannel = "general", workspaceName =
           ))}
         </div>
       </div>
+
+      {/* Task Actions Menu */}
+      <Dialog open={showActionsMenu} onOpenChange={setShowActionsMenu}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Task Actions</DialogTitle>
+          </DialogHeader>
+          {selectedTaskForActions && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-medium">{selectedTaskForActions.title}</h4>
+                <p className="text-sm text-muted-foreground">Choose an action for this task:</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-12"
+                  onClick={() => {
+                    onTaskClick?.(selectedTaskForActions);
+                    setShowActionsMenu(false);
+                  }}
+                >
+                  <Edit3 className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-12"
+                  onClick={() => {
+                    setShowActionsMenu(false);
+                  }}
+                >
+                  <Flag className="h-4 w-4 mr-2" />
+                  Favorite
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-12"
+                  onClick={() => {
+                    const newTask = {
+                      ...selectedTaskForActions,
+                      id: Date.now().toString(),
+                      title: `${selectedTaskForActions.title} (Copy)`,
+                      createdAt: new Date().toISOString().split('T')[0],
+                      updatedAt: new Date().toISOString().split('T')[0]
+                    };
+                    setTasks(prev => [...prev, newTask]);
+                    setShowActionsMenu(false);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Duplicate
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-12 text-red-600 hover:bg-red-50"
+                  onClick={() => {
+                    if (confirm('Delete this task?')) {
+                      setTasks(prev => prev.filter(t => t.id !== selectedTaskForActions.id));
+                      setShowActionsMenu(false);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Manager Button */}
+      <div className="fixed bottom-6 right-6">
+        <Button 
+          onClick={() => setShowCategoryManager(true)}
+          className="rounded-full h-12 w-12 p-0 bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg"
+          title="Manage Categories"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Category Manager Dialog */}
+      <Dialog open={showCategoryManager} onOpenChange={setShowCategoryManager}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manage Task Categories</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="font-medium">Current Categories</h4>
+              <div className="space-y-2">
+                {taskColumns.map((column, index) => (
+                  <div key={column.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className={`${column.color} rounded p-2 text-white`}>
+                        {column.icon}
+                      </div>
+                      <span className="font-medium">{column.title}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="ghost" size="sm">
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                      {taskColumns.length > 2 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('Delete this category? Tasks will be moved to "To Do".')) {
+                              setTasks(prev => prev.map(task => 
+                                task.status === column.id ? {...task, status: "todo"} : task
+                              ));
+                              setTaskColumns(prev => prev.filter((_, i) => i !== index));
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
