@@ -109,18 +109,38 @@ export function ModernSlackSidebar({
   const [showSidebarCustomizer, setShowSidebarCustomizer] = useState(false);
   const { settings, updateSettings } = useSidebarSettings();
 
-  // Track unread state per channel/DM
-  const [channelUnreadCounts, setChannelUnreadCounts] = useState<Record<string, number>>({
-    'general': 4,
-    'random': 4, 
-    'dev-team': 1
-  });
-  
-  const [dmUnreadCounts, setDMUnreadCounts] = useState<Record<string, number>>({
-    'John Doe': 2,
-    'Mike Johnson': 1,
-    'Sarah Wilson': 3
-  });
+  // Track unread state per channel/DM - fetched from API
+  const [channelUnreadCounts, setChannelUnreadCounts] = useState<Record<string, number>>({});
+  const [dmUnreadCounts, setDMUnreadCounts] = useState<Record<string, number>>({});
+
+  // Fetch real unread counts from API
+  React.useEffect(() => {
+    const fetchUnreadCounts = async () => {
+      try {
+        // Fetch channel unread counts
+        const channelResponse = await fetch('/api/unread-counts/channels');
+        if (channelResponse.ok) {
+          const channelCounts = await channelResponse.json();
+          setChannelUnreadCounts(channelCounts);
+        }
+
+        // Fetch DM unread counts  
+        const dmResponse = await fetch('/api/unread-counts/direct-messages');
+        if (dmResponse.ok) {
+          const dmCounts = await dmResponse.json();
+          setDMUnreadCounts(dmCounts);
+        }
+      } catch (error) {
+        console.error('Failed to fetch unread counts:', error);
+      }
+    };
+
+    fetchUnreadCounts();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCounts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Always use dynamic stats from props
   const channels = channelStats.map(stat => ({

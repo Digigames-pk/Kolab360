@@ -49,47 +49,25 @@ export function EnhancedFileUpload({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [recentFiles, setRecentFiles] = useState<FilePreview[]>([
-    {
-      id: "1",
-      name: "project-proposal.pdf",
-      size: 2450000,
-      type: "application/pdf",
-      url: "/files/project-proposal.pdf",
-      uploadedBy: "Sarah Wilson",
-      uploadedAt: "2024-01-24T10:30:00Z",
-      preview: "https://via.placeholder.com/150x200/4f46e5/white?text=PDF"
-    },
-    {
-      id: "2", 
-      name: "wireframes-v2.figma",
-      size: 5670000,
-      type: "application/figma",
-      url: "/files/wireframes-v2.figma",
-      uploadedBy: "Alex Johnson",
-      uploadedAt: "2024-01-24T09:15:00Z"
-    },
-    {
-      id: "3",
-      name: "demo-recording.mp4",
-      size: 15600000,
-      type: "video/mp4", 
-      url: "/files/demo-recording.mp4",
-      uploadedBy: "Mike Chen",
-      uploadedAt: "2024-01-23T16:45:00Z",
-      preview: "https://via.placeholder.com/150x100/ef4444/white?text=MP4"
-    },
-    {
-      id: "4",
-      name: "team-photo.jpg",
-      size: 1200000,
-      type: "image/jpeg",
-      url: "/files/team-photo.jpg", 
-      uploadedBy: "Lisa Rodriguez",
-      uploadedAt: "2024-01-23T14:20:00Z",
-      preview: "https://via.placeholder.com/150x150/10b981/white?text=JPG"
-    }
-  ]);
+  const [recentFiles, setRecentFiles] = useState<FilePreview[]>([]);
+
+  // Fetch real files from API
+  React.useEffect(() => {
+    const fetchRecentFiles = async () => {
+      try {
+        const response = await fetch('/api/files');
+        if (response.ok) {
+          const files = await response.json();
+          setRecentFiles(files);
+        }
+      } catch (error) {
+        console.error('Failed to fetch recent files:', error);
+        setRecentFiles([]); // Set empty array on error
+      }
+    };
+
+    fetchRecentFiles();
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

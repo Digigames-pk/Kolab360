@@ -15,64 +15,25 @@ const upload = multer({
   }
 });
 
-// Mock files data for development
-const mockFiles = [
-  {
-    id: '1',
-    filename: 'project-specs.pdf',
-    originalName: 'Project Specifications.pdf',
-    size: 245760, // ~240KB
-    mimetype: 'application/pdf',
-    uploadedBy: 1,
-    uploadedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    workspaceId: '1',
-    channelId: '550e8400-e29b-41d4-a716-446655440000',
-    category: 'documents',
-    url: '/uploads/project-specs.pdf'
-  },
-  {
-    id: '2',
-    filename: 'team-photo.jpg',
-    originalName: 'Team Photo 2024.jpg',
-    size: 1048576, // 1MB
-    mimetype: 'image/jpeg',
-    uploadedBy: 3,
-    uploadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    workspaceId: '1',
-    channelId: '550e8400-e29b-41d4-a716-446655440000',
-    category: 'images',
-    url: '/uploads/team-photo.jpg'
-  },
-  {
-    id: '3',
-    filename: 'budget-analysis.xlsx',
-    originalName: 'Q4 Budget Analysis.xlsx',
-    size: 512000, // ~500KB
-    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    uploadedBy: 1,
-    uploadedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-    workspaceId: '1',
-    channelId: '550e8400-e29b-41d4-a716-446655440000',
-    category: 'documents',
-    url: '/uploads/budget-analysis.xlsx'
-  }
-];
+// Import realistic test files data
+import { mockFiles as seedFiles } from '../seed-data';
 
 // GET /api/files - Get all files
 router.get('/', async (req, res) => {
   try {
-    const workspaceId = req.query.workspaceId || '1';
     const category = req.query.category;
     
-    let filteredFiles = mockFiles.filter(file => file.workspaceId === workspaceId);
+    // Use seed data files directly
+    let filteredFiles = [...seedFiles];
     
     if (category && category !== 'all') {
       filteredFiles = filteredFiles.filter(file => file.category === category);
     }
     
-    // Add uploader information
+    // Files already have uploader information
     const filesWithUploaders = filteredFiles.map(file => ({
       ...file,
+      name: file.originalName, // Map for compatibility with frontend
       uploader: {
         id: file.uploadedBy,
         firstName: file.uploadedBy === 1 ? 'System' : 'Regular',

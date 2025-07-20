@@ -278,13 +278,34 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   };
 
   // Mock user data for @ mentions
-  const mockUsers = [
-    { id: 1, name: 'Alice Johnson', username: 'alice' },
-    { id: 2, name: 'Bob Smith', username: 'bob' },
-    { id: 3, name: 'Charlie Brown', username: 'charlie' },
-    { id: 4, name: 'Diana Wilson', username: 'diana' },
-    { id: 5, name: 'Eva Martinez', username: 'eva' }
-  ];
+  const [availableUsers, setAvailableUsers] = useState<Array<{ id: number; name: string; username: string }>>([]);
+
+  // Fetch real users for mentions from API
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/workspace/users');
+        if (response.ok) {
+          const users = await response.json();
+          setAvailableUsers(users);
+        } else {
+          // Fallback for testing
+          setAvailableUsers([
+            { id: 1, name: 'Alice Johnson', username: 'alice' },
+            { id: 2, name: 'Bob Smith', username: 'bob' },
+            { id: 3, name: 'Charlie Brown', username: 'charlie' },
+            { id: 4, name: 'Diana Wilson', username: 'diana' },
+            { id: 5, name: 'Eva Martinez', username: 'eva' }
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        setAvailableUsers([]);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;

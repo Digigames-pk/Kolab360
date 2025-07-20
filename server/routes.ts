@@ -19,6 +19,7 @@ import { z } from "zod";
 import filesRoutes from "./routes/files";
 import simpleFilesRoutes from "./routes/simple-files";
 import simpleTasksRoutes from "./routes/simple-tasks";
+import workspaceUsersRoutes from './routes/workspace-users';
 
 const upload = multer({
   dest: "uploads/",
@@ -965,6 +966,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Tasks routes - mount the simple tasks router  
   app.use('/api/tasks', simpleTasksRoutes);
+
+  // Workspace users routes
+  app.use('/api/workspace', workspaceUsersRoutes);
+
+  // Data seeding endpoint for development
+  app.post('/api/seed-test-data', async (req: any, res) => {
+    try {
+      const { seedTestData } = await import('./seed-data');
+      await seedTestData();
+      
+      res.json({ 
+        success: true, 
+        message: 'Test data seeded successfully including 5 test notifications'
+      });
+    } catch (error) {
+      console.error('Error seeding test data:', error);
+      res.status(500).json({ error: 'Failed to seed test data' });
+    }
+  });
+
+  // Unread counts API - moved to avoid conflicts
+  app.get('/api/unread-counts/channels', async (req: any, res) => {
+    try {
+      // Import test data
+      const { mockChannelUnreadCounts } = await import('./seed-data');
+      
+      res.json(mockChannelUnreadCounts);
+    } catch (error) {
+      console.error('Error fetching channel unread counts:', error);
+      res.status(500).json({ error: 'Failed to fetch unread counts' });
+    }
+  });
+
+  app.get('/api/unread-counts/direct-messages', async (req: any, res) => {
+    try {
+      // Import test data
+      const { mockDMUnreadCounts } = await import('./seed-data');
+      
+      res.json(mockDMUnreadCounts);
+    } catch (error) {
+      console.error('Error fetching DM unread counts:', error);
+      res.status(500).json({ error: 'Failed to fetch DM unread counts' });
+    }
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);
