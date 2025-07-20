@@ -225,6 +225,16 @@ Required environment variables:
 - **TESTING INFRASTRUCTURE**: Comprehensive mock data system for development and testing purposes
 - **NOTIFICATION BADGE FIX**: Left menu notification badge now shows real unread count (5) from `/api/notifications/unread-count`
 
+### July 20, 2025 - Unread Count Persistence and Enhanced Messaging
+- **UNREAD COUNT FIX**: Completely resolved persistent unread count issue - now properly clears and stays cleared
+- **DYNAMIC STATE MANAGEMENT**: Implemented Map-based backend storage for real-time unread count tracking
+- **MARK AS READ API**: Added POST endpoints `/api/unread-counts/channels/:channelName/mark-read` and `/api/unread-counts/direct-messages/:userName/mark-read`
+- **CACHE PREVENTION**: Added no-cache headers to ensure real-time updates without browser caching issues
+- **FILE UPLOAD INTEGRATION**: Enhanced messaging with full file upload capability including drag-and-drop support
+- **MEDIA VIEWERS**: Implemented native video, audio, and image preview components within chat messages
+- **PIN MESSAGE FUNCTIONALITY**: Added "Pin Message" option to all message context menus with API integration
+- **COMPREHENSIVE LOGGING**: Deep debugging system with frontend/backend sync for troubleshooting
+
 ### Performance Improvements
 - Centralized API utility (`/lib/api.ts`) with proper error handling and JSON validation
 - Fixed React rendering warnings in drag-and-drop components

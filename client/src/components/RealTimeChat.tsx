@@ -60,6 +60,10 @@ interface Message {
   };
   reactions?: Reaction[];
   replyTo?: Message;
+  fileUrl?: string;
+  fileName?: string;
+  fileType?: string;
+  fileSize?: number;
 }
 
 interface Reaction {
@@ -382,15 +386,32 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
 
   const pinMessage = async (message: Message) => {
     try {
-      // In a real app, this would call an API to pin the message
-      console.log('Pinning message:', message);
-      
-      // Show success feedback
-      alert(`Message "${message.content.substring(0, 50)}..." has been pinned!`);
+      const response = await fetch('/api/pins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'message',
+          title: `Message from ${message.author.firstName} ${message.author.lastName}`,
+          content: message.content,
+          metadata: {
+            messageId: message.id,
+            channelId: message.channelId,
+            authorName: `${message.author.firstName} ${message.author.lastName}`,
+            timestamp: message.createdAt
+          }
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Message pinned successfully');
+        alert(`Message "${message.content.substring(0, 50)}..." has been pinned!`);
+      } else {
+        console.error('❌ Failed to pin message');
+      }
     } catch (error) {
-      console.error('Failed to pin message:', error);
+      console.error('Error pinning message:', error);
     }
-  };;
+  };
 
   // Emoji functions
   const addEmoji = (emoji: string) => {

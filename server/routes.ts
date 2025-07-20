@@ -1011,6 +1011,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const counts = Object.fromEntries(channelUnreadCounts);
       console.log('📊 [Unread Counts] Channel counts requested:', counts);
+      
+      // Prevent caching to ensure real-time updates
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       res.json(counts);
     } catch (error) {
       console.error('Error fetching channel unread counts:', error);
@@ -1023,6 +1031,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const counts = Object.fromEntries(dmUnreadCounts);
       console.log('📊 [Unread Counts] DM counts requested:', counts);
+      
+      // Prevent caching to ensure real-time updates
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       res.json(counts);
     } catch (error) {
       console.error('Error fetching DM unread counts:', error);
