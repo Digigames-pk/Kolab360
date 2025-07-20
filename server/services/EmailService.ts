@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { EmailTemplates } from '../templates/EmailTemplates';
 
 interface EmailOptions {
   to: string;
@@ -13,8 +14,15 @@ export class EmailService {
   private defaultFrom: string;
 
   constructor() {
+    if (!process.env.RESEND_API_KEY) {
+      console.error('⚠️ RESEND_API_KEY not found in environment variables');
+      throw new Error('RESEND_API_KEY is required for email service');
+    }
+    
     this.resend = new Resend(process.env.RESEND_API_KEY);
-    this.defaultFrom = 'Kolab360 <noreply@kolab360.com>';
+    this.defaultFrom = 'Kolab360 Team <onboarding@resend.dev>'; // Using verified Resend domain
+    
+    console.log('✅ Email service initialized with Resend API');
   }
 
   async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
@@ -88,6 +96,77 @@ export class EmailService {
     } catch (error: any) {
       return { success: false, error: error.message };
     }
+  }
+
+  // Template methods for different email types
+  async sendWelcomeEmail(to: string, userFirstName: string, workspaceName?: string) {
+    const template = EmailTemplates.getWelcomeEmail(userFirstName, workspaceName);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
+
+  async sendMentionEmail(to: string, mentionedUser: string, mentioner: string, channel: string, messagePreview: string) {
+    const template = EmailTemplates.getMentionEmail(mentionedUser, mentioner, channel, messagePreview);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
+
+  async sendTaskAssignedEmail(to: string, assigneeName: string, taskTitle: string, assignerName: string, dueDate?: string, priority?: string) {
+    const template = EmailTemplates.getTaskAssignedEmail(assigneeName, taskTitle, assignerName, dueDate, priority);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
+
+  async sendCalendarInviteEmail(to: string, inviteeName: string, eventTitle: string, startDate: string, endDate: string, location?: string, description?: string) {
+    const template = EmailTemplates.getCalendarInviteEmail(inviteeName, eventTitle, startDate, endDate, location, description);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
+
+  async sendPasswordResetEmail(to: string, userFirstName: string, resetToken: string) {
+    const template = EmailTemplates.getPasswordResetEmail(userFirstName, resetToken);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
+
+  async sendWorkspaceInviteEmail(to: string, inviteeName: string, inviterName: string, workspaceName: string, inviteCode: string) {
+    const template = EmailTemplates.getWorkspaceInviteEmail(inviteeName, inviterName, workspaceName, inviteCode);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
+
+  async sendDailyDigestEmail(to: string, userName: string, stats: any) {
+    const template = EmailTemplates.getDailyDigestEmail(userName, stats);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
   }
 }
 
