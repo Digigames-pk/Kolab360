@@ -74,47 +74,23 @@ interface NotificationCenterProps {
 }
 
 export function NotificationCenter({ isOpen, onClose, userRole }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'mention',
-      title: 'New mention in #general',
-      message: 'John Doe mentioned you: "Hey @you, can you review the project update?"',
-      timestamp: new Date(Date.now() - 5 * 60 * 1000),
-      read: false,
-      priority: 'high',
-      channel: 'general',
-      sender: 'John Doe'
-    },
-    {
-      id: '2',
-      type: 'task',
-      title: 'Task assigned: Review Q4 Reports',
-      message: 'Sarah Johnson assigned you a new task with high priority',
-      timestamp: new Date(Date.now() - 15 * 60 * 1000),
-      read: false,
-      priority: 'high',
-      sender: 'Sarah Johnson'
-    },
-    {
-      id: '3',
-      type: 'calendar',
-      title: 'Meeting reminder: Team Standup',
-      message: 'Your meeting starts in 30 minutes',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000),
-      read: true,
-      priority: 'medium'
-    },
-    {
-      id: '4',
-      type: 'welcome',
-      title: 'Welcome to Kolab360!',
-      message: 'Your workspace has been set up successfully',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      read: true,
-      priority: 'low'
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Fetch notifications from API
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/notifications')
+        .then(res => res.json())
+        .then(data => {
+          const formattedNotifications = data.map((n: any) => ({
+            ...n,
+            timestamp: new Date(n.timestamp)
+          }));
+          setNotifications(formattedNotifications);
+        })
+        .catch(err => console.error('Failed to fetch notifications:', err));
     }
-  ]);
+  }, [isOpen]);
 
   const [settings, setSettings] = useState<NotificationSettings>({
     emailNotifications: {
@@ -149,59 +125,63 @@ export function NotificationCenter({ isOpen, onClose, userRole }: NotificationCe
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Remove the mock notification generator since we're using real API data
   useEffect(() => {
-    // Simulate receiving new mention notifications
-    const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
-        const newNotification: Notification = {
-          id: Date.now().toString(),
-          type: 'mention',
-          title: `New mention in #${['general', 'dev-team', 'random'][Math.floor(Math.random() * 3)]}`,
-          message: `${['Sarah', 'Mike', 'Lisa'][Math.floor(Math.random() * 3)]} mentioned you in a message`,
-          timestamp: new Date(),
-          read: false,
-          priority: 'high',
-          channel: ['general', 'dev-team', 'random'][Math.floor(Math.random() * 3)],
-          sender: ['Sarah', 'Mike', 'Lisa'][Math.floor(Math.random() * 3)]
-        };
-        
-        setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Keep last 50
-        
-        // Play notification sound if enabled
-        if (settings.soundEnabled && !settings.doNotDisturb) {
-          // In a real app, you'd play a sound file here
-          console.log('🔔 Notification sound played');
-        }
-        
-        // Show desktop notification if enabled
-        if (settings.desktopNotifications && !settings.doNotDisturb && 'Notification' in window) {
-          new Notification(newNotification.title, {
-            body: newNotification.message,
-            icon: '/favicon.ico'
-          });
-        }
-      }
-    }, 30000); // Every 30 seconds
+    // Refresh notifications every 30 seconds while open
+    if (isOpen) {
+      const interval = setInterval(() => {
+        fetch('/api/notifications')
+          .then(res => res.json())
+          .then(data => {
+            const formattedNotifications = data.map((n: any) => ({
+              ...n,
+              timestamp: new Date(n.timestamp)
+            }));
+            setNotifications(formattedNotifications);
+          })
+          .catch(err => console.error('Failed to refresh notifications:', err));
+      }, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isOpen]);
 
-    return () => clearInterval(interval);
-  }, [settings]);
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      await fetch('/api/notifications/read-all', { method: 'POST' });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const deleteNotification = async (id: string) => {
+    try {
+      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+    }
   };
 
-  const clearAllNotifications = () => {
-    setNotifications([]);
+  const clearAllNotifications = async () => {
+    try {
+      await fetch('/api/notifications/clear-all', { method: 'POST' });
+      setNotifications([]);
+    } catch (err) {
+      console.error('Failed to clear all notifications:', err);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
