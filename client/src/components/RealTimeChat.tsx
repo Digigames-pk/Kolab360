@@ -167,7 +167,15 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.messages || data || []);
+        const messagesData = data.messages || data || [];
+        console.log('📥 Messages loaded from API:', messagesData);
+        console.log('🔍 File metadata check:', messagesData.map(m => ({
+          id: m.id,
+          hasFileUrl: !!m.fileUrl,
+          fileType: m.fileType,
+          messageType: m.messageType
+        })));
+        setMessages(messagesData);
       }
     } catch (error) {
       console.error('Failed to load messages:', error);
@@ -478,16 +486,25 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       
       if (messageResponse.ok) {
         const newMessage = await messageResponse.json();
-        // Add file metadata to the message
+        console.log('🆕 New message from API:', newMessage);
+        
+        // Add file metadata to the message if not already present
         const messageWithFile = {
           ...newMessage,
-          fileUrl: fileData.url,
-          fileName: fileData.originalName,
-          fileType: fileData.mimetype,
-          fileSize: fileData.size
+          fileUrl: newMessage.fileUrl || fileData.url,
+          fileName: newMessage.fileName || fileData.originalName,
+          fileType: newMessage.fileType || fileData.mimetype,
+          fileSize: newMessage.fileSize || fileData.size
         };
+        
+        console.log('🎯 Final message with file data:', messageWithFile);
         setMessages(prev => [...prev, messageWithFile]);
         console.log('✅ File message created successfully');
+        
+        // Refetch messages to ensure we have latest data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         console.error('Failed to create message for file');
       }
