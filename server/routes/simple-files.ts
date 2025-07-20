@@ -8,7 +8,7 @@ const router = Router();
 // Configure multer for file uploads
 const upload = multer({
   dest: 'uploads/',
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit (increased from 10MB)
   fileFilter: (req, file, cb) => {
     // Allow all file types for now
     cb(null, true);
