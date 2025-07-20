@@ -235,7 +235,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const messages = await storage.getChannelMessages(channelId, limit);
-      res.json(messages);
+      
+      // Extract file metadata from message metadata for frontend compatibility
+      const processedMessages = messages.map(message => {
+        const processedMessage = { ...message };
+        
+        // If message has file metadata, extract it to top level for frontend compatibility
+        if (message.metadata && message.messageType === 'file') {
+          const { fileUrl, fileName, fileType, fileSize } = message.metadata;
+          processedMessage.fileUrl = fileUrl;
+          processedMessage.fileName = fileName;
+          processedMessage.fileType = fileType;
+          processedMessage.fileSize = fileSize;
+        }
+        
+        return processedMessage;
+      });
+      
+      res.json(processedMessages);
     } catch (error) {
       console.error("Error fetching messages:", error);
       res.status(500).json({ message: "Failed to fetch messages" });
@@ -252,15 +269,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         channelId = '550e8400-e29b-41d4-a716-446655440000'; // Default UUID for general channel
       }
       
+      // Extract file metadata if present
+      const { fileUrl, fileName, fileType, fileSize, ...bodyData } = req.body;
+      
+      console.log('📨 Message creation request:', {
+        fileUrl, fileName, fileType, fileSize,
+        hasFileData: !!(fileUrl || fileName || fileType)
+      });
+      
       const messageData = insertMessageSchema.parse({
-        ...req.body,
+        ...bodyData,
         channelId: channelId,
       });
       
-      const message = await storage.createMessage({
+      // Add file metadata if present
+      const messageToCreate = {
         ...messageData,
         authorId: userId,
-      });
+      };
+      
+      if (fileUrl || fileName || fileType) {
+        messageToCreate.messageType = 'file';
+        messageToCreate.metadata = {
+          fileUrl,
+          fileName,
+          fileType,
+          fileSize
+        };
+        console.log('📎 Creating file message with metadata:', messageToCreate.metadata);
+      } else {
+        console.log('💬 Creating text message');
+      }
+      
+      const message = await storage.createMessage(messageToCreate);
 
       // Broadcast to WebSocket connections
       const author = req.user || { id: 3, firstName: "Regular", lastName: "User", email: "user@test.com", role: "user" };
