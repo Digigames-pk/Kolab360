@@ -47,6 +47,7 @@ import {
   Settings2
 } from 'lucide-react';
 import { SidebarCustomizer, SidebarSettings, useSidebarSettings } from './SidebarCustomizer';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface ChannelStat {
   id: string;
@@ -108,6 +109,9 @@ export function ModernSlackSidebar({
   const [isDeafened, setIsDeafened] = useState(false);
   const [showSidebarCustomizer, setShowSidebarCustomizer] = useState(false);
   const { settings, updateSettings } = useSidebarSettings();
+  
+  // Get real notification count from API
+  const { unreadCount } = useNotifications();
 
   // Track unread state per channel/DM - fetched from API
   const [channelUnreadCounts, setChannelUnreadCounts] = useState<Record<string, number>>({});
@@ -250,8 +254,10 @@ export function ModernSlackSidebar({
           >
             <Bell className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
             Notifications
-            {settings.showUnreadCounts && (
-              <Badge variant="destructive" className="ml-auto">3</Badge>
+            {settings.showUnreadCounts && unreadCount > 0 && (
+              <Badge variant="destructive" className="ml-auto">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
             )}
           </Button>
           
