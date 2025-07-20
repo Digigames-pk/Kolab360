@@ -219,10 +219,11 @@ Required environment variables:
 - **UNREAD COUNTS**: Live channel and DM unread counts from `/api/unread-counts/channels` and `/api/unread-counts/direct-messages`
 - **FILE SYSTEM**: Real file data from seed-data.ts with authentic file metadata, sizes, and timestamps
 - **USER DATA**: Dynamic user fetching for @mentions from `/api/workspace/users` endpoint
-- **NOTIFICATION TESTING**: Complete data seeding system for realistic testing with `/api/seed-test-data`
+- **NOTIFICATION SYSTEM**: Complete notification badge system using real API data with 5 test notifications
 - **SIDEBAR DATA**: Real-time channel statistics and member counts with auto-refresh functionality
 - **API ENDPOINTS**: All major components now use proper REST APIs instead of placeholder data
 - **TESTING INFRASTRUCTURE**: Comprehensive mock data system for development and testing purposes
+- **NOTIFICATION BADGE FIX**: Left menu notification badge now shows real unread count (5) from `/api/notifications/unread-count`
 
 ### Performance Improvements
 - Centralized API utility (`/lib/api.ts`) with proper error handling and JSON validation

@@ -56,9 +56,20 @@ export async function seedTestData() {
       }
     ];
 
-    // Create notifications
+    // Create notifications directly using the private method
     for (const notification of notifications) {
-      await notificationService.createNotification(notification);
+      // Call the private method directly
+      (notificationService as any).createInAppNotification({
+        userId: testUserId,
+        userEmail: 'test@example.com',
+        userName: 'Test User',
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        priority: notification.priority,
+        channel: notification.channel,
+        sender: notification.sender
+      });
     }
 
     console.log(`✅ Created ${notifications.length} test notifications`);
