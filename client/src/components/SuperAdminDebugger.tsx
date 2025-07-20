@@ -20,7 +20,8 @@ import {
   Settings,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Lock
 } from 'lucide-react';
 
 interface ChannelStats {

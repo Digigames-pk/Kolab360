@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { DebugLogger, logger } from '@/components/DebugLogger';
 import { SystemTester } from '@/components/SystemTester';
 import { SuperAdminDebugger } from '@/components/SuperAdminDebugger';
+import { SuperAdminToggle } from '@/components/SuperAdminToggle';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -72,12 +73,13 @@ export default function Home() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [callType, setCallType] = useState<'voice' | 'video'>('voice');
+  const [userRole, setUserRole] = useState('admin');
 
-  // Mock user data - Set as super_admin to test debugging
+  // Mock user data - Dynamic role for testing
   const user = {
     firstName: 'John',
     lastName: 'Doe',
-    role: 'super_admin' as const  // Changed to super_admin for debugging access
+    role: userRole as 'admin' | 'super_admin'
   };
 
   // Mock workspace data
@@ -130,14 +132,18 @@ export default function Home() {
     { id: 'general', name: 'general', memberCount: 3, activeMembers: 2, lastActivity: new Date().toISOString(), messageCount: 45, type: 'public' as const },
     { id: 'random', name: 'random', memberCount: 8, activeMembers: 1, lastActivity: new Date().toISOString(), messageCount: 12, type: 'public' as const },
     { id: 'dev-team', name: 'dev-team', memberCount: 5, activeMembers: 4, lastActivity: new Date().toISOString(), messageCount: 89, type: 'private' as const },
-    { id: 'announcements', name: 'announcements', memberCount: 12, activeMembers: 0, lastActivity: new Date().toISOString(), messageCount: 3, type: 'public' as const }
+    { id: 'announcements', name: 'announcements', memberCount: 12, activeMembers: 0, lastActivity: new Date().toISOString(), messageCount: 3, type: 'public' as const },
+    { id: 'design', name: 'design', memberCount: 6, activeMembers: 1, lastActivity: new Date().toISOString(), messageCount: 22, type: 'public' as const },
+    { id: 'marketing', name: 'marketing', memberCount: 4, activeMembers: 2, lastActivity: new Date().toISOString(), messageCount: 15, type: 'private' as const }
   ]);
 
   const [dmStats, setDMStats] = useState([
     { id: 'john-doe', name: 'John Doe', status: 'online' as const, lastSeen: new Date().toISOString(), unreadCount: 2, totalMessages: 156 },
     { id: 'jane-smith', name: 'Jane Smith', status: 'away' as const, lastSeen: new Date(Date.now() - 300000).toISOString(), unreadCount: 0, totalMessages: 87 },
-    { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline' as const, lastSeen: new Date(Date.now() - 3600000).toISOString(), unreadCount: 1, totalMessages: 234 }
+    { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline' as const, lastSeen: new Date(Date.now() - 3600000).toISOString(), unreadCount: 1, totalMessages: 234 },
+    { id: 'sarah-wilson', name: 'Sarah Wilson', status: 'online' as const, lastSeen: new Date().toISOString(), unreadCount: 3, totalMessages: 92 }
   ]);
+
   const channels = currentWorkspaceData.channels;
   const directMessages = currentWorkspaceData.directMessages;
 
@@ -474,6 +480,12 @@ export default function Home() {
         isOpen={showChannelInfo}
         onClose={() => setShowChannelInfo(false)}
         channelName={selectedChannel}
+      />
+
+      {/* Development Toggle - Only in dev mode */}
+      <SuperAdminToggle
+        currentRole={userRole}
+        onRoleChange={setUserRole}
       />
 
       {/* Super Admin Debugger - Only visible to super admin */}

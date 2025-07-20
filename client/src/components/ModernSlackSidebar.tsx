@@ -107,34 +107,23 @@ export function ModernSlackSidebar({
   const [showSidebarCustomizer, setShowSidebarCustomizer] = useState(false);
   const { settings, updateSettings } = useSidebarSettings();
 
-  // Use dynamic stats if provided, otherwise fallback to static data
-  const channels = channelStats.length > 0 ? 
-    channelStats.map(stat => ({
-      id: stat.id,
-      name: stat.name,
-      type: stat.type,
-      unread: Math.floor(Math.random() * 5), // Simulate unread messages
-      memberCount: stat.memberCount,
-      activeMembers: stat.activeMembers
-    })) : [
-      { id: 'general', name: 'general', type: 'public', unread: 3, memberCount: 3, activeMembers: 2 },
-      { id: 'random', name: 'random', type: 'public', unread: 0, memberCount: 8, activeMembers: 1 },
-      { id: 'dev-team', name: 'dev-team', type: 'private', unread: 12, memberCount: 5, activeMembers: 4 },
-      { id: 'design', name: 'design', type: 'public', unread: 0, memberCount: 6, activeMembers: 0 },
-      { id: 'marketing', name: 'marketing', type: 'private', unread: 5, memberCount: 4, activeMembers: 2 }
-    ];
+  // Always use dynamic stats from props
+  const channels = channelStats.map(stat => ({
+    id: stat.id,
+    name: stat.name,
+    type: stat.type,
+    unread: Math.floor(Math.random() * 5), // Simulate unread messages
+    memberCount: stat.memberCount,
+    activeMembers: stat.activeMembers
+  }));
 
-  const directMessages = dmStats.length > 0 ?
-    dmStats.map(stat => ({
-      id: stat.id,
-      name: stat.name,
-      status: stat.status,
-      unread: stat.unreadCount
-    })) : [
-      { id: 'john-doe', name: 'John Doe', status: 'online', unread: 2 },
-      { id: 'jane-smith', name: 'Jane Smith', status: 'away', unread: 0 },
-      { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline', unread: 1 }
-    ];
+  // Always use dynamic stats from props
+  const directMessages = dmStats.map(stat => ({
+    id: stat.id,
+    name: stat.name,
+    status: stat.status,
+    unread: stat.unreadCount
+  }));
 
   const getCurrentWorkspace = () => workspaces.find(w => w.id === selectedWorkspace);
   const currentWorkspace = getCurrentWorkspace();
