@@ -83,6 +83,7 @@ interface ModernSlackSidebarProps {
   onShowSettings?: () => void;
   channelStats?: ChannelStat[];
   dmStats?: DMStat[];
+  onCreateWorkspace?: () => void;
 }
 
 export function ModernSlackSidebar({
@@ -100,19 +101,33 @@ export function ModernSlackSidebar({
   onStartCall,
   onShowSettings,
   channelStats = [],
-  dmStats = []
+  dmStats = [],
+  onCreateWorkspace
 }: ModernSlackSidebarProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [showSidebarCustomizer, setShowSidebarCustomizer] = useState(false);
   const { settings, updateSettings } = useSidebarSettings();
 
+  // Track unread state per channel/DM
+  const [channelUnreadCounts, setChannelUnreadCounts] = useState<Record<string, number>>({
+    'general': 4,
+    'random': 4, 
+    'dev-team': 1
+  });
+  
+  const [dmUnreadCounts, setDMUnreadCounts] = useState<Record<string, number>>({
+    'John Doe': 2,
+    'Mike Johnson': 1,
+    'Sarah Wilson': 3
+  });
+
   // Always use dynamic stats from props
   const channels = channelStats.map(stat => ({
     id: stat.id,
     name: stat.name,
     type: stat.type,
-    unread: Math.floor(Math.random() * 5), // Simulate unread messages
+    unread: channelUnreadCounts[stat.name] || 0,
     memberCount: stat.memberCount,
     activeMembers: stat.activeMembers
   }));
@@ -122,7 +137,7 @@ export function ModernSlackSidebar({
     id: stat.id,
     name: stat.name,
     status: stat.status,
-    unread: stat.unreadCount
+    unread: dmUnreadCounts[stat.name] || 0
   }));
 
   const getCurrentWorkspace = () => workspaces.find(w => w.id === selectedWorkspace);
@@ -171,7 +186,7 @@ export function ModernSlackSidebar({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onCreateWorkspace}>
               <Plus className="h-4 w-4 mr-2" />
               Create workspace
             </DropdownMenuItem>
@@ -284,6 +299,13 @@ export function ModernSlackSidebar({
                     onClick={() => {
                       onChannelSelect(channel.id);
                       onViewChange('chat');
+                      // Mark channel as read when clicked
+                      if (channel.unread > 0) {
+                        setChannelUnreadCounts(prev => ({
+                          ...prev,
+                          [channel.name]: 0
+                        }));
+                      }
                     }}
                   >
                     {channel.type === 'private' ? (
@@ -335,6 +357,13 @@ export function ModernSlackSidebar({
                   onClick={() => {
                     onViewChange('chat');
                     console.log('Selected DM:', dm.name);
+                    // Mark DM as read when clicked
+                    if (dm.unread > 0) {
+                      setDMUnreadCounts(prev => ({
+                        ...prev,
+                        [dm.name]: 0
+                      }));
+                    }
                   }}
                 >
                   <div className="flex items-center mr-2">

@@ -33,6 +33,7 @@ import { SystemTester } from '@/components/SystemTester';
 import { SuperAdminDebugger } from '@/components/SuperAdminDebugger';
 import { SuperAdminToggle } from '@/components/SuperAdminToggle';
 import { useNotifications } from '@/hooks/useNotifications';
+import { CreateWorkspaceModal } from '@/components/CreateWorkspaceModal';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -43,19 +44,7 @@ export default function Home() {
   const [currentTheme, setCurrentTheme] = useState('slack-light');
 
   // Notification system hook
-  const { unreadCount, sendTestNotification } = useNotifications();
-
-  // Create some test notifications on component mount for demo
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Send a few test notifications to show the red badge working
-      sendTestNotification('mention');
-      setTimeout(() => sendTestNotification('task'), 1000);
-      setTimeout(() => sendTestNotification('calendar'), 2000);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [sendTestNotification]);
+  const { unreadCount, sendTestNotification, markAllAsRead } = useNotifications();
 
   // Component mount logging
   useEffect(() => {
@@ -84,6 +73,7 @@ export default function Home() {
   const [showProfile, setShowProfile] = useState(false);
   const [showInviteUsers, setShowInviteUsers] = useState(false);
   const [showChannelInfo, setShowChannelInfo] = useState(false);
+  const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   
   // Selected items for modals
   const [selectedTask, setSelectedTask] = useState(null);
@@ -98,12 +88,23 @@ export default function Home() {
     role: userRole as 'admin' | 'super_admin'
   };
 
-  // Mock workspace data
-  const workspaces = [
+  // Mock workspace data with state management
+  const [workspaces, setWorkspaces] = useState([
     { id: 1, name: 'Kolab360 Demo', initial: 'KD' },
     { id: 2, name: 'Marketing Team', initial: 'MT' },
     { id: 3, name: 'Development', initial: 'DV' }
-  ];
+  ]);
+
+  // Handle workspace creation
+  const handleCreateWorkspace = (newWorkspace: any) => {
+    const workspaceWithInitial = {
+      ...newWorkspace,
+      initial: newWorkspace.name.charAt(0).toUpperCase()
+    };
+    setWorkspaces(prev => [...prev, workspaceWithInitial]);
+    setSelectedWorkspace(newWorkspace.id);
+    console.log('New workspace created:', workspaceWithInitial);
+  };
 
   // Mock workspace data with channels and DMs
   const workspaceData = {
@@ -190,6 +191,7 @@ export default function Home() {
           onShowSettings={() => alert('Opening audio settings...')}
           channelStats={channelStats}
           dmStats={dmStats}
+          onCreateWorkspace={() => setShowCreateWorkspace(true)}
         />
       </div>
 
@@ -200,7 +202,13 @@ export default function Home() {
           selectedChannel={selectedChannel}
           currentView={activeView}
           onShowSearch={() => setShowSearch(true)}
-          onShowNotifications={() => setShowNotifications(true)}
+          onShowNotifications={() => {
+            setShowNotifications(true);
+            // Mark notifications as read when notification center is opened
+            if (unreadCount > 0) {
+              setTimeout(() => markAllAsRead(), 500);
+            }
+          }}
           onViewChange={setActiveView}
           onStartCall={(type) => {
             setCallType(type);
@@ -502,6 +510,13 @@ export default function Home() {
 
       {/* Debug Logger */}
       <DebugLogger />
+
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal
+        isOpen={showCreateWorkspace}
+        onClose={() => setShowCreateWorkspace(false)}
+        onCreateWorkspace={handleCreateWorkspace}
+      />
     </div>
   );
 }
