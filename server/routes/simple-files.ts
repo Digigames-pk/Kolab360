@@ -95,7 +95,19 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       }
     };
     
-    res.status(201).json(fileWithUploader);
+    // Return in the format expected by frontend
+    const responseData = {
+      success: true,
+      id: newFile.id,
+      originalName: newFile.originalName,
+      filename: newFile.filename,
+      size: newFile.size,
+      mimetype: newFile.mimetype,
+      url: newFile.url,
+      uploadedAt: newFile.uploadedAt.toISOString()
+    };
+    
+    res.status(201).json(responseData);
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({ message: 'Failed to upload file' });

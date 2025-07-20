@@ -100,6 +100,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   const [showMentionDropdown, setShowMentionDropdown] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -438,14 +439,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       });
 
       if (response.ok) {
-        const responseText = await response.text();
-        let fileData;
-        try {
-          fileData = JSON.parse(responseText);
-        } catch (e) {
-          console.error('Invalid JSON response:', responseText);
-          throw new Error('Invalid response from server');
-        }
+        const fileData = await response.json();
         
         // Create message with file attachment using the actual file data
         const endpoint = channelId 
@@ -487,6 +481,77 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  // Drag and drop functions
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('channelId', channelId || '');
+      formData.append('recipientId', recipientId?.toString() || '');
+
+      try {
+        const response = await fetch('/api/simple-files/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const fileData = await response.json();
+          
+          // Create message with file attachment
+          const endpoint = channelId 
+            ? `/api/channels/${channelId}/messages`
+            : `/api/messages/direct`;
+            
+          const messageResponse = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `📎 Shared file: ${fileData.originalName}`,
+              authorId: user?.id || 3,
+              channelId: channelId,
+              recipientId: recipientId,
+              fileUrl: fileData.url,
+              fileName: fileData.originalName,
+              fileType: fileData.mimetype,
+              fileSize: fileData.size
+            })
+          });
+          
+          if (messageResponse.ok) {
+            const newMessage = await messageResponse.json();
+            const messageWithFile = {
+              ...newMessage,
+              fileUrl: fileData.url,
+              fileName: fileData.originalName,
+              fileType: fileData.mimetype,
+              fileSize: fileData.size
+            };
+            setMessages(prev => [...prev, messageWithFile]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to upload file:', error);
+      }
     }
   };
 
@@ -594,7 +659,29 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     <div className={cn("flex-1 flex flex-col h-full", className)}>
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-4">
-        <div className="space-y-4 py-4">
+        <div 
+          className={cn(
+            "space-y-4 py-4 relative",
+            isDragging && "bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg"
+          )}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {/* Drag overlay */}
+          {isDragging && (
+            <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 dark:bg-blue-900/40 backdrop-blur-sm z-50 rounded-lg">
+              <div className="text-center p-8">
+                <Upload className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+                <p className="text-lg font-medium text-blue-700 dark:text-blue-300">
+                  Drop files here to upload
+                </p>
+                <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                  Images, videos, documents, and more
+                </p>
+              </div>
+            </div>
+          )}
           {messageGroups.length === 0 ? (
             <div className="flex-1 flex items-center justify-center py-12">
               <div className="text-center space-y-2">
