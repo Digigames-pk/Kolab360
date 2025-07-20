@@ -843,7 +843,6 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                             <div className="space-y-2">
                               <p className="text-sm break-words">{message.content}</p>
                               {/* File Preview */}
-                              {console.log('🖼️ Checking file preview for message:', { id: message.id, fileUrl: message.fileUrl, fileType: message.fileType, hasFileUrl: !!message.fileUrl })}
                               {message.fileUrl && (
                                 <div className="mt-2">
                                   {message.fileType?.startsWith('image/') ? (
