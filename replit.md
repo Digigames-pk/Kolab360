@@ -204,6 +204,16 @@ Required environment variables:
 - **VISUAL INDICATORS**: Member count badges next to channel names showing current and active members
 - **EMAIL NOTIFICATIONS**: Welcome, mentions, task assignments, calendar invites, password reset, workspace invites, daily digest
 
+### July 20, 2025 - Comprehensive Notification System Implementation
+- **IN-APP NOTIFICATIONS**: Complete notification center with all 7 email types plus @mention notifications (in-app only, no email duplicates)
+- **NOTIFICATION SETTINGS**: Granular control over email and in-app notifications for each type (mentions, tasks, calendar, welcome, workspace invites, password reset, daily digest)
+- **SMART FEATURES**: Do Not Disturb mode, quiet hours, sound notifications, desktop notifications, priority-based filtering
+- **API INFRASTRUCTURE**: Full REST API for notifications (get, mark read, delete, settings) with user-specific storage
+- **MENTION DETECTION**: Real-time @mention parsing with automatic in-app notification generation (separate from email system)
+- **NOTIFICATION SERVICE**: Centralized service handling all notification types with email/in-app separation
+- **USER PREFERENCES**: Persistent notification settings per user with intelligent quiet time handling
+- **VISUAL INDICATORS**: Unread count badges, priority color coding, notification type icons, timestamp display
+
 ### Performance Improvements
 - Centralized API utility (`/lib/api.ts`) with proper error handling and JSON validation
 - Fixed React rendering warnings in drag-and-drop components

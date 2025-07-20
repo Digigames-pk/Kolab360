@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, requireAuth, requireRole } from "./auth";
 import { generateAIResponse, analyzeSentiment, summarizeMessages, generateTasks, autoCompleteMessage } from "./openai";
 import { emailService } from "./email";
+import { notificationService } from "./services/NotificationService";
 import { 
   insertWorkspaceSchema, 
   insertChannelSchema, 
@@ -534,6 +535,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating AI response:", error);
       res.status(500).json({ message: "Failed to generate AI response" });
+    }
+  });
+
+  // Notification routes
+  app.get('/api/notifications', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const limit = parseInt(req.query.limit as string) || 50;
+      const notifications = notificationService.getNotifications(userId, limit);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      res.status(500).json({ error: 'Failed to fetch notifications' });
+    }
+  });
+
+  app.post('/api/notifications/:id/read', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const notificationId = req.params.id;
+      const success = notificationService.markAsRead(userId, notificationId);
+      res.json({ success });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).json({ error: 'Failed to mark notification as read' });
+    }
+  });
+
+  app.post('/api/notifications/read-all', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const success = notificationService.markAllAsRead(userId);
+      res.json({ success });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      res.status(500).json({ error: 'Failed to mark all notifications as read' });
+    }
+  });
+
+  app.delete('/api/notifications/:id', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const notificationId = req.params.id;
+      const success = notificationService.deleteNotification(userId, notificationId);
+      res.json({ success });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      res.status(500).json({ error: 'Failed to delete notification' });
+    }
+  });
+
+  app.delete('/api/notifications', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const success = notificationService.clearAllNotifications(userId);
+      res.json({ success });
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+      res.status(500).json({ error: 'Failed to clear notifications' });
+    }
+  });
+
+  app.get('/api/notifications/unread-count', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const count = notificationService.getUnreadCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      res.status(500).json({ error: 'Failed to fetch unread count' });
+    }
+  });
+
+  app.get('/api/notifications/settings', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const settings = notificationService.getUserNotificationSettings(userId);
+      res.json(settings);
+    } catch (error) {
+      console.error('Error fetching notification settings:', error);
+      res.status(500).json({ error: 'Failed to fetch notification settings' });
+    }
+  });
+
+  app.post('/api/notifications/settings', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      notificationService.updateUserSettings(userId, req.body);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating notification settings:', error);
+      res.status(500).json({ error: 'Failed to update notification settings' });
+    }
+  });
+
+  // Test notification routes for development
+  app.post('/api/notifications/test/:type', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const user = req.user;
+      const type = req.params.type;
+      
+      let result;
+      switch (type) {
+        case 'mention':
+          result = await notificationService.sendMentionNotification(
+            userId,
+            user.email,
+            user.firstName,
+            'John Doe',
+            'general',
+            'Hey @you, can you check this out?'
+          );
+          break;
+          
+        case 'task':
+          result = await notificationService.sendTaskNotification(
+            userId,
+            user.email,
+            user.firstName,
+            'Review quarterly reports',
+            'Sarah Johnson'
+          );
+          break;
+          
+        case 'calendar':
+          result = await notificationService.sendCalendarNotification(
+            userId,
+            user.email,
+            user.firstName,
+            'Team Standup Meeting'
+          );
+          break;
+          
+        default:
+          result = await notificationService.sendNotification({
+            userId,
+            userEmail: user.email,
+            userName: user.firstName,
+            type: type as any,
+            title: `Test ${type} notification`,
+            message: `This is a test ${type} notification`,
+            priority: 'medium'
+          });
+      }
+      
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      res.status(500).json({ error: 'Failed to send test notification' });
     }
   });
 

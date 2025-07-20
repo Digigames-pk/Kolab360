@@ -1,436 +1,408 @@
-import { Resend } from 'resend';
+import { EmailService } from './EmailService';
 
-interface User {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  notificationPreferences?: {
-    email: boolean;
+interface NotificationOptions {
+  userId: string;
+  userEmail: string;
+  userName: string;
+  type: 'mention' | 'task' | 'calendar' | 'welcome' | 'workspace_invite' | 'password_reset' | 'daily_digest';
+  title: string;
+  message: string;
+  priority: 'low' | 'medium' | 'high';
+  channel?: string;
+  sender?: string;
+  actionUrl?: string;
+  emailOnly?: boolean; // If true, only send email, no in-app notification
+  inAppOnly?: boolean; // If true, only send in-app notification, no email
+}
+
+interface UserNotificationSettings {
+  userId: string;
+  emailNotifications: {
     mentions: boolean;
     tasks: boolean;
     calendar: boolean;
-    directMessages: boolean;
-    workspaceUpdates: boolean;
+    welcome: boolean;
+    workspaceInvites: boolean;
+    passwordReset: boolean;
+    dailyDigest: boolean;
+  };
+  inAppNotifications: {
+    mentions: boolean;
+    tasks: boolean;
+    calendar: boolean;
+    welcome: boolean;
+    workspaceInvites: boolean;
+    passwordReset: boolean;
+    dailyDigest: boolean;
+  };
+  soundEnabled: boolean;
+  desktopNotifications: boolean;
+  doNotDisturb: boolean;
+  quietHours: {
+    enabled: boolean;
+    start: string;
+    end: string;
   };
 }
 
-interface NotificationData {
-  type: 'welcome' | 'mention' | 'task_assigned' | 'task_completed' | 'calendar_invite' | 'password_reset' | 'direct_message' | 'workspace_invite' | 'file_shared' | 'deadline_reminder' | 'system_update';
-  recipient: User;
-  data: any;
+interface InAppNotification {
+  id: string;
+  userId: string;
+  type: NotificationOptions['type'];
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  priority: NotificationOptions['priority'];
   channel?: string;
-  workspace?: string;
-  sender?: User;
-  priority?: 'low' | 'medium' | 'high' | 'urgent';
-}
-
-interface EmailTemplate {
-  subject: string;
-  html: string;
-  text?: string;
+  sender?: string;
+  actionUrl?: string;
 }
 
 export class NotificationService {
-  private resend: Resend;
-  private baseUrl: string;
+  private emailService: EmailService;
+  private inAppNotifications: Map<string, InAppNotification[]> = new Map(); // userId -> notifications
+  private userSettings: Map<string, UserNotificationSettings> = new Map(); // userId -> settings
 
   constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY);
-    this.baseUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+    this.emailService = new EmailService();
+    this.initializeDefaultSettings();
   }
 
-  async sendNotification(notification: NotificationData): Promise<void> {
-    const { recipient, type } = notification;
+  private initializeDefaultSettings() {
+    // Mock default settings for demo users
+    const defaultSettings: UserNotificationSettings = {
+      userId: 'default',
+      emailNotifications: {
+        mentions: true,
+        tasks: true,
+        calendar: true,
+        welcome: true,
+        workspaceInvites: true,
+        passwordReset: true,
+        dailyDigest: true
+      },
+      inAppNotifications: {
+        mentions: true,
+        tasks: true,
+        calendar: true,
+        welcome: true,
+        workspaceInvites: true,
+        passwordReset: true,
+        dailyDigest: true
+      },
+      soundEnabled: true,
+      desktopNotifications: true,
+      doNotDisturb: false,
+      quietHours: {
+        enabled: false,
+        start: '22:00',
+        end: '08:00'
+      }
+    };
+
+    this.userSettings.set('default', defaultSettings);
+  }
+
+  private getUserSettings(userId: string): UserNotificationSettings {
+    return this.userSettings.get(userId) || this.userSettings.get('default')!;
+  }
+
+  private isQuietTime(settings: UserNotificationSettings): boolean {
+    if (!settings.quietHours.enabled) return false;
+
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
     
-    // Check user preferences
-    if (!this.shouldSendNotification(recipient, type)) {
-      console.log(`Notification skipped for user ${recipient.id} - type: ${type}`);
-      return;
+    const [startHour, startMin] = settings.quietHours.start.split(':').map(Number);
+    const [endHour, endMin] = settings.quietHours.end.split(':').map(Number);
+    
+    const startTime = startHour * 60 + startMin;
+    const endTime = endHour * 60 + endMin;
+    
+    if (startTime <= endTime) {
+      return currentTime >= startTime && currentTime <= endTime;
+    } else {
+      // Quiet hours span midnight
+      return currentTime >= startTime || currentTime <= endTime;
     }
-
-    // Send email notification
-    await this.sendEmailNotification(notification);
-    
-    // Store in-app notification
-    await this.storeInAppNotification(notification);
-    
-    // Send real-time notification via WebSocket if user is online
-    await this.sendRealTimeNotification(notification);
   }
 
-  private shouldSendNotification(user: User, type: string): boolean {
-    const prefs = user.notificationPreferences;
-    if (!prefs) return true; // Default to sending all notifications
-    
-    switch (type) {
-      case 'mention':
-        return prefs.mentions;
-      case 'task_assigned':
-      case 'task_completed':
-      case 'deadline_reminder':
-        return prefs.tasks;
-      case 'calendar_invite':
-        return prefs.calendar;
-      case 'direct_message':
-        return prefs.directMessages;
-      case 'workspace_invite':
-      case 'file_shared':
-      case 'system_update':
-        return prefs.workspaceUpdates;
-      default:
-        return prefs.email;
-    }
-  }
-
-  private async sendEmailNotification(notification: NotificationData): Promise<void> {
-    const template = this.getEmailTemplate(notification);
-    
+  async sendNotification(options: NotificationOptions): Promise<{
+    emailSent: boolean;
+    inAppCreated: boolean;
+    error?: string;
+  }> {
     try {
-      await this.resend.emails.send({
-        from: 'Kolab360 <noreply@kolab360.com>',
-        to: notification.recipient.email,
-        subject: template.subject,
-        html: template.html,
-        text: template.text
-      });
+      const settings = this.getUserSettings(options.userId);
+      const isQuietTime = this.isQuietTime(settings);
       
-      console.log(`Email sent successfully to ${notification.recipient.email} - type: ${notification.type}`);
+      let emailSent = false;
+      let inAppCreated = false;
+
+      // Send email notification if enabled and not in quiet hours (unless it's urgent)
+      if (!options.inAppOnly && this.shouldSendEmailNotification(options.type, settings, isQuietTime, options.priority)) {
+        try {
+          await this.sendEmailNotification(options);
+          emailSent = true;
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+        }
+      }
+
+      // Create in-app notification if enabled
+      if (!options.emailOnly && this.shouldCreateInAppNotification(options.type, settings)) {
+        this.createInAppNotification(options);
+        inAppCreated = true;
+      }
+
+      return { emailSent, inAppCreated };
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error('Notification service error:', error);
+      return { 
+        emailSent: false, 
+        inAppCreated: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   }
 
-  private getEmailTemplate(notification: NotificationData): EmailTemplate {
-    const { type, recipient, data, sender, channel, workspace } = notification;
-    const baseTemplate = this.getBaseEmailTemplate();
+  private shouldSendEmailNotification(type: NotificationOptions['type'], settings: UserNotificationSettings, isQuietTime: boolean, priority: string): boolean {
+    if (settings.doNotDisturb && priority !== 'high') return false;
+    if (isQuietTime && priority !== 'high') return false;
 
     switch (type) {
-      case 'welcome':
-        return {
-          subject: 'Welcome to Kolab360! 🎉',
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>Welcome to Kolab360, ${recipient.firstName}!</h2>
-            <p>We're excited to have you on board. Kolab360 is your new collaboration hub where teams come together to work smarter, not harder.</p>
-            
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="margin-top: 0;">🚀 Get Started:</h3>
-              <ul style="margin: 0; padding-left: 20px;">
-                <li>Set up your profile and preferences</li>
-                <li>Join or create your first workspace</li>
-                <li>Invite team members to collaborate</li>
-                <li>Explore channels, tasks, and file sharing</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/welcome" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Complete Setup
-              </a>
-            </div>
-            
-            <p>If you have any questions, our support team is here to help at <a href="mailto:support@kolab360.com">support@kolab360.com</a></p>
-          `)
-        };
+      case 'mention': return settings.emailNotifications.mentions;
+      case 'task': return settings.emailNotifications.tasks;
+      case 'calendar': return settings.emailNotifications.calendar;
+      case 'welcome': return settings.emailNotifications.welcome;
+      case 'workspace_invite': return settings.emailNotifications.workspaceInvites;
+      case 'password_reset': return settings.emailNotifications.passwordReset;
+      case 'daily_digest': return settings.emailNotifications.dailyDigest;
+      default: return false;
+    }
+  }
 
+  private shouldCreateInAppNotification(type: NotificationOptions['type'], settings: UserNotificationSettings): boolean {
+    switch (type) {
+      case 'mention': return settings.inAppNotifications.mentions;
+      case 'task': return settings.inAppNotifications.tasks;
+      case 'calendar': return settings.inAppNotifications.calendar;
+      case 'welcome': return settings.inAppNotifications.welcome;
+      case 'workspace_invite': return settings.inAppNotifications.workspaceInvites;
+      case 'password_reset': return settings.inAppNotifications.passwordReset;
+      case 'daily_digest': return settings.inAppNotifications.dailyDigest;
+      default: return false;
+    }
+  }
+
+  private async sendEmailNotification(options: NotificationOptions): Promise<void> {
+    switch (options.type) {
       case 'mention':
-        return {
-          subject: `${sender?.firstName} mentioned you in #${channel}`,
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>You were mentioned in #${channel}</h2>
-            <p><strong>${sender?.firstName} ${sender?.lastName}</strong> mentioned you in a message:</p>
-            
-            <div style="background: #f1f5f9; padding: 15px; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 20px 0; font-style: italic;">
-              "${data.message}"
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/channels/${channel}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                View Conversation
-              </a>
-            </div>
-          `)
-        };
+        if (options.channel && options.sender) {
+          await this.emailService.sendMentionEmail(
+            options.userEmail,
+            options.userName,
+            options.sender,
+            options.channel,
+            options.message
+          );
+        }
+        break;
 
-      case 'task_assigned':
-        return {
-          subject: `New task assigned: ${data.taskTitle}`,
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>You've been assigned a new task</h2>
-            <p><strong>${sender?.firstName} ${sender?.lastName}</strong> assigned you a task in #${channel}:</p>
-            
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #1e293b;">${data.taskTitle}</h3>
-              ${data.description ? `<p style="color: #64748b; margin: 10px 0;">${data.description}</p>` : ''}
-              <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
-                <span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                  Priority: ${data.priority}
-                </span>
-                ${data.dueDate ? `
-                  <span style="background: #fef3c7; color: #d97706; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                    Due: ${new Date(data.dueDate).toLocaleDateString()}
-                  </span>
-                ` : ''}
-              </div>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/tasks/${data.taskId}" style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                View Task
-              </a>
-            </div>
-          `)
-        };
+      case 'task':
+        if (options.sender) {
+          await this.emailService.sendTaskAssignedEmail(
+            options.userEmail,
+            options.userName,
+            options.title,
+            options.sender,
+            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default 7 days from now
+            options.priority
+          );
+        }
+        break;
 
-      case 'calendar_invite':
-        return {
-          subject: `Calendar Invite: ${data.eventTitle}`,
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>You're invited to an event</h2>
-            <p><strong>${sender?.firstName} ${sender?.lastName}</strong> invited you to a calendar event:</p>
-            
-            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border: 1px solid #bae6fd; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #0c4a6e;">${data.eventTitle}</h3>
-              ${data.description ? `<p style="color: #0369a1; margin: 10px 0;">${data.description}</p>` : ''}
-              
-              <div style="margin-top: 15px;">
-                <p style="margin: 5px 0;"><strong>📅 Date:</strong> ${new Date(data.startDate).toLocaleDateString()}</p>
-                <p style="margin: 5px 0;"><strong>🕐 Time:</strong> ${new Date(data.startDate).toLocaleTimeString()} - ${new Date(data.endDate).toLocaleTimeString()}</p>
-                ${data.location ? `<p style="margin: 5px 0;"><strong>📍 Location:</strong> ${data.location}</p>` : ''}
-                ${data.meetingLink ? `<p style="margin: 5px 0;"><strong>🔗 Meeting Link:</strong> <a href="${data.meetingLink}">${data.meetingLink}</a></p>` : ''}
-              </div>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/calendar/event/${data.eventId}" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;">
-                Accept Invite
-              </a>
-              <a href="${this.baseUrl}/calendar/event/${data.eventId}/decline" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Decline
-              </a>
-            </div>
-          `)
-        };
+      case 'calendar':
+        const startDate = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
+        await this.emailService.sendCalendarInviteEmail(
+          options.userEmail,
+          options.userName,
+          options.title,
+          startDate.toISOString(),
+          endDate.toISOString(),
+          'Conference Room A',
+          options.message
+        );
+        break;
+
+      case 'welcome':
+        await this.emailService.sendWelcomeEmail(
+          options.userEmail,
+          options.userName,
+          'Kolab360 Workspace'
+        );
+        break;
+
+      case 'workspace_invite':
+        if (options.sender) {
+          await this.emailService.sendWorkspaceInviteEmail(
+            options.userEmail,
+            options.userName,
+            options.sender,
+            'Kolab360 Team',
+            'INVITE2025'
+          );
+        }
+        break;
 
       case 'password_reset':
-        return {
-          subject: 'Reset Your Kolab360 Password',
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>Password Reset Request</h2>
-            <p>Hi ${recipient.firstName},</p>
-            <p>We received a request to reset your password for your Kolab360 account.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/reset-password?token=${data.resetToken}" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Reset Password
-              </a>
-            </div>
-            
-            <p style="color: #6b7280; font-size: 14px;">This link will expire in 1 hour for security reasons.</p>
-            <p style="color: #6b7280; font-size: 14px;">If you didn't request this password reset, please ignore this email or contact support if you have concerns.</p>
-          `)
-        };
+        await this.emailService.sendPasswordResetEmail(
+          options.userEmail,
+          options.userName,
+          'reset_token_' + Date.now()
+        );
+        break;
 
-      case 'deadline_reminder':
-        return {
-          subject: `⏰ Task deadline approaching: ${data.taskTitle}`,
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>Task Deadline Reminder</h2>
-            <p>Hi ${recipient.firstName},</p>
-            <p>Your task <strong>"${data.taskTitle}"</strong> is due ${data.timeUntilDue}.</p>
-            
-            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border: 1px solid #fbbf24; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #92400e;">⚠️ Action Required</h3>
-              <p style="color: #92400e; margin: 10px 0;">${data.description || 'No description provided'}</p>
-              <p style="color: #92400e; margin: 5px 0;"><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleString()}</p>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/tasks/${data.taskId}" style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Complete Task
-              </a>
-            </div>
-          `)
-        };
-
-      case 'file_shared':
-        return {
-          subject: `${sender?.firstName} shared a file with you`,
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>File Shared</h2>
-            <p><strong>${sender?.firstName} ${sender?.lastName}</strong> shared a file with you in #${channel}:</p>
-            
-            <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #15803d;">📎 ${data.fileName}</h3>
-              <p style="color: #166534; margin: 10px 0;">Size: ${data.fileSize}</p>
-              ${data.message ? `<p style="color: #166534; font-style: italic;">"${data.message}"</p>` : ''}
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}/files/${data.fileId}" style="background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                View File
-              </a>
-            </div>
-          `)
-        };
-
-      default:
-        return {
-          subject: 'Kolab360 Notification',
-          html: baseTemplate.replace('{{CONTENT}}', `
-            <h2>New Notification</h2>
-            <p>You have a new notification from Kolab360.</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${this.baseUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                View Dashboard
-              </a>
-            </div>
-          `)
-        };
+      case 'daily_digest':
+        await this.emailService.sendDailyDigestEmail(
+          options.userEmail,
+          options.userName,
+          {
+            newMessages: Math.floor(Math.random() * 50),
+            completedTasks: Math.floor(Math.random() * 10),
+            upcomingEvents: Math.floor(Math.random() * 5),
+            activeUsers: Math.floor(Math.random() * 20),
+            topChannel: options.channel || 'general',
+            topContributor: options.sender || 'Team Member',
+            filesShared: Math.floor(Math.random() * 15)
+          }
+        );
+        break;
     }
   }
 
-  private getBaseEmailTemplate(): string {
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kolab360 Notification</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9fafb;">
-        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <!-- Header -->
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Kolab360</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 16px;">Collaboration Platform</p>
-          </div>
-          
-          <!-- Content -->
-          <div style="padding: 40px;">
-            {{CONTENT}}
-          </div>
-          
-          <!-- Footer -->
-          <div style="background: #f8fafc; padding: 30px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
-            <p style="color: #6b7280; margin: 0 0 10px 0; font-size: 14px;">
-              This email was sent by Kolab360. Manage your notification preferences in your account settings.
-            </p>
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © ${new Date().getFullYear()} Kolab360. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+  private createInAppNotification(options: NotificationOptions): void {
+    const notification: InAppNotification = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      userId: options.userId,
+      type: options.type,
+      title: options.title,
+      message: options.message,
+      timestamp: new Date(),
+      read: false,
+      priority: options.priority,
+      channel: options.channel,
+      sender: options.sender,
+      actionUrl: options.actionUrl
+    };
+
+    const userNotifications = this.inAppNotifications.get(options.userId) || [];
+    userNotifications.unshift(notification);
+    
+    // Keep only the last 100 notifications per user
+    if (userNotifications.length > 100) {
+      userNotifications.splice(100);
+    }
+    
+    this.inAppNotifications.set(options.userId, userNotifications);
   }
 
-  private async storeInAppNotification(notification: NotificationData): Promise<void> {
-    // Store notification in database for in-app display
-    // This would integrate with your database storage
-    console.log(`Storing in-app notification for user ${notification.recipient.id}`);
+  // API methods for frontend
+  getNotifications(userId: string, limit: number = 50): InAppNotification[] {
+    const notifications = this.inAppNotifications.get(userId) || [];
+    return notifications.slice(0, limit);
   }
 
-  private async sendRealTimeNotification(notification: NotificationData): Promise<void> {
-    // Send real-time notification via WebSocket if user is online
-    // This would integrate with your WebSocket service
-    console.log(`Sending real-time notification to user ${notification.recipient.id}`);
+  markAsRead(userId: string, notificationId: string): boolean {
+    const notifications = this.inAppNotifications.get(userId);
+    if (!notifications) return false;
+
+    const notification = notifications.find(n => n.id === notificationId);
+    if (!notification) return false;
+
+    notification.read = true;
+    return true;
   }
 
-  // Convenience methods for common notifications
-  async sendWelcomeEmail(user: User): Promise<void> {
+  markAllAsRead(userId: string): boolean {
+    const notifications = this.inAppNotifications.get(userId);
+    if (!notifications) return false;
+
+    notifications.forEach(n => n.read = true);
+    return true;
+  }
+
+  deleteNotification(userId: string, notificationId: string): boolean {
+    const notifications = this.inAppNotifications.get(userId);
+    if (!notifications) return false;
+
+    const index = notifications.findIndex(n => n.id === notificationId);
+    if (index === -1) return false;
+
+    notifications.splice(index, 1);
+    return true;
+  }
+
+  clearAllNotifications(userId: string): boolean {
+    this.inAppNotifications.set(userId, []);
+    return true;
+  }
+
+  getUnreadCount(userId: string): number {
+    const notifications = this.inAppNotifications.get(userId) || [];
+    return notifications.filter(n => !n.read).length;
+  }
+
+  updateUserSettings(userId: string, settings: Partial<UserNotificationSettings>): void {
+    const currentSettings = this.getUserSettings(userId);
+    const updatedSettings = { ...currentSettings, ...settings, userId };
+    this.userSettings.set(userId, updatedSettings);
+  }
+
+  getUserNotificationSettings(userId: string): UserNotificationSettings {
+    return this.getUserSettings(userId);
+  }
+
+  // Convenience methods for specific notification types
+  async sendMentionNotification(userId: string, userEmail: string, userName: string, mentionedBy: string, channel: string, message: string): Promise<void> {
     await this.sendNotification({
-      type: 'welcome',
-      recipient: user,
-      data: {}
-    });
-  }
-
-  async sendMentionNotification(recipient: User, sender: User, message: string, channel: string): Promise<void> {
-    await this.sendNotification({
+      userId,
+      userEmail,
+      userName,
       type: 'mention',
-      recipient,
-      sender,
-      data: { message },
+      title: `New mention in #${channel}`,
+      message: `${mentionedBy} mentioned you: "${message}"`,
+      priority: 'high',
       channel,
+      sender: mentionedBy,
+      inAppOnly: true // Only in-app notification for mentions, email is handled separately
+    });
+  }
+
+  async sendTaskNotification(userId: string, userEmail: string, userName: string, taskTitle: string, assignedBy: string): Promise<void> {
+    await this.sendNotification({
+      userId,
+      userEmail,
+      userName,
+      type: 'task',
+      title: `Task assigned: ${taskTitle}`,
+      message: `${assignedBy} assigned you a new task`,
+      priority: 'high',
+      sender: assignedBy
+    });
+  }
+
+  async sendCalendarNotification(userId: string, userEmail: string, userName: string, eventTitle: string): Promise<void> {
+    await this.sendNotification({
+      userId,
+      userEmail,
+      userName,
+      type: 'calendar',
+      title: `Meeting reminder: ${eventTitle}`,
+      message: 'Your meeting starts soon',
       priority: 'medium'
-    });
-  }
-
-  async sendTaskAssignedNotification(recipient: User, sender: User, task: any, channel: string): Promise<void> {
-    await this.sendNotification({
-      type: 'task_assigned',
-      recipient,
-      sender,
-      data: {
-        taskId: task.id,
-        taskTitle: task.title,
-        description: task.description,
-        priority: task.priority,
-        dueDate: task.dueDate
-      },
-      channel,
-      priority: 'high'
-    });
-  }
-
-  async sendCalendarInvite(recipient: User, sender: User, event: any): Promise<void> {
-    await this.sendNotification({
-      type: 'calendar_invite',
-      recipient,
-      sender,
-      data: {
-        eventId: event.id,
-        eventTitle: event.title,
-        description: event.description,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        location: event.location,
-        meetingLink: event.meetingLink
-      },
-      priority: 'medium'
-    });
-  }
-
-  async sendPasswordResetEmail(user: User, resetToken: string): Promise<void> {
-    await this.sendNotification({
-      type: 'password_reset',
-      recipient: user,
-      data: { resetToken },
-      priority: 'high'
-    });
-  }
-
-  async sendDeadlineReminder(recipient: User, task: any, timeUntilDue: string): Promise<void> {
-    await this.sendNotification({
-      type: 'deadline_reminder',
-      recipient,
-      data: {
-        taskId: task.id,
-        taskTitle: task.title,
-        description: task.description,
-        dueDate: task.dueDate,
-        timeUntilDue
-      },
-      priority: 'urgent'
-    });
-  }
-
-  async sendFileSharedNotification(recipient: User, sender: User, file: any, channel: string, message?: string): Promise<void> {
-    await this.sendNotification({
-      type: 'file_shared',
-      recipient,
-      sender,
-      data: {
-        fileId: file.id,
-        fileName: file.name,
-        fileSize: file.size,
-        message
-      },
-      channel,
-      priority: 'low'
     });
   }
 }

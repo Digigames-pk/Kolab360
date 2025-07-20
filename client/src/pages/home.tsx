@@ -13,7 +13,7 @@ import { AIAssistant } from '@/components/AIAssistant';
 import { EnhancedSearch } from '@/components/EnhancedSearch';
 import { AdvancedSearch } from '@/components/AdvancedSearch';
 import { IntegrationHub } from '@/components/IntegrationHub';
-import NotificationCenter from '@/components/NotificationCenter';
+import { NotificationCenter } from '@/components/NotificationCenter';
 import EmailTestCenter from '@/components/EmailTestCenter';
 import PinningSystem, { PinButton } from '@/components/PinningSystem';
 import { WorkspaceThemeCustomizer } from '@/components/WorkspaceThemeCustomizer';
@@ -369,25 +369,11 @@ export default function Home() {
       )}
       
       {/* Notifications Modal */}
-      {showNotifications && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Notifications</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowNotifications(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <NotificationCenter />
-            </div>
-          </div>
-        </div>
-      )}
+      <NotificationCenter
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        userRole={user.role}
+      />
 
       {/* Theme Customizer Modal */}
       {showThemeCustomizer && (
