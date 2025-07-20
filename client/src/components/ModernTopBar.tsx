@@ -124,7 +124,18 @@ export function ModernTopBar({
             <Search className="h-4 w-4" />
           </Button>
           
-          <Button variant="ghost" size="sm" onClick={onShowNotifications} className="relative">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              onShowNotifications();
+              // Force cache refresh when bell is clicked
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
+            }} 
+            className="relative"
+          >
             <Bell className="h-4 w-4" />
             {unreadNotificationCount > 0 && (
               <Badge 

@@ -61,18 +61,20 @@ export function useNotifications() {
   });
 
   // Fetch unread count
-  const { data: unreadCount = 0 } = useQuery({
+  const { data: unreadCountData = { count: 0 } } = useQuery({
     queryKey: ['/api/notifications/unread-count'],
-    queryFn: async (): Promise<number> => {
+    queryFn: async (): Promise<{ count: number }> => {
       const response = await fetch('/api/notifications/unread-count');
       if (!response.ok) {
         throw new Error('Failed to fetch unread count');
       }
       const data = await response.json();
-      return data.count;
+      return data;
     },
     refetchInterval: 10000, // Refetch every 10 seconds
   });
+
+  const unreadCount = unreadCountData.count;
 
   // Fetch notification settings
   const { data: settings } = useQuery({
@@ -118,9 +120,12 @@ export function useNotifications() {
       // Immediately set the cache to 0 for instant UI update
       queryClient.setQueryData(['/api/notifications/unread-count'], { count: 0 });
       queryClient.setQueryData(['/api/notifications'], []);
-      // Then invalidate to fetch fresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+      // Force invalidate all related queries with exact matching
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications'], exact: true });
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'], exact: true });
+      // Force a complete cache reset for notifications
+      queryClient.removeQueries({ queryKey: ['/api/notifications'] });
+      queryClient.removeQueries({ queryKey: ['/api/notifications/unread-count'] });
       console.log('[NotificationHook] Marked all notifications as read and cleared cache');
     },
   });
