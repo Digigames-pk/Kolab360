@@ -164,7 +164,14 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         ? `/api/channels/${channelId}/messages`
         : `/api/users/${recipientId}/messages`;
         
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         const messagesData = data.messages || data || [];
@@ -501,10 +508,8 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         setMessages(prev => [...prev, messageWithFile]);
         console.log('✅ File message created successfully');
         
-        // Refetch messages to ensure we have latest data
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // Refetch messages immediately to show the new message
+        await loadMessages();
       } else {
         console.error('Failed to create message for file');
       }
