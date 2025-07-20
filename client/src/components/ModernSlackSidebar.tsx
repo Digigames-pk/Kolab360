@@ -322,18 +322,35 @@ export function ModernSlackSidebar({
                     key={channel.id}
                     variant={selectedChannel === channel.id ? 'secondary' : 'ghost'}
                     className={`w-full justify-start px-2 ${settings.compactMode ? 'py-0 h-6 text-xs' : 'py-1 h-8 text-sm'}`}
-                    onClick={() => {
+                    onClick={async () => {
                       onChannelSelect(channel.id);
                       onViewChange('chat');
+                      
                       // Mark as read after a short delay to simulate viewing messages
-                      setTimeout(() => {
-                        if (channel.unread > 0) {
-                          setChannelUnreadCounts(prev => ({
-                            ...prev,
-                            [channel.name]: 0
-                          }));
-                        }
-                      }, 2000);
+                      if (channel.unread > 0) {
+                        setTimeout(async () => {
+                          try {
+                            console.log(`🔄 [Frontend] Marking channel "${channel.name}" as read`);
+                            
+                            const response = await fetch(`/api/unread-counts/channels/${channel.name}/mark-read`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' }
+                            });
+                            
+                            if (response.ok) {
+                              const result = await response.json();
+                              console.log('✅ [Frontend] Successfully marked as read:', result);
+                              
+                              // Update local state with backend response
+                              setChannelUnreadCounts(result.allCounts);
+                            } else {
+                              console.error('❌ [Frontend] Failed to mark as read:', response.statusText);
+                            }
+                          } catch (error) {
+                            console.error('❌ [Frontend] Error marking channel as read:', error);
+                          }
+                        }, 2000);
+                      }
                     }}
                   >
                     {channel.type === 'private' ? (
@@ -382,18 +399,35 @@ export function ModernSlackSidebar({
                   key={dm.id}
                   variant="ghost"
                   className={`w-full justify-start px-2 ${settings.compactMode ? 'py-0 h-6 text-xs' : 'py-1 h-8 text-sm'}`}
-                  onClick={() => {
+                  onClick={async () => {
                     onViewChange('chat');
                     console.log('Selected DM:', dm.name);
-                    // Mark as read after a short delay to simulate viewing messages
-                    setTimeout(() => {
-                      if (dm.unread > 0) {
-                        setDMUnreadCounts(prev => ({
-                          ...prev,
-                          [dm.name]: 0
-                        }));
-                      }
-                    }, 2000);
+                    
+                    // Mark DM as read after a short delay to simulate viewing messages
+                    if (dm.unread > 0) {
+                      setTimeout(async () => {
+                        try {
+                          console.log(`🔄 [Frontend] Marking DM "${dm.name}" as read`);
+                          
+                          const response = await fetch(`/api/unread-counts/direct-messages/${encodeURIComponent(dm.name)}/mark-read`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          });
+                          
+                          if (response.ok) {
+                            const result = await response.json();
+                            console.log('✅ [Frontend] Successfully marked DM as read:', result);
+                            
+                            // Update local state with backend response
+                            setDMUnreadCounts(result.allCounts);
+                          } else {
+                            console.error('❌ [Frontend] Failed to mark DM as read:', response.statusText);
+                          }
+                        } catch (error) {
+                          console.error('❌ [Frontend] Error marking DM as read:', error);
+                        }
+                      }, 2000);
+                    }
                   }}
                 >
                   <div className="flex items-center mr-2">

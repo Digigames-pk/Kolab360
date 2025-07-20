@@ -986,28 +986,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Unread counts API - moved to avoid conflicts
+  // Dynamic unread counts with persistent state management
+  const channelUnreadCounts = new Map<string, number>([
+    ['general', 4],
+    ['random', 2], 
+    ['dev-team', 7],
+    ['design', 1],
+    ['marketing', 0],
+    ['support', 3]
+  ]);
+
+  const dmUnreadCounts = new Map<string, number>([
+    ['Sarah Wilson', 3],
+    ['Alex Johnson', 1],
+    ['Mike Chen', 5],
+    ['Lisa Rodriguez', 0],
+    ['John Doe', 2],
+    ['Emma Davis', 1],
+    ['Tom Anderson', 0]
+  ]);
+
+  // Get channel unread counts
   app.get('/api/unread-counts/channels', async (req: any, res) => {
     try {
-      // Import test data
-      const { mockChannelUnreadCounts } = await import('./seed-data');
-      
-      res.json(mockChannelUnreadCounts);
+      const counts = Object.fromEntries(channelUnreadCounts);
+      console.log('📊 [Unread Counts] Channel counts requested:', counts);
+      res.json(counts);
     } catch (error) {
       console.error('Error fetching channel unread counts:', error);
       res.status(500).json({ error: 'Failed to fetch unread counts' });
     }
   });
 
+  // Get DM unread counts
   app.get('/api/unread-counts/direct-messages', async (req: any, res) => {
     try {
-      // Import test data
-      const { mockDMUnreadCounts } = await import('./seed-data');
-      
-      res.json(mockDMUnreadCounts);
+      const counts = Object.fromEntries(dmUnreadCounts);
+      console.log('📊 [Unread Counts] DM counts requested:', counts);
+      res.json(counts);
     } catch (error) {
       console.error('Error fetching DM unread counts:', error);
       res.status(500).json({ error: 'Failed to fetch DM unread counts' });
+    }
+  });
+
+  // Mark channel as read
+  app.post('/api/unread-counts/channels/:channelName/mark-read', async (req: any, res) => {
+    try {
+      const { channelName } = req.params;
+      const userId = req.user?.id || 3; // Default user for development
+      
+      console.log(`🔄 [Mark Read] User ${userId} marking channel "${channelName}" as read`);
+      
+      // Set unread count to 0 for this channel
+      channelUnreadCounts.set(channelName, 0);
+      
+      const updatedCounts = Object.fromEntries(channelUnreadCounts);
+      console.log('✅ [Mark Read] Updated channel counts:', updatedCounts);
+      
+      res.json({ 
+        success: true, 
+        channelName,
+        unreadCount: 0,
+        allCounts: updatedCounts
+      });
+    } catch (error) {
+      console.error('Error marking channel as read:', error);
+      res.status(500).json({ error: 'Failed to mark channel as read' });
+    }
+  });
+
+  // Mark DM as read
+  app.post('/api/unread-counts/direct-messages/:userName/mark-read', async (req: any, res) => {
+    try {
+      const { userName } = req.params;
+      const userId = req.user?.id || 3; // Default user for development
+      
+      console.log(`🔄 [Mark Read] User ${userId} marking DM "${userName}" as read`);
+      
+      // Set unread count to 0 for this DM
+      dmUnreadCounts.set(userName, 0);
+      
+      const updatedCounts = Object.fromEntries(dmUnreadCounts);
+      console.log('✅ [Mark Read] Updated DM counts:', updatedCounts);
+      
+      res.json({ 
+        success: true, 
+        userName,
+        unreadCount: 0,
+        allCounts: updatedCounts
+      });
+    } catch (error) {
+      console.error('Error marking DM as read:', error);
+      res.status(500).json({ error: 'Failed to mark DM as read' });
     }
   });
 
