@@ -46,6 +46,13 @@ export default function Home() {
   // Notification system hook
   const { unreadCount, sendTestNotification, markAllAsRead } = useNotifications();
 
+  // Add a quick test function for notifications (dev only)
+  const testNotificationBadge = () => {
+    sendTestNotification('mention');
+    setTimeout(() => sendTestNotification('task'), 500);
+    setTimeout(() => sendTestNotification('calendar'), 1000);
+  };
+
   // Component mount logging
   useEffect(() => {
     logger.log('info', 'Home', 'Component mounted', { 
@@ -53,6 +60,11 @@ export default function Home() {
       activeView, 
       selectedWorkspace 
     });
+
+    // Make test notification function available globally for dev testing
+    if (import.meta.env.DEV) {
+      (window as any).testNotifications = testNotificationBadge;
+    }
   }, []);
 
   // View change logging
@@ -204,9 +216,9 @@ export default function Home() {
           onShowSearch={() => setShowSearch(true)}
           onShowNotifications={() => {
             setShowNotifications(true);
-            // Mark notifications as read when notification center is opened
+            // Mark notifications as read immediately when notification center is opened
             if (unreadCount > 0) {
-              setTimeout(() => markAllAsRead(), 500);
+              markAllAsRead();
             }
           }}
           onViewChange={setActiveView}

@@ -248,6 +248,23 @@ export function ModernTopBar({
             </Button>
           )}
 
+          {/* Test Notification Button - Dev Only */}
+          {import.meta.env.DEV && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Call a test function passed from parent
+                if ((window as any).testNotifications) {
+                  (window as any).testNotifications();
+                }
+              }}
+              className="h-8 ml-2 border-green-200 text-green-600"
+            >
+              Test Notifications
+            </Button>
+          )}
+
         </div>
       </div>
     </div>

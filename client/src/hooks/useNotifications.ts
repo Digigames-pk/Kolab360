@@ -115,6 +115,9 @@ export function useNotifications() {
       return response.json();
     },
     onSuccess: () => {
+      // Immediately set the cache to 0 for instant UI update
+      queryClient.setQueryData(['/api/notifications/unread-count'], 0);
+      // Then invalidate to fetch fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
     },
