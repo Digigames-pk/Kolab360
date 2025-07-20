@@ -291,11 +291,11 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         } else {
           // Fallback for testing
           setAvailableUsers([
-            { id: 1, name: 'Alice Johnson', username: 'alice' },
-            { id: 2, name: 'Bob Smith', username: 'bob' },
-            { id: 3, name: 'Charlie Brown', username: 'charlie' },
-            { id: 4, name: 'Diana Wilson', username: 'diana' },
-            { id: 5, name: 'Eva Martinez', username: 'eva' }
+            { id: 1, firstName: 'Alice', lastName: 'Johnson', email: 'alice@kolab360.com' },
+            { id: 2, firstName: 'Bob', lastName: 'Smith', email: 'bob@kolab360.com' },
+            { id: 3, firstName: 'Charlie', lastName: 'Brown', email: 'charlie@kolab360.com' },
+            { id: 4, firstName: 'Diana', lastName: 'Wilson', email: 'diana@kolab360.com' },
+            { id: 5, firstName: 'Eva', lastName: 'Martinez', email: 'eva@kolab360.com' }
           ]);
         }
       } catch (error) {
@@ -826,7 +826,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       {/* @ Mention Dropdown */}
       {showMentionDropdown && (
         <div 
-          className="fixed z-50 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto"
+          className="fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto"
           style={{
             top: `${mentionPosition.top}px`,
             left: `${mentionPosition.left}px`,
@@ -842,15 +842,15 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             .map(user => (
               <div
                 key={user.id}
-                className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center space-x-2"
+                className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center space-x-2"
                 onClick={() => insertMention(user)}
               >
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
                   {user.firstName.charAt(0)}
                 </div>
                 <div>
-                  <div className="text-sm font-medium">{user.firstName} {user.lastName}</div>
-                  <div className="text-xs text-gray-500">@{user.email.split('@')[0]}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">@{user.email.split('@')[0]}</div>
                 </div>
               </div>
             ))
