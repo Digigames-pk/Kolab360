@@ -1,0 +1,122 @@
+
+[vite] connecting... client:495:9
+GET
+wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=IovR-t8x-Qjb
+NS_ERROR_WEBSOCKET_CONNECTION_REFUSED
+
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=IovR-t8x-Qjb. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+    setupWebSocket client:552
+    <anonymous> client:531
+client:536
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+    (Async: EventListener.handleEvent)
+    setupWebSocket client:552
+    <anonymous> client:531
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+WebSocket: Using mock connection in development mode useWebSocket.ts:28:15
+Mock WebSocket message sent: 
+Object { type: "join_channel", channelId: "general" }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "join_workspace", workspaceId: 1, userId: 3 }
+useWebSocket.ts:102:15
+[INFO] Home: Component mounted 
+Object { selectedChannel: "general", activeView: "chat", selectedWorkspace: 1 }
+DebugLogger.tsx:38:13
+[INFO] Home: View changed 
+Object { activeView: "chat", selectedChannel: "general" }
+DebugLogger.tsx:38:13
+Failed to fetch users: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data RealTimeChat.tsx:302:17
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "send_message", channelId: "general", recipientId: undefined, content: "sdfsd", authorId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_stop_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_stop_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+User typing @mention: sdkfj @ RealTimeChat.tsx:318:15
+Mock WebSocket message sent: 
+Object { type: "user_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+Uncaught ReferenceError: mockUsers is not defined
+    RealTimeChat RealTimeChat.tsx:835
+    React 27
+    <anonymous> main.tsx:5
+RealTimeChat.tsx:835:12
+Uncaught ReferenceError: mockUsers is not defined
+    RealTimeChat RealTimeChat.tsx:835
+    React 28
+    <anonymous> main.tsx:5
+RealTimeChat.tsx:835:12
+The above error occurred in the <RealTimeChat> component:
+
+RealTimeChat@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/RealTimeChat.tsx:56:29
+div
+div
+div
+Home@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/pages/home.tsx:53:35
+Route@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=77d8f421:323:13
+ProtectedRoute@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/lib/protected-route.tsx:21:31
+Switch@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=77d8f421:379:14
+Router@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/App.tsx?v=jDcuDC5IKYJD8WG1GWq1R:33:31
+AuthProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/hooks/useAuth.ts:11:29
+Provider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=77d8f421:38:47
+TooltipProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=77d8f421:69:7
+ThemeProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/src/components/ThemeProvider.tsx:67:30
+QueryClientProvider@https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=77d8f421:2804:27
+App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. react-dom.development.js:18704:15
+Uncaught ReferenceError: mockUsers is not defined
+    RealTimeChat RealTimeChat.tsx:835
+    React 25
+    <anonymous> main.tsx:5
+RealTimeChat.tsx:835:12
+Mock WebSocket message sent: 
+Object { type: "user_stop_typing", channelId: "general", userId: 3 }
+useWebSocket.ts:102:15
+
+​
+

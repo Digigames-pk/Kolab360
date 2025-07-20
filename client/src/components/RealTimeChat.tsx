@@ -277,8 +277,8 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     }
   };
 
-  // Mock user data for @ mentions
-  const [availableUsers, setAvailableUsers] = useState<Array<{ id: number; name: string; username: string }>>([]);
+  // Real user data for @ mentions from API
+  const [availableUsers, setAvailableUsers] = useState<Array<{ id: number; firstName: string; lastName: string; email: string }>>([]);
 
   // Fetch real users for mentions from API
   React.useEffect(() => {
@@ -339,7 +339,8 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
 
   const insertMention = (user: any) => {
     const lastAtIndex = messageText.lastIndexOf('@');
-    const newText = messageText.slice(0, lastAtIndex) + `@${user.username} `;
+    const username = user.email.split('@')[0]; // Use email prefix as username
+    const newText = messageText.slice(0, lastAtIndex) + `@${username} `;
     setMessageText(newText);
     setShowMentionDropdown(false);
     inputRef.current?.focus();
@@ -832,10 +833,11 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             minWidth: '200px'
           }}
         >
-          {mockUsers
+          {availableUsers
             .filter(user => 
-              user.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
-              user.username.toLowerCase().includes(mentionQuery.toLowerCase())
+              user.firstName.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+              user.lastName.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+              user.email.toLowerCase().includes(mentionQuery.toLowerCase())
             )
             .map(user => (
               <div
@@ -844,11 +846,11 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                 onClick={() => insertMention(user)}
               >
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                  {user.name.charAt(0)}
+                  {user.firstName.charAt(0)}
                 </div>
                 <div>
-                  <div className="text-sm font-medium">{user.name}</div>
-                  <div className="text-xs text-gray-500">@{user.username}</div>
+                  <div className="text-sm font-medium">{user.firstName} {user.lastName}</div>
+                  <div className="text-xs text-gray-500">@{user.email.split('@')[0]}</div>
                 </div>
               </div>
             ))
