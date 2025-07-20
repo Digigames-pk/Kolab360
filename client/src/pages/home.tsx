@@ -30,6 +30,7 @@ import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { DebugLogger, logger } from '@/components/DebugLogger';
 import { SystemTester } from '@/components/SystemTester';
+import { SuperAdminDebugger } from '@/components/SuperAdminDebugger';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -72,11 +73,11 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [callType, setCallType] = useState<'voice' | 'video'>('voice');
 
-  // Mock user data
+  // Mock user data - Set as super_admin to test debugging
   const user = {
     firstName: 'John',
     lastName: 'Doe',
-    role: 'admin' as const
+    role: 'super_admin' as const  // Changed to super_admin for debugging access
   };
 
   // Mock workspace data
@@ -123,6 +124,20 @@ export default function Home() {
 
   // Get current workspace data
   const currentWorkspaceData = workspaceData[selectedWorkspace] || workspaceData[1];
+
+  // Dynamic stats for debugging (initially based on mock data)
+  const [channelStats, setChannelStats] = useState([
+    { id: 'general', name: 'general', memberCount: 3, activeMembers: 2, lastActivity: new Date().toISOString(), messageCount: 45, type: 'public' as const },
+    { id: 'random', name: 'random', memberCount: 8, activeMembers: 1, lastActivity: new Date().toISOString(), messageCount: 12, type: 'public' as const },
+    { id: 'dev-team', name: 'dev-team', memberCount: 5, activeMembers: 4, lastActivity: new Date().toISOString(), messageCount: 89, type: 'private' as const },
+    { id: 'announcements', name: 'announcements', memberCount: 12, activeMembers: 0, lastActivity: new Date().toISOString(), messageCount: 3, type: 'public' as const }
+  ]);
+
+  const [dmStats, setDMStats] = useState([
+    { id: 'john-doe', name: 'John Doe', status: 'online' as const, lastSeen: new Date().toISOString(), unreadCount: 2, totalMessages: 156 },
+    { id: 'jane-smith', name: 'Jane Smith', status: 'away' as const, lastSeen: new Date(Date.now() - 300000).toISOString(), unreadCount: 0, totalMessages: 87 },
+    { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline' as const, lastSeen: new Date(Date.now() - 3600000).toISOString(), unreadCount: 1, totalMessages: 234 }
+  ]);
   const channels = currentWorkspaceData.channels;
   const directMessages = currentWorkspaceData.directMessages;
 
@@ -151,6 +166,8 @@ export default function Home() {
             setShowVoiceCall(true);
           }}
           onShowSettings={() => alert('Opening audio settings...')}
+          channelStats={channelStats}
+          dmStats={dmStats}
         />
       </div>
 
@@ -457,6 +474,15 @@ export default function Home() {
         isOpen={showChannelInfo}
         onClose={() => setShowChannelInfo(false)}
         channelName={selectedChannel}
+      />
+
+      {/* Super Admin Debugger - Only visible to super admin */}
+      <SuperAdminDebugger
+        userRole={user.role}
+        onUpdateChannelStats={setChannelStats}
+        onUpdateDMStats={setDMStats}
+        currentChannelStats={channelStats}
+        currentDMStats={dmStats}
       />
 
       {/* Debug Logger */}

@@ -48,6 +48,25 @@ import {
 } from 'lucide-react';
 import { SidebarCustomizer, SidebarSettings, useSidebarSettings } from './SidebarCustomizer';
 
+interface ChannelStat {
+  id: string;
+  name: string;
+  memberCount: number;
+  activeMembers: number;
+  lastActivity: string;
+  messageCount: number;
+  type: 'public' | 'private';
+}
+
+interface DMStat {
+  id: string;
+  name: string;
+  status: 'online' | 'away' | 'offline';
+  lastSeen: string;
+  unreadCount: number;
+  totalMessages: number;
+}
+
 interface ModernSlackSidebarProps {
   selectedChannel: string;
   onChannelSelect: (channel: string) => void;
@@ -62,6 +81,8 @@ interface ModernSlackSidebarProps {
   onShowProfile?: () => void;
   onStartCall?: (type: 'voice' | 'video') => void;
   onShowSettings?: () => void;
+  channelStats?: ChannelStat[];
+  dmStats?: DMStat[];
 }
 
 export function ModernSlackSidebar({
@@ -77,26 +98,43 @@ export function ModernSlackSidebar({
   onWorkspaceSelect,
   onShowProfile,
   onStartCall,
-  onShowSettings
+  onShowSettings,
+  channelStats = [],
+  dmStats = []
 }: ModernSlackSidebarProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
   const [showSidebarCustomizer, setShowSidebarCustomizer] = useState(false);
   const { settings, updateSettings } = useSidebarSettings();
 
-  const channels = [
-    { id: 'general', name: 'general', type: 'public', unread: 3 },
-    { id: 'random', name: 'random', type: 'public', unread: 0 },
-    { id: 'dev-team', name: 'dev-team', type: 'private', unread: 12 },
-    { id: 'design', name: 'design', type: 'public', unread: 0 },
-    { id: 'marketing', name: 'marketing', type: 'private', unread: 5 }
-  ];
+  // Use dynamic stats if provided, otherwise fallback to static data
+  const channels = channelStats.length > 0 ? 
+    channelStats.map(stat => ({
+      id: stat.id,
+      name: stat.name,
+      type: stat.type,
+      unread: Math.floor(Math.random() * 5), // Simulate unread messages
+      memberCount: stat.memberCount,
+      activeMembers: stat.activeMembers
+    })) : [
+      { id: 'general', name: 'general', type: 'public', unread: 3, memberCount: 3, activeMembers: 2 },
+      { id: 'random', name: 'random', type: 'public', unread: 0, memberCount: 8, activeMembers: 1 },
+      { id: 'dev-team', name: 'dev-team', type: 'private', unread: 12, memberCount: 5, activeMembers: 4 },
+      { id: 'design', name: 'design', type: 'public', unread: 0, memberCount: 6, activeMembers: 0 },
+      { id: 'marketing', name: 'marketing', type: 'private', unread: 5, memberCount: 4, activeMembers: 2 }
+    ];
 
-  const directMessages = [
-    { id: 'john-doe', name: 'John Doe', status: 'online', unread: 2 },
-    { id: 'jane-smith', name: 'Jane Smith', status: 'away', unread: 0 },
-    { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline', unread: 1 }
-  ];
+  const directMessages = dmStats.length > 0 ?
+    dmStats.map(stat => ({
+      id: stat.id,
+      name: stat.name,
+      status: stat.status,
+      unread: stat.unreadCount
+    })) : [
+      { id: 'john-doe', name: 'John Doe', status: 'online', unread: 2 },
+      { id: 'jane-smith', name: 'Jane Smith', status: 'away', unread: 0 },
+      { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline', unread: 1 }
+    ];
 
   const getCurrentWorkspace = () => workspaces.find(w => w.id === selectedWorkspace);
   const currentWorkspace = getCurrentWorkspace();
@@ -120,7 +158,9 @@ export function ModernSlackSidebar({
                   <h2 className="font-bold text-gray-900 text-lg">
                     {currentWorkspace?.name || 'Workspace'}
                   </h2>
-                  <p className="text-sm text-gray-500">3 members online</p>
+                  <p className="text-sm text-gray-500">
+                    {channels.reduce((total, ch) => total + (ch.memberCount || 0), 0)} members, {channels.reduce((total, ch) => total + (ch.activeMembers || 0), 0)} online
+                  </p>
                 </div>
               </div>
               <ChevronDown className="h-4 w-4 text-gray-500" />
@@ -263,14 +303,23 @@ export function ModernSlackSidebar({
                       <Hash className={`${settings.compactMode ? 'h-2 w-2' : 'h-3 w-3'} mr-2 text-gray-500`} />
                     )}
                     <span className="truncate">{channel.name}</span>
-                    {settings.showUnreadCounts && channel.unread > 0 && (
+                    <div className="ml-auto flex items-center space-x-1">
+                      {/* Member count */}
                       <Badge 
-                        variant="destructive" 
-                        className={`ml-auto ${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}
+                        variant="outline" 
+                        className={`${settings.compactMode ? 'text-xs h-4 min-w-4 px-1' : 'text-xs h-5 min-w-5 px-1'} bg-blue-50 text-blue-600 border-blue-200`}
                       >
-                        {channel.unread}
+                        {channel.memberCount || 0}
                       </Badge>
-                    )}
+                      {settings.showUnreadCounts && channel.unread > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className={`${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}
+                        >
+                          {channel.unread}
+                        </Badge>
+                      )}
+                    </div>
                   </Button>
                 ))}
               </div>
