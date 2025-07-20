@@ -433,46 +433,63 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     formData.append('recipientId', recipientId?.toString() || '');
 
     try {
-      const response = await fetch('/api/simple-files/upload', {
+      const response = await fetch('/api/files/upload', {
         method: 'POST',
         body: formData,
       });
 
-      if (response.ok) {
-        const fileData = await response.json();
+      console.log('📤 Upload response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Upload failed:', errorText);
+        throw new Error(`Upload failed: ${response.status}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await response.text();
+        console.error('Non-JSON response:', responseText);
+        throw new Error('Server returned non-JSON response');
+      }
+
+      const fileData = await response.json();
+      console.log('📤 File data received:', fileData);
+      
+      // Create message with file attachment using the actual file data
+      const endpoint = channelId 
+        ? `/api/channels/${channelId}/messages`
+        : `/api/messages/direct`;
         
-        // Create message with file attachment using the actual file data
-        const endpoint = channelId 
-          ? `/api/channels/${channelId}/messages`
-          : `/api/messages/direct`;
-          
-        const messageResponse = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: `📎 Shared file: ${fileData.originalName}`,
-            authorId: user?.id || 3,
-            channelId: channelId,
-            recipientId: recipientId,
-            fileUrl: fileData.url,
-            fileName: fileData.originalName,
-            fileType: fileData.mimetype,
-            fileSize: fileData.size
-          })
-        });
-        
-        if (messageResponse.ok) {
-          const newMessage = await messageResponse.json();
-          // Add file metadata to the message
-          const messageWithFile = {
-            ...newMessage,
-            fileUrl: fileData.url,
-            fileName: fileData.originalName,
-            fileType: fileData.mimetype,
-            fileSize: fileData.size
-          };
-          setMessages(prev => [...prev, messageWithFile]);
-        }
+      const messageResponse = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `📎 Shared file: ${fileData.originalName}`,
+          authorId: user?.id || 3,
+          channelId: channelId,
+          recipientId: recipientId,
+          fileUrl: fileData.url,
+          fileName: fileData.originalName,
+          fileType: fileData.mimetype,
+          fileSize: fileData.size
+        })
+      });
+      
+      if (messageResponse.ok) {
+        const newMessage = await messageResponse.json();
+        // Add file metadata to the message
+        const messageWithFile = {
+          ...newMessage,
+          fileUrl: fileData.url,
+          fileName: fileData.originalName,
+          fileType: fileData.mimetype,
+          fileSize: fileData.size
+        };
+        setMessages(prev => [...prev, messageWithFile]);
+        console.log('✅ File message created successfully');
+      } else {
+        console.error('Failed to create message for file');
       }
     } catch (error) {
       console.error('Failed to upload file:', error);
@@ -509,45 +526,56 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       formData.append('recipientId', recipientId?.toString() || '');
 
       try {
-        const response = await fetch('/api/simple-files/upload', {
+        const response = await fetch('/api/files/upload', {
           method: 'POST',
           body: formData,
         });
 
-        if (response.ok) {
-          const fileData = await response.json();
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const responseText = await response.text();
+          console.error('Non-JSON response:', responseText);
+          throw new Error('Server returned non-JSON response');
+        }
+
+        const fileData = await response.json();
+        console.log('📤 Drag-drop file data received:', fileData);
+        
+        // Create message with file attachment
+        const endpoint = channelId 
+          ? `/api/channels/${channelId}/messages`
+          : `/api/messages/direct`;
           
-          // Create message with file attachment
-          const endpoint = channelId 
-            ? `/api/channels/${channelId}/messages`
-            : `/api/messages/direct`;
-            
-          const messageResponse = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              content: `📎 Shared file: ${fileData.originalName}`,
-              authorId: user?.id || 3,
-              channelId: channelId,
-              recipientId: recipientId,
-              fileUrl: fileData.url,
-              fileName: fileData.originalName,
-              fileType: fileData.mimetype,
-              fileSize: fileData.size
-            })
-          });
-          
-          if (messageResponse.ok) {
-            const newMessage = await messageResponse.json();
-            const messageWithFile = {
-              ...newMessage,
-              fileUrl: fileData.url,
-              fileName: fileData.originalName,
-              fileType: fileData.mimetype,
-              fileSize: fileData.size
-            };
-            setMessages(prev => [...prev, messageWithFile]);
-          }
+        const messageResponse = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: `📎 Shared file: ${fileData.originalName}`,
+            authorId: user?.id || 3,
+            channelId: channelId,
+            recipientId: recipientId,
+            fileUrl: fileData.url,
+            fileName: fileData.originalName,
+            fileType: fileData.mimetype,
+            fileSize: fileData.size
+          })
+        });
+        
+        if (messageResponse.ok) {
+          const newMessage = await messageResponse.json();
+          const messageWithFile = {
+            ...newMessage,
+            fileUrl: fileData.url,
+            fileName: fileData.originalName,
+            fileType: fileData.mimetype,
+            fileSize: fileData.size
+          };
+          setMessages(prev => [...prev, messageWithFile]);
+          console.log('✅ Drag-drop file message created successfully');
         }
       } catch (error) {
         console.error('Failed to upload file:', error);

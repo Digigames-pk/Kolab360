@@ -963,6 +963,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Files routes - mount the simple files router
   app.use('/api/files', simpleFilesRoutes);
+  app.use('/api/simple-files', simpleFilesRoutes);
   
   // Tasks routes - mount the simple tasks router  
   app.use('/api/tasks', simpleTasksRoutes);

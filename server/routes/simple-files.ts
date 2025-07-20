@@ -70,7 +70,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
     
     const newFile = {
-      id: (mockFiles.length + 1).toString(),
+      id: (seedFiles.length + 1).toString(),
       filename: req.file.filename,
       originalName: req.file.originalname,
       size: req.file.size,
@@ -83,7 +83,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       url: `/uploads/${req.file.filename}`
     };
     
-    mockFiles.push(newFile);
+    seedFiles.push(newFile);
     
     const fileWithUploader = {
       ...newFile,
@@ -107,6 +107,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       uploadedAt: newFile.uploadedAt.toISOString()
     };
     
+    console.log('📤 File upload response:', responseData);
     res.status(201).json(responseData);
   } catch (error) {
     console.error('Error uploading file:', error);
@@ -118,7 +119,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 router.get('/simple-files/:id', async (req, res) => {
   try {
     const fileId = req.params.id;
-    const file = mockFiles.find(f => f.id === fileId);
+    const file = seedFiles.find(f => f.id === fileId);
     
     if (!file) {
       return res.status(404).json({ message: 'File not found' });
@@ -164,7 +165,7 @@ router.post('/simple-files/upload-multiple', upload.array('files', 10), async (r
       }
       
       const newFile = {
-        id: (mockFiles.length + uploadedFiles.length + 1).toString(),
+        id: (seedFiles.length + uploadedFiles.length + 1).toString(),
         filename: file.filename,
         originalName: file.originalname,
         size: file.size,
@@ -177,7 +178,7 @@ router.post('/simple-files/upload-multiple', upload.array('files', 10), async (r
         url: `/uploads/${file.filename}`
       };
       
-      mockFiles.push(newFile);
+      seedFiles.push(newFile);
       uploadedFiles.push({
         ...newFile,
         uploader: {
@@ -203,13 +204,13 @@ router.post('/simple-files/upload-multiple', upload.array('files', 10), async (r
 router.delete('/simple-files/:id', async (req, res) => {
   try {
     const fileId = req.params.id;
-    const fileIndex = mockFiles.findIndex(f => f.id === fileId);
+    const fileIndex = seedFiles.findIndex(f => f.id === fileId);
     
     if (fileIndex === -1) {
       return res.status(404).json({ message: 'File not found' });
     }
     
-    const file = mockFiles[fileIndex];
+    const file = seedFiles[fileIndex];
     
     // Try to delete the actual file from disk
     try {
@@ -221,7 +222,7 @@ router.delete('/simple-files/:id', async (req, res) => {
       console.warn('Could not delete file from disk:', fsError);
     }
     
-    mockFiles.splice(fileIndex, 1);
+    seedFiles.splice(fileIndex, 1);
     res.json({ message: 'File deleted successfully' });
   } catch (error) {
     console.error('Error deleting file:', error);
@@ -233,7 +234,7 @@ router.delete('/simple-files/:id', async (req, res) => {
 router.get('/simple-files/:id/download', async (req, res) => {
   try {
     const fileId = req.params.id;
-    const file = mockFiles.find(f => f.id === fileId);
+    const file = seedFiles.find(f => f.id === fileId);
     
     if (!file) {
       return res.status(404).json({ message: 'File not found' });
