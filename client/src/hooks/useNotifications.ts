@@ -116,10 +116,12 @@ export function useNotifications() {
     },
     onSuccess: () => {
       // Immediately set the cache to 0 for instant UI update
-      queryClient.setQueryData(['/api/notifications/unread-count'], 0);
+      queryClient.setQueryData(['/api/notifications/unread-count'], { count: 0 });
+      queryClient.setQueryData(['/api/notifications'], []);
       // Then invalidate to fetch fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+      console.log('[NotificationHook] Marked all notifications as read and cleared cache');
     },
   });
 

@@ -427,6 +427,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
             className={`mb-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
               snapshot.isDragging ? 'shadow-lg rotate-2' : ''
             }`}
+            style={{ contain: 'layout style paint' }}
             onClick={(e) => {
               e.stopPropagation();
               setSelectedTask(task);
@@ -603,7 +604,8 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
                         minHeight: '400px', 
                         maxHeight: 'calc(100vh - 300px)',
                         overflowY: 'auto',
-                        scrollBehavior: 'smooth' 
+                        scrollBehavior: 'smooth',
+                        contain: 'layout style paint'
                       }}
                     >
                       {filteredTasks.map((task, index) => (
@@ -743,7 +745,7 @@ export function RobustTaskBoard({ selectedChannel, workspaceId }: RobustTaskBoar
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white" data-testid="task-board">
+    <div className="h-full w-full flex flex-col bg-white overflow-hidden" data-testid="task-board" style={{ contain: 'layout' }}>
       {/* Header */}
       <div className="border-b bg-white p-6 flex-shrink-0 w-full">
         <div className="flex items-center justify-between mb-4">

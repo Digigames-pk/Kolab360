@@ -328,9 +328,14 @@ export class NotificationService {
 
   markAllAsRead(userId: string): boolean {
     const notifications = this.inAppNotifications.get(userId);
-    if (!notifications) return false;
+    if (!notifications) {
+      console.log(`[NotificationService] No notifications found for user ${userId} when marking all as read`);
+      return false;
+    }
 
+    const unreadCount = notifications.filter(n => !n.read).length;
     notifications.forEach(n => n.read = true);
+    console.log(`[NotificationService] Marked ${unreadCount} notifications as read for user ${userId}`);
     return true;
   }
 
@@ -352,7 +357,9 @@ export class NotificationService {
 
   getUnreadCount(userId: string): number {
     const notifications = this.inAppNotifications.get(userId) || [];
-    return notifications.filter(n => !n.read).length;
+    const count = notifications.filter(n => !n.read).length;
+    console.log(`[NotificationService] Getting unread count for user ${userId}: ${count} notifications`);
+    return count;
   }
 
   updateUserSettings(userId: string, settings: Partial<UserNotificationSettings>): void {
