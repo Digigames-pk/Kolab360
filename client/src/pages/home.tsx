@@ -15,7 +15,7 @@ import { AdvancedSearch } from '@/components/AdvancedSearch';
 import { IntegrationHub } from '@/components/IntegrationHub';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import EmailTestCenter from '@/components/EmailTestCenter';
-import PinningSystem, { PinButton } from '@/components/PinningSystem';
+import { PinningSystem } from '@/components/PinningSystem';
 import { WorkspaceThemeCustomizer } from '@/components/WorkspaceThemeCustomizer';
 import { TaskDetailModal } from '@/components/TaskDetailModal';
 import { FileViewer } from '@/components/FileViewer';
@@ -86,6 +86,7 @@ export default function Home() {
   const [showInviteUsers, setShowInviteUsers] = useState(false);
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
+  const [showPinningSystem, setShowPinningSystem] = useState(false);
   
   // Selected items for modals
   const [selectedTask, setSelectedTask] = useState(null);
@@ -229,6 +230,7 @@ export default function Home() {
           onInviteUsers={() => setShowInviteUsers(true)}
           onShowChannelInfo={() => setShowChannelInfo(true)}
           onShowSettings={() => alert('Opening channel settings...')}
+          onShowPinned={() => setShowPinningSystem(true)}
           unreadNotificationCount={unreadCount}
         />
 
@@ -528,6 +530,12 @@ export default function Home() {
         isOpen={showCreateWorkspace}
         onClose={() => setShowCreateWorkspace(false)}
         onCreateWorkspace={handleCreateWorkspace}
+      />
+
+      {/* Pinning System Modal */}
+      <PinningSystem
+        isOpen={showPinningSystem}
+        onClose={() => setShowPinningSystem(false)}
       />
     </div>
   );

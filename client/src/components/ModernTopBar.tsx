@@ -43,6 +43,7 @@ interface ModernTopBarProps {
   onInviteUsers?: () => void;
   onShowChannelInfo?: () => void;
   onShowSettings?: () => void;
+  onShowPinned?: () => void;
   unreadNotificationCount?: number;
 }
 
@@ -56,6 +57,7 @@ export function ModernTopBar({
   onInviteUsers,
   onShowChannelInfo,
   onShowSettings,
+  onShowPinned,
   unreadNotificationCount = 0
 }: ModernTopBarProps) {
   const getChannelInfo = () => {
@@ -145,9 +147,9 @@ export function ModernTopBar({
             <DropdownMenuContent align="end" className="w-56">
               {currentView === 'chat' && (
                 <>
-                  <DropdownMenuItem onClick={() => alert('Viewing pinned messages...')}>
+                  <DropdownMenuItem onClick={() => onShowPinned && onShowPinned()}>
                     <Pin className="h-4 w-4 mr-2" />
-                    View pinned messages
+                    View pinned items
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onShowChannelInfo}>
                     <Info className="h-4 w-4 mr-2" />

@@ -325,8 +325,15 @@ export function ModernSlackSidebar({
                     onClick={() => {
                       onChannelSelect(channel.id);
                       onViewChange('chat');
-                      // Don't immediately mark as read - let the backend handle this
-                      // when messages are actually viewed/loaded
+                      // Mark as read after a short delay to simulate viewing messages
+                      setTimeout(() => {
+                        if (channel.unread > 0) {
+                          setChannelUnreadCounts(prev => ({
+                            ...prev,
+                            [channel.name]: 0
+                          }));
+                        }
+                      }, 2000);
                     }}
                   >
                     {channel.type === 'private' ? (
@@ -378,8 +385,15 @@ export function ModernSlackSidebar({
                   onClick={() => {
                     onViewChange('chat');
                     console.log('Selected DM:', dm.name);
-                    // Don't immediately mark as read - let the backend handle this
-                    // when messages are actually viewed/loaded
+                    // Mark as read after a short delay to simulate viewing messages
+                    setTimeout(() => {
+                      if (dm.unread > 0) {
+                        setDMUnreadCounts(prev => ({
+                          ...prev,
+                          [dm.name]: 0
+                        }));
+                      }
+                    }, 2000);
                   }}
                 >
                   <div className="flex items-center mr-2">

@@ -27,7 +27,8 @@ import {
   Phone,
   Video,
   Users,
-  Upload
+  Upload,
+  Pin
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -377,7 +378,19 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     } catch (error) {
       console.error('Failed to delete message:', error);
     }
-  };
+  }
+
+  const pinMessage = async (message: Message) => {
+    try {
+      // In a real app, this would call an API to pin the message
+      console.log('Pinning message:', message);
+      
+      // Show success feedback
+      alert(`Message "${message.content.substring(0, 50)}..." has been pinned!`);
+    } catch (error) {
+      console.error('Failed to pin message:', error);
+    }
+  };;
 
   // Emoji functions
   const addEmoji = (emoji: string) => {
@@ -749,6 +762,10 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                                 <DropdownMenuItem onClick={() => setReplyingTo(message)}>
                                   <Reply className="h-4 w-4 mr-2" />
                                   Reply
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => pinMessage(message)}>
+                                  <Pin className="h-4 w-4 mr-2" />
+                                  Pin Message
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => {
