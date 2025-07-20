@@ -293,14 +293,8 @@ export function ModernSlackSidebar({
                     )}
                     <span className="truncate">{channel.name}</span>
                     <div className="ml-auto flex items-center space-x-1">
-                      {/* Member count */}
-                      <Badge 
-                        variant="outline" 
-                        className={`${settings.compactMode ? 'text-xs h-4 min-w-4 px-1' : 'text-xs h-5 min-w-5 px-1'} bg-blue-50 text-blue-600 border-blue-200`}
-                      >
-                        {channel.memberCount || 0}
-                      </Badge>
-                      {settings.showUnreadCounts && channel.unread > 0 && (
+                      {/* Only show red notification badge for unread messages */}
+                      {channel.unread > 0 && (
                         <Badge 
                           variant="destructive" 
                           className={`${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}
@@ -360,7 +354,7 @@ export function ModernSlackSidebar({
                     </Avatar>
                   </div>
                   <span className="truncate">{dm.name}</span>
-                  {settings.showUnreadCounts && dm.unread > 0 && (
+                  {dm.unread > 0 && (
                     <Badge 
                       variant="destructive" 
                       className={`ml-auto ${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}

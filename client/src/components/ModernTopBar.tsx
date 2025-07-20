@@ -43,6 +43,7 @@ interface ModernTopBarProps {
   onInviteUsers?: () => void;
   onShowChannelInfo?: () => void;
   onShowSettings?: () => void;
+  unreadNotificationCount?: number;
 }
 
 export function ModernTopBar({
@@ -54,7 +55,8 @@ export function ModernTopBar({
   onStartCall,
   onInviteUsers,
   onShowChannelInfo,
-  onShowSettings
+  onShowSettings,
+  unreadNotificationCount = 0
 }: ModernTopBarProps) {
   const getChannelInfo = () => {
     const channels = {
@@ -122,8 +124,16 @@ export function ModernTopBar({
             <Search className="h-4 w-4" />
           </Button>
           
-          <Button variant="ghost" size="sm" onClick={onShowNotifications}>
+          <Button variant="ghost" size="sm" onClick={onShowNotifications} className="relative">
             <Bell className="h-4 w-4" />
+            {unreadNotificationCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-4 w-4 text-xs p-0 flex items-center justify-center"
+              >
+                {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+              </Badge>
+            )}
           </Button>
           
           <DropdownMenu>

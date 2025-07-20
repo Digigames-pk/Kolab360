@@ -32,6 +32,7 @@ import { DebugLogger, logger } from '@/components/DebugLogger';
 import { SystemTester } from '@/components/SystemTester';
 import { SuperAdminDebugger } from '@/components/SuperAdminDebugger';
 import { SuperAdminToggle } from '@/components/SuperAdminToggle';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -40,6 +41,21 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'test'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [currentTheme, setCurrentTheme] = useState('slack-light');
+
+  // Notification system hook
+  const { unreadCount, sendTestNotification } = useNotifications();
+
+  // Create some test notifications on component mount for demo
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Send a few test notifications to show the red badge working
+      sendTestNotification('mention');
+      setTimeout(() => sendTestNotification('task'), 1000);
+      setTimeout(() => sendTestNotification('calendar'), 2000);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [sendTestNotification]);
 
   // Component mount logging
   useEffect(() => {
@@ -193,6 +209,7 @@ export default function Home() {
           onInviteUsers={() => setShowInviteUsers(true)}
           onShowChannelInfo={() => setShowChannelInfo(true)}
           onShowSettings={() => alert('Opening channel settings...')}
+          unreadNotificationCount={unreadCount}
         />
 
         {/* Content Area */}
