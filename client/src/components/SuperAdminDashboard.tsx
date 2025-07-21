@@ -60,8 +60,15 @@ import {
   Workflow,
   TrendingUp,
   PieChart,
-  BarChart2
+  BarChart2,
+  X
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface User {
   id: number;
@@ -109,6 +116,212 @@ export function SuperAdminDashboard() {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
+  
+  // Organization management state
+  const [showCreateOrgModal, setShowCreateOrgModal] = useState(false);
+  const [showEditOrgModal, setShowEditOrgModal] = useState(false);
+  const [showOrgLimitsModal, setShowOrgLimitsModal] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<any>(null);
+  const [newOrgData, setNewOrgData] = useState({
+    name: '',
+    domain: '',
+    plan: 'Business',
+    adminEmail: '',
+    memberLimit: 100,
+    storageLimit: 1000,
+    apiRateLimit: 1000,
+    features: {
+      sso: false,
+      multiFactorAuth: false,
+      customBranding: false,
+      advancedAnalytics: false,
+      apiAccess: true,
+      webhooks: true,
+      customIntegrations: false,
+      prioritySupport: false,
+      dataExport: true,
+      auditLogs: true,
+      guestAccess: true,
+      fileSharing: true,
+      videoConferencing: true,
+      screenSharing: true,
+      customEmojis: true,
+      appDirectory: true
+    }
+  });
+
+  // Mock organizations data
+  const [organizations, setOrganizations] = useState([
+    {
+      id: 1,
+      name: 'Kolab360 Enterprise',
+      domain: 'kolab360.com',
+      plan: 'Enterprise',
+      status: 'active',
+      members: 124,
+      memberLimit: 500,
+      storageUsed: 847,
+      storageLimit: 2000,
+      adminName: 'John Doe',
+      adminEmail: 'admin@kolab360.com',
+      createdAt: '2024-01-15',
+      features: {
+        sso: true,
+        multiFactorAuth: true,
+        customBranding: true,
+        advancedAnalytics: true,
+        apiAccess: true,
+        webhooks: true,
+        customIntegrations: true,
+        prioritySupport: true,
+        dataExport: true,
+        auditLogs: true,
+        guestAccess: true,
+        fileSharing: true,
+        videoConferencing: true,
+        screenSharing: true,
+        customEmojis: true,
+        appDirectory: true
+      }
+    },
+    {
+      id: 2,
+      name: 'DevTeam Hub',
+      domain: 'devteam.kolab360.com',
+      plan: 'Business+',
+      status: 'active',
+      members: 45,
+      memberLimit: 100,
+      storageUsed: 234,
+      storageLimit: 500,
+      adminName: 'Sarah Wilson',
+      adminEmail: 'sarah@devteam.kolab360.com',
+      createdAt: '2024-02-20',
+      features: {
+        sso: false,
+        multiFactorAuth: true,
+        customBranding: false,
+        advancedAnalytics: true,
+        apiAccess: true,
+        webhooks: true,
+        customIntegrations: false,
+        prioritySupport: false,
+        dataExport: true,
+        auditLogs: true,
+        guestAccess: true,
+        fileSharing: true,
+        videoConferencing: true,
+        screenSharing: true,
+        customEmojis: true,
+        appDirectory: true
+      }
+    },
+    {
+      id: 3,
+      name: 'Marketing Central',
+      domain: 'marketing.kolab360.com',
+      plan: 'Business',
+      status: 'suspended',
+      members: 23,
+      memberLimit: 50,
+      storageUsed: 89,
+      storageLimit: 200,
+      adminName: 'Mike Chen',
+      adminEmail: 'mike@marketing.kolab360.com',
+      createdAt: '2024-03-10',
+      features: {
+        sso: false,
+        multiFactorAuth: false,
+        customBranding: false,
+        advancedAnalytics: false,
+        apiAccess: true,
+        webhooks: false,
+        customIntegrations: false,
+        prioritySupport: false,
+        dataExport: false,
+        auditLogs: false,
+        guestAccess: true,
+        fileSharing: true,
+        videoConferencing: true,
+        screenSharing: false,
+        customEmojis: false,
+        appDirectory: true
+      }
+    }
+  ]);
+
+  const handleCreateOrg = () => {
+    const newOrg = {
+      id: organizations.length + 1,
+      ...newOrgData,
+      status: 'active',
+      members: 0,
+      storageUsed: 0,
+      adminName: 'New Admin',
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    
+    setOrganizations([...organizations, newOrg]);
+    setShowCreateOrgModal(false);
+    setNewOrgData({
+      name: '',
+      domain: '',
+      plan: 'Business',
+      adminEmail: '',
+      memberLimit: 100,
+      storageLimit: 1000,
+      apiRateLimit: 1000,
+      features: {
+        sso: false,
+        multiFactorAuth: false,
+        customBranding: false,
+        advancedAnalytics: false,
+        apiAccess: true,
+        webhooks: true,
+        customIntegrations: false,
+        prioritySupport: false,
+        dataExport: true,
+        auditLogs: true,
+        guestAccess: true,
+        fileSharing: true,
+        videoConferencing: true,
+        screenSharing: true,
+        customEmojis: true,
+        appDirectory: true
+      }
+    });
+    
+    toast({
+      title: "Organization Created",
+      description: `${newOrg.name} has been created successfully.`
+    });
+  };
+
+  const handleSuspendOrg = (orgId: number) => {
+    setOrganizations(organizations.map(org => 
+      org.id === orgId 
+        ? { ...org, status: org.status === 'suspended' ? 'active' : 'suspended' }
+        : org
+    ));
+    
+    const org = organizations.find(o => o.id === orgId);
+    toast({
+      title: org?.status === 'suspended' ? "Organization Reactivated" : "Organization Suspended",
+      description: `${org?.name} has been ${org?.status === 'suspended' ? 'reactivated' : 'suspended'}.`
+    });
+  };
+
+  const handleDeleteOrg = (orgId: number) => {
+    if (confirm('Are you sure you want to delete this organization? This action cannot be undone.')) {
+      const orgName = organizations.find(org => org.id === orgId)?.name;
+      setOrganizations(organizations.filter(org => org.id !== orgId));
+      toast({
+        title: "Organization Deleted",
+        description: `${orgName} has been permanently deleted.`,
+        variant: "destructive"
+      });
+    }
+  };
 
   // Mock data - in production this would come from API
   useEffect(() => {
@@ -518,52 +731,420 @@ export function SuperAdminDashboard() {
 
           {/* Workspaces Tab */}
           <TabsContent value="workspaces" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Building2 className="h-5 w-5 mr-2" />
-                    Workspace Management
-                  </div>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Workspace
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { name: 'Main Organization', members: 124, status: 'active', plan: 'Enterprise' },
-                    { name: 'Development Team', members: 45, status: 'active', plan: 'Business+' },
-                    { name: 'Marketing Hub', members: 23, status: 'active', plan: 'Business+' },
-                    { name: 'Client Projects', members: 67, status: 'archived', plan: 'Pro' }
-                  ].map((workspace, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-blue-600 text-white">
-                            {workspace.name.split(' ').map(n => n[0]).join('')}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold">Organization Management</h2>
+                <p className="text-gray-600">Manage workspaces, plans, and organizational controls</p>
+              </div>
+              <Button onClick={() => setShowCreateOrgModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Organization
+              </Button>
+            </div>
+
+            {/* Organization Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {organizations.map((org) => (
+                <Card key={org.id} className={`border-2 ${org.status === 'suspended' ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className={`${org.status === 'suspended' ? 'bg-red-500' : 'bg-blue-600'} text-white font-bold`}>
+                            {org.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-medium">{workspace.name}</h3>
-                          <p className="text-sm text-gray-600">{workspace.members} members • {workspace.plan}</p>
+                          <h3 className="font-bold text-lg">{org.name}</h3>
+                          <p className="text-sm text-gray-600">{org.domain}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={workspace.status === 'active' ? 'default' : 'secondary'}>
-                          {workspace.status}
-                        </Badge>
-                        <Button variant="outline" size="sm">
-                          <Settings className="h-4 w-4" />
-                        </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedOrg(org);
+                            setShowEditOrgModal(true);
+                          }}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Organization
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedOrg(org);
+                            setShowOrgLimitsModal(true);
+                          }}>
+                            <Settings className="h-4 w-4 mr-2" />
+                            Configure Limits
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSuspendOrg(org.id)}>
+                            {org.status === 'suspended' ? (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Reactivate
+                              </>
+                            ) : (
+                              <>
+                                <Ban className="h-4 w-4 mr-2" />
+                                Suspend
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteOrg(org.id)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Organization
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Plan</span>
+                      <Badge variant={org.plan === 'Enterprise' ? 'default' : 'secondary'}>
+                        {org.plan}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Status</span>
+                      <Badge variant={org.status === 'active' ? 'default' : 'destructive'}>
+                        {org.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Members</span>
+                      <span className="font-medium">{org.members}/{org.memberLimit}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Storage</span>
+                      <span className="font-medium">{org.storageUsed}GB/{org.storageLimit}GB</span>
+                    </div>
+                    <Progress value={(org.storageUsed / org.storageLimit) * 100} className="h-2" />
+                    
+                    <div className="pt-2 border-t">
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>Created: {new Date(org.createdAt).toLocaleDateString()}</span>
+                        <span>Admin: {org.adminName}</span>
                       </div>
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Create Organization Modal */}
+            {showCreateOrgModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Create New Organization</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowCreateOrgModal(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Organization Name</label>
+                        <Input 
+                          value={newOrgData.name}
+                          onChange={(e) => setNewOrgData({...newOrgData, name: e.target.value})}
+                          placeholder="Acme Corporation"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Domain</label>
+                        <Input 
+                          value={newOrgData.domain}
+                          onChange={(e) => setNewOrgData({...newOrgData, domain: e.target.value})}
+                          placeholder="acme.com"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Plan</label>
+                        <Select value={newOrgData.plan} onValueChange={(value) => setNewOrgData({...newOrgData, plan: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Free">Free</SelectItem>
+                            <SelectItem value="Pro">Pro</SelectItem>
+                            <SelectItem value="Business">Business</SelectItem>
+                            <SelectItem value="Business+">Business+</SelectItem>
+                            <SelectItem value="Enterprise">Enterprise</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Admin Email</label>
+                        <Input 
+                          value={newOrgData.adminEmail}
+                          onChange={(e) => setNewOrgData({...newOrgData, adminEmail: e.target.value})}
+                          placeholder="admin@acme.com"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Member Limit</label>
+                        <Input 
+                          type="number"
+                          value={newOrgData.memberLimit}
+                          onChange={(e) => setNewOrgData({...newOrgData, memberLimit: parseInt(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Storage Limit (GB)</label>
+                        <Input 
+                          type="number"
+                          value={newOrgData.storageLimit}
+                          onChange={(e) => setNewOrgData({...newOrgData, storageLimit: parseInt(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">API Rate Limit</label>
+                        <Input 
+                          type="number"
+                          value={newOrgData.apiRateLimit}
+                          onChange={(e) => setNewOrgData({...newOrgData, apiRateLimit: parseInt(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium">Feature Access</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {Object.entries(newOrgData.features).map(([feature, enabled]) => (
+                          <div key={feature} className="flex items-center space-x-2">
+                            <input 
+                              type="checkbox" 
+                              checked={enabled}
+                              onChange={(e) => setNewOrgData({
+                                ...newOrgData, 
+                                features: {...newOrgData.features, [feature]: e.target.checked}
+                              })}
+                              className="rounded"
+                            />
+                            <label className="text-sm capitalize">{feature.replace(/([A-Z])/g, ' $1').trim()}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button variant="outline" onClick={() => setShowCreateOrgModal(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleCreateOrg}>
+                        Create Organization
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
+
+            {/* Edit Organization Modal */}
+            {showEditOrgModal && selectedOrg && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Edit Organization: {selectedOrg.name}</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowEditOrgModal(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Organization Name</label>
+                        <Input defaultValue={selectedOrg.name} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Domain</label>
+                        <Input defaultValue={selectedOrg.domain} />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Plan</label>
+                        <Select defaultValue={selectedOrg.plan}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Free">Free</SelectItem>
+                            <SelectItem value="Pro">Pro</SelectItem>
+                            <SelectItem value="Business">Business</SelectItem>
+                            <SelectItem value="Business+">Business+</SelectItem>
+                            <SelectItem value="Enterprise">Enterprise</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Status</label>
+                        <Select defaultValue={selectedOrg.status}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="suspended">Suspended</SelectItem>
+                            <SelectItem value="archived">Archived</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button variant="outline" onClick={() => setShowEditOrgModal(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={() => {
+                        setShowEditOrgModal(false);
+                        toast({ title: "Organization updated successfully" });
+                      }}>
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Organization Limits Modal */}
+            {showOrgLimitsModal && selectedOrg && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Configure Limits: {selectedOrg.name}</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowOrgLimitsModal(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    {/* Resource Limits */}
+                    <div>
+                      <h4 className="font-medium mb-3">Resource Limits</h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Member Limit</label>
+                          <Input type="number" defaultValue={selectedOrg.memberLimit} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Storage Limit (GB)</label>
+                          <Input type="number" defaultValue={selectedOrg.storageLimit} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">API Rate Limit/min</label>
+                          <Input type="number" defaultValue="1000" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feature Controls */}
+                    <div>
+                      <h4 className="font-medium mb-3">Feature Access Controls</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        {[
+                          'sso', 'multiFactorAuth', 'customBranding', 'advancedAnalytics', 
+                          'apiAccess', 'webhooks', 'customIntegrations', 'prioritySupport',
+                          'dataExport', 'auditLogs', 'guestAccess', 'fileSharing',
+                          'videoConferencing', 'screenSharing', 'customEmojis', 'appDirectory'
+                        ].map(feature => (
+                          <div key={feature} className="flex items-center space-x-2 p-2 border rounded">
+                            <input type="checkbox" defaultChecked className="rounded" />
+                            <label className="text-sm capitalize flex-1">
+                              {feature.replace(/([A-Z])/g, ' $1').trim()}
+                            </label>
+                            {feature === 'sso' && <Badge variant="secondary">Enterprise</Badge>}
+                            {feature === 'advancedAnalytics' && <Badge variant="secondary">Business+</Badge>}
+                            {feature === 'prioritySupport' && <Badge variant="secondary">Pro+</Badge>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Communication Limits */}
+                    <div>
+                      <h4 className="font-medium mb-3">Communication Limits</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Max Channels per Workspace</label>
+                          <Input type="number" defaultValue="500" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Max Message History (days)</label>
+                          <Input type="number" defaultValue="90" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Max File Size (MB)</label>
+                          <Input type="number" defaultValue="100" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Max Video Call Duration (hours)</label>
+                          <Input type="number" defaultValue="24" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Security Policies */}
+                    <div>
+                      <h4 className="font-medium mb-3">Security Policies</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <div className="font-medium">Require 2FA for all users</div>
+                            <div className="text-sm text-gray-600">Force two-factor authentication</div>
+                          </div>
+                          <input type="checkbox" className="rounded" />
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <div className="font-medium">Restrict external integrations</div>
+                            <div className="text-sm text-gray-600">Require admin approval for apps</div>
+                          </div>
+                          <input type="checkbox" defaultChecked className="rounded" />
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <div className="font-medium">Enable data loss prevention</div>
+                            <div className="text-sm text-gray-600">Monitor sensitive data sharing</div>
+                          </div>
+                          <input type="checkbox" defaultChecked className="rounded" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button variant="outline" onClick={() => setShowOrgLimitsModal(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={() => {
+                        setShowOrgLimitsModal(false);
+                        toast({ title: "Organization limits updated successfully" });
+                      }}>
+                        Save Limits
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Security & Compliance Tab */}
