@@ -621,14 +621,20 @@ class MemoryStorage implements IStorage {
   // Stub implementations for required interface methods
   async getUser(id: number): Promise<User | undefined> {
     const mockUsers = [
-      { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin" as const, createdAt: new Date(), lastLoginAt: null },
-      { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user" as const, createdAt: new Date(), lastLoginAt: null }
+      { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$abc123", isActive: true },
+      { id: 2, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "dad73a1c10139f9962cbc31f0d6525f2ec8a1b41afe14ed64871d4651fd5e0feebf18903ba9f7e22b45ec7aa414c5c94c71b3df76104c80657b41ad40496757d.37d6dd2f85107ce290f3ed032ade9810", isActive: true },
+      { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$def456", isActive: true }
     ];
     return mockUsers.find(u => u.id === id);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return this.getUser(email === "admin@demo.com" ? 1 : 3);
+    const mockUsers = [
+      { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$abc123", isActive: true },
+      { id: 2, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "dad73a1c10139f9962cbc31f0d6525f2ec8a1b41afe14ed64871d4651fd5e0feebf18903ba9f7e22b45ec7aa414c5c94c71b3df76104c80657b41ad40496757d.37d6dd2f85107ce290f3ed032ade9810", isActive: true },
+      { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$def456", isActive: true }
+    ];
+    return mockUsers.find(u => u.email === email);
   }
 
   async createUser(user: InsertUser): Promise<User> {
