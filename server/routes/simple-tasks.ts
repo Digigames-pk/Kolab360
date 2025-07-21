@@ -2,79 +2,8 @@ import { Router } from 'express';
 
 const router = Router();
 
-// Mock tasks data for development
-const mockTasks = [
-  {
-    id: '1',
-    title: 'Set up project structure',
-    description: 'Initialize the basic project structure with components and routing',
-    status: 'completed',
-    priority: 'high',
-    assignedUserId: 3,
-    createdBy: 1,
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
-    workspaceId: '1',
-    category: 'Development'
-  },
-  {
-    id: '2',
-    title: 'Implement user authentication',
-    description: 'Create login/logout functionality with session management',
-    status: 'in-progress',
-    priority: 'high',
-    assignedUserId: 3,
-    createdBy: 1,
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-    workspaceId: '1',
-    category: 'Development'
-  },
-  {
-    id: '3',
-    title: 'Design task management interface',
-    description: 'Create intuitive UI for task creation, editing, and tracking',
-    status: 'todo',
-    priority: 'medium',
-    assignedUserId: 3,
-    createdBy: 1,
-    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-    updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-    dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
-    workspaceId: '1',
-    category: 'Design'
-  },
-  {
-    id: '4',
-    title: 'Set up file upload system',
-    description: 'Implement secure file upload with cloud storage integration',
-    status: 'todo',
-    priority: 'medium',
-    assignedUserId: 3,
-    createdBy: 1,
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-    updatedAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 2 weeks from now
-    workspaceId: '1',
-    category: 'Development'
-  },
-  {
-    id: '5',
-    title: 'Write documentation',
-    description: 'Document API endpoints and component usage',
-    status: 'todo',
-    priority: 'low',
-    assignedUserId: 3,
-    createdBy: 1,
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-    updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-    dueDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000), // 3 weeks from now
-    workspaceId: '1',
-    category: 'Documentation'
-  }
-];
+// Clean tasks data - no mock content
+const mockTasks = [];
 
 // GET /api/tasks - Get all tasks
 router.get('/', async (req, res) => {
@@ -82,12 +11,8 @@ router.get('/', async (req, res) => {
     const workspaceId = req.query.workspaceId || '1';
     const filteredTasks = mockTasks.filter(task => task.workspaceId === workspaceId);
     
-    // Add creator and assignee information
-    const tasksWithUsers = filteredTasks.map(task => ({
-      ...task,
-      creator: { id: 1, firstName: 'System', lastName: 'Admin', email: 'admin@demo.com' },
-      assignedUser: { id: 3, firstName: 'Regular', lastName: 'User', email: 'user@test.com' }
-    }));
+    // Return tasks without dummy user data
+    const tasksWithUsers = filteredTasks;
     
     res.json(tasksWithUsers);
   } catch (error) {

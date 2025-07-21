@@ -17,21 +17,21 @@ export async function seedTestData() {
 
     // Create super admin user if it doesn't exist
     try {
-      const existingAdmin = await storage.getUserByEmail('superadmin@test.com');
+      const existingAdmin = await storage.getUserByEmail('marty@onlinechannel.tv');
       if (!existingAdmin) {
         console.log('Creating super admin user...');
-        const hashedPassword = await hashPassword('superadmin123');
+        const hashedPassword = await hashPassword('123456');
         
         await storage.createUser({
-          email: 'superadmin@test.com',
+          email: 'marty@onlinechannel.tv',
           password: hashedPassword,
-          firstName: 'Super',
+          firstName: 'Marty',
           lastName: 'Admin',
           role: 'super_admin',
           isActive: true
         });
         
-        console.log('✅ Super admin user created: superadmin@test.com / superadmin123');
+        console.log('✅ Super admin user created: marty@onlinechannel.tv / 123456');
       } else {
         console.log('✅ Super admin user already exists');
       }
@@ -42,69 +42,7 @@ export async function seedTestData() {
     // Create test notifications for user 3 (the authenticated test user)
     const testUserId = '3';
 
-    // Clear existing notifications first
-    notificationService.clearAllNotifications(testUserId);
-
-    // Create realistic test notifications
-    const notifications = [
-      {
-        userId: testUserId,
-        type: 'mention' as const,
-        title: 'Mentioned in #general',
-        message: 'Sarah Wilson mentioned you: "Can you review the latest project updates?"',
-        priority: 'high' as const,
-        channel: 'general',
-        sender: 'Sarah Wilson'
-      },
-      {
-        userId: testUserId,
-        type: 'task' as const,
-        title: 'New task assigned: Database Migration',
-        message: 'Alex Johnson assigned you a high-priority task for the Q1 database migration project.',
-        priority: 'high' as const,
-        sender: 'Alex Johnson'
-      },
-      {
-        userId: testUserId,
-        type: 'calendar' as const,
-        title: 'Meeting in 30 minutes',
-        message: 'Team standup meeting starts at 2:00 PM in Conference Room A.',
-        priority: 'medium' as const
-      },
-      {
-        userId: testUserId,
-        type: 'mention' as const,
-        title: 'Mentioned in #dev-team',
-        message: 'Mike Chen mentioned you: "The API integration looks great! Ship it 🚀"',
-        priority: 'medium' as const,
-        channel: 'dev-team',
-        sender: 'Mike Chen'
-      },
-      {
-        userId: testUserId,
-        type: 'task' as const,
-        title: 'Task completed: Code Review',
-        message: 'Your code review for PR #247 has been approved and merged.',
-        priority: 'low' as const,
-        sender: 'System'
-      }
-    ];
-
-    // Create notifications directly using the private method
-    for (const notification of notifications) {
-      // Call the private method directly
-      (notificationService as any).createInAppNotification({
-        userId: testUserId,
-        userEmail: 'test@example.com',
-        userName: 'Test User',
-        type: notification.type,
-        title: notification.title,
-        message: notification.message,
-        priority: notification.priority,
-        channel: notification.channel,
-        sender: notification.sender
-      });
-    }
+    // No test notifications - clean slate for production
 
     console.log(`✅ Created ${notifications.length} test notifications`);
 
@@ -146,85 +84,4 @@ export const mockDMUnreadCounts = {
 };
 
 // Generate realistic test files
-export const mockFiles = [
-  {
-    id: "1",
-    filename: "project-requirements.pdf",
-    originalName: "Q1_Project_Requirements_Final.pdf",
-    mimetype: "application/pdf",
-    size: 2847293,
-    uploadDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-    uploader: { name: "Sarah Wilson" },
-    category: "document"
-  },
-  {
-    id: "2", 
-    filename: "team-meeting-recording.mp4",
-    originalName: "Daily_Standup_2025-01-20.mp4",
-    mimetype: "video/mp4",
-    size: 45892847,
-    uploadDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    uploader: { name: "Alex Johnson" },
-    category: "video"
-  },
-  {
-    id: "3",
-    filename: "wireframes-v3.fig",
-    originalName: "Mobile_App_Wireframes_v3.fig",
-    mimetype: "application/figma",
-    size: 8394728,
-    uploadDate: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-    uploader: { name: "Lisa Rodriguez" },
-    category: "document"
-  },
-  {
-    id: "4",
-    filename: "api-documentation.docx",
-    originalName: "REST_API_Documentation_v2.docx",
-    mimetype: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    size: 1594823,
-    uploadDate: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
-    uploader: { name: "Mike Chen" },
-    category: "document"
-  },
-  {
-    id: "5",
-    filename: "user-feedback-analysis.xlsx",
-    originalName: "User_Feedback_Q4_2024_Analysis.xlsx",
-    mimetype: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    size: 734829,
-    uploadDate: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
-    uploader: { name: "Emma Davis" },
-    category: "document"
-  },
-  {
-    id: "6",
-    filename: "logo-variations.zip",
-    originalName: "Brand_Logo_Variations_2025.zip",
-    mimetype: "application/zip",
-    size: 12847392,
-    uploadDate: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8 hours ago
-    uploader: { name: "Tom Anderson" },
-    category: "other"
-  },
-  {
-    id: "7",
-    filename: "team-photo.jpg",
-    originalName: "Team_Photo_2025.jpg",
-    mimetype: "image/jpeg",
-    size: 2456789,
-    uploadDate: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
-    uploader: { name: "Sarah Wilson" },
-    category: "image"
-  },
-  {
-    id: "8",
-    filename: "mockup-design.png",
-    originalName: "App_Mockup_Design_V2.png",
-    mimetype: "image/png",
-    size: 3847293,
-    uploadDate: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-    uploader: { name: "Lisa Rodriguez" },
-    category: "image"
-  }
-];
+export const mockFiles = [];

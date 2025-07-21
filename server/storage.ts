@@ -549,90 +549,19 @@ export class DatabaseStorage implements IStorage {
 
 // Memory storage for immediate messaging functionality
 class MemoryStorage implements IStorage {
-  private mockMessages: (Message & { author: User })[] = [
-    {
-      id: "1",
-      content: "Welcome to the general channel! Let's start collaborating.",
-      authorId: 1,
-      channelId: "general",
-      recipientId: null,
-      threadId: null,
-      messageType: "text",
-      metadata: null,
-      editedAt: null,
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      author: { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin", createdAt: new Date(), lastLoginAt: null }
-    },
-    {
-      id: "2", 
-      content: "Thanks for setting this up! Excited to work with everyone.",
-      authorId: 3,
-      channelId: "general",
-      recipientId: null,
-      threadId: null,
-      messageType: "text",
-      metadata: null,
-      editedAt: null,
-      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-      author: { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user", createdAt: new Date(), lastLoginAt: null }
-    },
-    {
-      id: "3",
-      content: "Let me know if you need any help with the new features!",
-      authorId: 1,
-      channelId: "general", 
-      recipientId: null,
-      threadId: null,
-      messageType: "text",
-      metadata: null,
-      editedAt: null,
-      createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-      author: { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin", createdAt: new Date(), lastLoginAt: null }
-    },
-    // Direct messages
-    {
-      id: "4",
-      content: "Hey! Can you review my latest changes?",
-      authorId: 1,
-      channelId: null,
-      recipientId: 3,
-      threadId: null,
-      messageType: "text",
-      metadata: null,
-      editedAt: null,
-      createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-      author: { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin", createdAt: new Date(), lastLoginAt: null }
-    },
-    {
-      id: "5",
-      content: "Absolutely! I'll take a look right now.",
-      authorId: 3,
-      channelId: null,
-      recipientId: 1,
-      threadId: null,
-      messageType: "text",
-      metadata: null,
-      editedAt: null,
-      createdAt: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
-      author: { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user", createdAt: new Date(), lastLoginAt: null }
-    }
-  ];
+  private mockMessages: (Message & { author: User })[] = [];
 
   // Stub implementations for required interface methods
   async getUser(id: number): Promise<User | undefined> {
     const mockUsers = [
-      { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$abc123", isActive: true },
-      { id: 2, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "dad73a1c10139f9962cbc31f0d6525f2ec8a1b41afe14ed64871d4651fd5e0feebf18903ba9f7e22b45ec7aa414c5c94c71b3df76104c80657b41ad40496757d.37d6dd2f85107ce290f3ed032ade9810", isActive: true },
-      { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$def456", isActive: true }
+      { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "c7a628cbbfaf4b9c8c2596aad6b16b6bbfea08b43b4f8a7ba00f6a9e0b9e8ec28e8a31a3a9c3d4e9e7f6f2d4a9c6e8b7f5a1e6c9d3a2f5e4b7c1a8f9e2d6c5.f3b4c8a7e2d6f9a1c5e8b3f7a2d9c6e4b1f8a5d2c7e9f3b6a4c1d8e5f2a9c7b3d6e1f4a8c2e7f9d5b1a6e3c8f2a4d7c9e5b8f1a3d6e2c7f4a9b5e8c1d3f6", isActive: true, profileImageUrl: null, updatedAt: new Date() }
     ];
     return mockUsers.find(u => u.id === id);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const mockUsers = [
-      { id: 1, email: "admin@demo.com", firstName: "System", lastName: "Admin", role: "admin" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$abc123", isActive: true },
-      { id: 2, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "dad73a1c10139f9962cbc31f0d6525f2ec8a1b41afe14ed64871d4651fd5e0feebf18903ba9f7e22b45ec7aa414c5c94c71b3df76104c80657b41ad40496757d.37d6dd2f85107ce290f3ed032ade9810", isActive: true },
-      { id: 3, email: "user@test.com", firstName: "Regular", lastName: "User", role: "user" as const, createdAt: new Date(), lastLoginAt: null, password: "$2a$10$def456", isActive: true }
+      { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "c7a628cbbfaf4b9c8c2596aad6b16b6bbfea08b43b4f8a7ba00f6a9e0b9e8ec28e8a31a3a9c3d4e9e7f6f2d4a9c6e8b7f5a1e6c9d3a2f5e4b7c1a8f9e2d6c5.f3b4c8a7e2d6f9a1c5e8b3f7a2d9c6e4b1f8a5d2c7e9f3b6a4c1d8e5f2a9c7b3d6e1f4a8c2e7f9d5b1a6e3c8f2a4d7c9e5b8f1a3d6e2c7f4a9b5e8c1d3f6", isActive: true, profileImageUrl: null, updatedAt: new Date() }
     ];
     return mockUsers.find(u => u.email === email);
   }
@@ -650,11 +579,11 @@ class MemoryStorage implements IStorage {
   }
 
   async getWorkspace(id: string): Promise<Workspace | undefined> {
-    return { id: "1", name: "Demo Workspace", slug: "demo", inviteCode: "DEMO123", createdAt: new Date(), ownerId: 1 };
+    return undefined;
   }
 
   async getUserWorkspaces(userId: number): Promise<Workspace[]> {
-    return [{ id: "1", name: "Demo Workspace", slug: "demo", inviteCode: "DEMO123", createdAt: new Date(), ownerId: 1 }];
+    return [];
   }
 
   async joinWorkspaceByCode(userId: number, inviteCode: string): Promise<Workspace | null> {

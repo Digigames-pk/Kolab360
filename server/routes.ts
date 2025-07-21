@@ -1107,24 +1107,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dynamic unread counts with persistent state management
-  const channelUnreadCounts = new Map<string, number>([
-    ['general', 4],
-    ['random', 2], 
-    ['dev-team', 7],
-    ['design', 1],
-    ['marketing', 0],
-    ['support', 3]
-  ]);
-
-  const dmUnreadCounts = new Map<string, number>([
-    ['Sarah Wilson', 3],
-    ['Alex Johnson', 1],
-    ['Mike Chen', 5],
-    ['Lisa Rodriguez', 0],
-    ['John Doe', 2],
-    ['Emma Davis', 1],
-    ['Tom Anderson', 0]
-  ]);
+  const channelUnreadCounts = new Map<string, number>();
+  const dmUnreadCounts = new Map<string, number>();
 
   // Get channel unread counts
   app.get('/api/unread-counts/channels', async (req: any, res) => {
