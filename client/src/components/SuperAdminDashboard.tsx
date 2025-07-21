@@ -962,7 +962,16 @@ export function SuperAdminDashboard() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-56">
+                          {/* Organization Management */}
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedOrgForManagement(org);
+                            setShowOrgManagementModal(true);
+                          }}>
+                            <Crown className="h-4 w-4 mr-2" />
+                            Manage Admins & Users
+                          </DropdownMenuItem>
+                          
                           <DropdownMenuItem onClick={() => {
                             setSelectedOrg(org);
                             setShowEditOrgModal(true);
@@ -970,6 +979,7 @@ export function SuperAdminDashboard() {
                             <Edit className="h-4 w-4 mr-2" />
                             Edit Organization
                           </DropdownMenuItem>
+                          
                           <DropdownMenuItem onClick={() => {
                             setSelectedOrg(org);
                             setShowOrgLimitsModal(true);
@@ -977,19 +987,60 @@ export function SuperAdminDashboard() {
                             <Settings className="h-4 w-4 mr-2" />
                             Configure Limits
                           </DropdownMenuItem>
+                          
+                          {/* Security & Compliance */}
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedOrg(org);
+                            setShowSecurityModal(true);
+                          }}>
+                            <Shield className="h-4 w-4 mr-2" />
+                            Security Settings
+                          </DropdownMenuItem>
+                          
+                          {/* Billing & Plans */}
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedOrg(org);
+                            setShowBillingModal(true);
+                          }}>
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            Billing & Plans
+                          </DropdownMenuItem>
+                          
+                          {/* App Management */}
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedApp(org);
+                            setShowAppManagementModal(true);
+                          }}>
+                            <Zap className="h-4 w-4 mr-2" />
+                            App Permissions
+                          </DropdownMenuItem>
+                          
+                          {/* Data & Analytics */}
+                          <DropdownMenuItem>
+                            <BarChart2 className="h-4 w-4 mr-2" />
+                            View Analytics
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem>
+                            <Download className="h-4 w-4 mr-2" />
+                            Export Data
+                          </DropdownMenuItem>
+                          
+                          {/* Organization Actions */}
                           <DropdownMenuItem onClick={() => handleSuspendOrg(org.id)}>
                             {org.status === 'suspended' ? (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Reactivate
+                                Reactivate Organization
                               </>
                             ) : (
                               <>
                                 <Ban className="h-4 w-4 mr-2" />
-                                Suspend
+                                Suspend Organization
                               </>
                             )}
                           </DropdownMenuItem>
+                          
                           <DropdownMenuItem 
                             onClick={() => handleDeleteOrg(org.id)}
                             className="text-red-600"
