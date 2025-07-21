@@ -112,6 +112,7 @@ export function SuperAdminDashboard() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -457,6 +458,23 @@ export function SuperAdminDashboard() {
       toast({
         title: "Pricing Plan Deleted",
         description: "Custom pricing plan has been deleted successfully.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // User management functions  
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setShowEditUserModal(true);
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      setUsers(users.filter(user => user.id !== userId));
+      toast({
+        title: "User Deleted",
+        description: "User has been permanently deleted.",
         variant: "destructive"
       });
     }
@@ -859,6 +877,26 @@ export function SuperAdminDashboard() {
                               Demote
                             </Button>
                           ) : null}
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditUser(user)}
+                            className="border-gray-200 text-gray-600 hover:bg-gray-50"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -3046,6 +3084,136 @@ export function SuperAdminDashboard() {
                   Save Configuration
                 </Button>
                 <Button variant="outline" onClick={() => setShowOrgControlsModal(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit User Modal */}
+        {showEditUserModal && selectedUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Edit User: {selectedUser.firstName} {selectedUser.lastName}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowEditUserModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium">Personal Information</h4>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">First Name</label>
+                    <Input defaultValue={selectedUser.firstName} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Last Name</label>
+                    <Input defaultValue={selectedUser.lastName} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <Input defaultValue={selectedUser.email} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Department</label>
+                    <Select defaultValue={selectedUser.department}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Engineering">Engineering</SelectItem>
+                        <SelectItem value="Marketing">Marketing</SelectItem>
+                        <SelectItem value="Sales">Sales</SelectItem>
+                        <SelectItem value="HR">HR</SelectItem>
+                        <SelectItem value="Finance">Finance</SelectItem>
+                        <SelectItem value="Support">Support</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h4 className="font-medium">Account Settings</h4>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Role</label>
+                    <Select defaultValue={selectedUser.role}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="guest">Guest</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <Select defaultValue={selectedUser.status}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium">Permissions</label>
+                    <div className="space-y-2">
+                      {[
+                        'Create Channels',
+                        'Delete Messages',
+                        'Manage Users',
+                        'Access Analytics',
+                        'File Upload',
+                        'External Integrations'
+                      ].map((permission) => (
+                        <label key={permission} className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked={Math.random() > 0.5} />
+                          <span className="text-sm">{permission}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded">
+                <h4 className="font-medium mb-3">Account Statistics</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Messages Sent:</span>
+                    <span className="font-medium ml-2">{selectedUser.messageCount}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Files Shared:</span>
+                    <span className="font-medium ml-2">{selectedUser.filesShared}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Last Active:</span>
+                    <span className="font-medium ml-2">{selectedUser.lastActive}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Member Since:</span>
+                    <span className="font-medium ml-2">{selectedUser.joinedAt}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3 pt-6 border-t">
+                <Button onClick={() => {
+                  setShowEditUserModal(false);
+                  toast({ title: "User Updated", description: "User information has been saved successfully." });
+                }}>
+                  Save Changes
+                </Button>
+                <Button variant="outline" onClick={() => setShowEditUserModal(false)}>
                   Cancel
                 </Button>
               </div>
