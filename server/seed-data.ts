@@ -108,21 +108,9 @@ export async function seedTestData() {
 
     console.log(`✅ Created ${notifications.length} test notifications`);
 
-    // Seed realistic channel and DM data for testing unread counts
-    const channelUnreadData = {
-      'general': Math.floor(Math.random() * 5) + 1, // 1-5 unread
-      'random': Math.floor(Math.random() * 3), // 0-2 unread
-      'dev-team': Math.floor(Math.random() * 8) + 1, // 1-8 unread
-      'design': Math.floor(Math.random() * 2), // 0-1 unread
-    };
-
-    const dmUnreadData = {
-      'Sarah Wilson': Math.floor(Math.random() * 3) + 1, // 1-3 unread
-      'Alex Johnson': Math.floor(Math.random() * 2), // 0-1 unread
-      'Mike Chen': Math.floor(Math.random() * 4) + 1, // 1-4 unread
-      'Lisa Rodriguez': Math.floor(Math.random() * 2), // 0-1 unread
-      'John Doe': Math.floor(Math.random() * 6) + 1, // 1-6 unread
-    };
+    // Initialize empty data for testing without dummy content
+    const channelUnreadData = {};
+    const dmUnreadData = {};
 
     console.log('✅ Generated realistic unread count data');
     console.log('📊 Channel unread counts:', channelUnreadData);
