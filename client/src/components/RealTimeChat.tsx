@@ -299,7 +299,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   };
 
   // Real user data for @ mentions from API
-  const [availableUsers, setAvailableUsers] = useState<Array<{ id: number; firstName: string; lastName: string; email: string }>>([]);
+  const [availableUsers, setAvailableUsers] = useState<Array<{ id: number; firstName: string; lastName: string; email: string; role?: string; department?: string }>>([]);
 
   // Fetch real users for mentions from API
   React.useEffect(() => {
@@ -310,14 +310,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           const users = await response.json();
           setAvailableUsers(users);
         } else {
-          // Fallback for testing
-          setAvailableUsers([
-            { id: 1, firstName: 'Alice', lastName: 'Johnson', email: 'alice@kolab360.com' },
-            { id: 2, firstName: 'Bob', lastName: 'Smith', email: 'bob@kolab360.com' },
-            { id: 3, firstName: 'Charlie', lastName: 'Brown', email: 'charlie@kolab360.com' },
-            { id: 4, firstName: 'Diana', lastName: 'Wilson', email: 'diana@kolab360.com' },
-            { id: 5, firstName: 'Eva', lastName: 'Martinez', email: 'eva@kolab360.com' }
-          ]);
+          console.warn('Failed to fetch users from API, no fallback data used');
         }
       } catch (error) {
         console.error('Failed to fetch users:', error);
@@ -360,8 +353,9 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
 
   const insertMention = (user: any) => {
     const lastAtIndex = messageText.lastIndexOf('@');
-    const username = user.email.split('@')[0]; // Use email prefix as username
-    const newText = messageText.slice(0, lastAtIndex) + `@${username} `;
+    // Use full name for better clarity, especially when multiple people share first names
+    const mentionText = `${user.firstName} ${user.lastName}`;
+    const newText = messageText.slice(0, lastAtIndex) + `@${mentionText} `;
     setMessageText(newText);
     setShowMentionDropdown(false);
     inputRef.current?.focus();
@@ -1021,11 +1015,13 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                 onClick={() => insertMention(user)}
               >
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                  {user.firstName.charAt(0)}
+                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">@{user.email.split('@')[0]}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    @{user.email.split('@')[0]} • {(user as any).department || 'Team Member'}
+                  </div>
                 </div>
               </div>
             ))
