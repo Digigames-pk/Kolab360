@@ -499,13 +499,25 @@ export function ModernSlackSidebar({
                 Integrations
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => {
-                // Clear any local storage/session data
-                localStorage.clear();
-                sessionStorage.clear();
-                
-                // Redirect to logout endpoint or login page
-                window.location.href = '/api/auth/logout';
+              <DropdownMenuItem onClick={async () => {
+                try {
+                  // Clear any local storage/session data
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  
+                  // Make a request to the logout endpoint
+                  const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                  });
+                  
+                  // Force a full page reload to clear any cached data
+                  window.location.reload();
+                } catch (error) {
+                  console.error('Logout error:', error);
+                  // Fallback: just reload the page
+                  window.location.reload();
+                }
               }}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out

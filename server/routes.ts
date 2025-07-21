@@ -1004,6 +1004,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth routes
+  app.post('/api/auth/logout', (req: any, res) => {
+    req.logout((err: any) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ error: 'Failed to logout' });
+      }
+      
+      // Destroy the session
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error('Session destroy error:', err);
+          return res.status(500).json({ error: 'Failed to destroy session' });
+        }
+        
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
+        
+        // Send success response
+        res.json({ success: true, message: 'Logged out successfully' });
+      });
+    });
+  });
+
+  // Keep GET route for direct access
   app.get('/api/auth/logout', (req: any, res) => {
     req.logout((err: any) => {
       if (err) {
