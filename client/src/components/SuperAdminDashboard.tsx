@@ -2620,11 +2620,42 @@ export function SuperAdminDashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Price</label>
-                    <Input placeholder="e.g., $15.99" defaultValue={selectedPlan?.price || ''} />
+                    <div className="flex space-x-2">
+                      <Select defaultValue="USD">
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">$</SelectItem>
+                          <SelectItem value="EUR">€</SelectItem>
+                          <SelectItem value="GBP">£</SelectItem>
+                          <SelectItem value="JPY">¥</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input 
+                        type="number" 
+                        step="0.01"
+                        placeholder="15.99" 
+                        className="flex-1"
+                        defaultValue={selectedPlan?.price?.replace(/[^0-9.]/g, '') || ''}
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Billing Period</label>
-                    <Input placeholder="e.g., Per user/month" defaultValue={selectedPlan?.billingPeriod || ''} />
+                    <Select defaultValue={selectedPlan?.billingPeriod?.toLowerCase()?.includes('month') ? 'monthly' : selectedPlan?.billingPeriod?.toLowerCase()?.includes('year') ? 'yearly' : 'custom'}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="monthly">Monthly (per user/month)</SelectItem>
+                        <SelectItem value="yearly">Yearly (per user/year)</SelectItem>
+                        <SelectItem value="quarterly">Quarterly (per user/quarter)</SelectItem>
+                        <SelectItem value="weekly">Weekly (per user/week)</SelectItem>
+                        <SelectItem value="onetime">One-time payment</SelectItem>
+                        <SelectItem value="custom">Custom billing period</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
@@ -2646,19 +2677,146 @@ export function SuperAdminDashboard() {
                   <h4 className="font-medium">Resource Limits</h4>
                   <div>
                     <label className="block text-sm font-medium mb-1">Max Users</label>
-                    <Input placeholder="e.g., Unlimited or 500" defaultValue={selectedPlan?.limits?.maxUsers || ''} />
+                    <div className="flex space-x-2">
+                      <Input 
+                        type="number" 
+                        placeholder="Number of users" 
+                        className="flex-1"
+                        defaultValue={selectedPlan?.limits?.maxUsers?.replace(/[^0-9]/g, '') || ''}
+                      />
+                      <Select defaultValue="limit">
+                        <SelectTrigger className="w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="limit">Fixed Limit</SelectItem>
+                          <SelectItem value="unlimited">Unlimited</SelectItem>
+                          <SelectItem value="per-workspace">Per Workspace</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Maximum number of users allowed in the organization</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Storage Limit</label>
-                    <Input placeholder="e.g., 100GB per user" defaultValue={selectedPlan?.limits?.storage || ''} />
+                    <div className="flex space-x-2">
+                      <Input 
+                        type="number" 
+                        placeholder="Amount" 
+                        className="flex-1"
+                        defaultValue={selectedPlan?.limits?.storage?.replace(/[^0-9]/g, '') || ''}
+                      />
+                      <Select defaultValue="GB">
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MB">MB</SelectItem>
+                          <SelectItem value="GB">GB</SelectItem>
+                          <SelectItem value="TB">TB</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select defaultValue="total">
+                        <SelectTrigger className="w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="total">Total</SelectItem>
+                          <SelectItem value="per-user">Per User</SelectItem>
+                          <SelectItem value="unlimited">Unlimited</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">API Calls per Hour</label>
-                    <Input placeholder="e.g., 25,000" defaultValue={selectedPlan?.limits?.apiCalls || ''} />
+                    <label className="block text-sm font-medium mb-1">API Rate Limit</label>
+                    <div className="flex space-x-2">
+                      <Input 
+                        type="number" 
+                        placeholder="Requests" 
+                        className="flex-1"
+                        defaultValue={selectedPlan?.limits?.apiCalls?.replace(/[^0-9]/g, '') || ''}
+                      />
+                      <Select defaultValue="hour">
+                        <SelectTrigger className="w-24">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="minute">Per Min</SelectItem>
+                          <SelectItem value="hour">Per Hour</SelectItem>
+                          <SelectItem value="day">Per Day</SelectItem>
+                          <SelectItem value="unlimited">Unlimited</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">API requests allowed per time period</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Max File Size</label>
-                    <Input placeholder="e.g., 2GB" defaultValue={selectedPlan?.limits?.fileSize || ''} />
+                    <div className="flex space-x-2">
+                      <Input 
+                        type="number" 
+                        placeholder="Size" 
+                        className="flex-1"
+                        defaultValue={selectedPlan?.limits?.fileSize?.replace(/[^0-9]/g, '') || ''}
+                      />
+                      <Select defaultValue="MB">
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="KB">KB</SelectItem>
+                          <SelectItem value="MB">MB</SelectItem>
+                          <SelectItem value="GB">GB</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Maximum size for individual file uploads</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Message History Retention</label>
+                    <div className="flex space-x-2">
+                      <Input 
+                        type="number" 
+                        placeholder="Duration" 
+                        className="flex-1"
+                        defaultValue="90"
+                      />
+                      <Select defaultValue="days">
+                        <SelectTrigger className="w-24">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="days">Days</SelectItem>
+                          <SelectItem value="months">Months</SelectItem>
+                          <SelectItem value="years">Years</SelectItem>
+                          <SelectItem value="unlimited">Unlimited</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">How long to keep message history</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Concurrent Video Calls</label>
+                    <div className="flex space-x-2">
+                      <Input 
+                        type="number" 
+                        placeholder="Max calls" 
+                        className="flex-1"
+                        defaultValue="10"
+                      />
+                      <Select defaultValue="simultaneous">
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="simultaneous">Simultaneous</SelectItem>
+                          <SelectItem value="per-workspace">Per Workspace</SelectItem>
+                          <SelectItem value="unlimited">Unlimited</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Maximum concurrent video calls allowed</p>
                   </div>
                 </div>
               </div>
