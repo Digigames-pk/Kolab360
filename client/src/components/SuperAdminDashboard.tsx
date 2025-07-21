@@ -148,6 +148,14 @@ export function SuperAdminDashboard() {
   const [customRoles, setCustomRoles] = useState<any[]>([]);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [newOrgData, setNewOrgData] = useState({
+    name: '',
+    domain: '',
+    plan: 'free',
+    adminEmail: '',
+    adminFirstName: '',
+    adminLastName: ''
+  });
 
   // Load data from APIs
   useEffect(() => {
@@ -158,7 +166,6 @@ export function SuperAdminDashboard() {
     try {
       setLoading(true);
       // Load real data from APIs
-      // For now, using empty arrays to avoid dummy data
       setUsers([]);
       setStats({
         totalUsers: 0,
@@ -170,9 +177,42 @@ export function SuperAdminDashboard() {
         channels: 0,
         integrations: 0
       });
-      setOrganizations([]);
+      // Initialize with empty arrays but keep existing organizations if any
       setCustomRoles([]);
-      setPricingPlans([]);
+      setPricingPlans([
+        {
+          id: 1,
+          name: 'Free',
+          price: 0,
+          features: ['Basic messaging', '10 GB storage', 'Up to 10 members'],
+          memberLimit: 10,
+          storageLimit: 10
+        },
+        {
+          id: 2,
+          name: 'Pro',
+          price: 8,
+          features: ['Advanced messaging', '100 GB storage', 'Up to 100 members', 'Video calls'],
+          memberLimit: 100,
+          storageLimit: 100
+        },
+        {
+          id: 3,
+          name: 'Business',
+          price: 15,
+          features: ['Everything in Pro', '500 GB storage', 'Up to 500 members', 'Advanced analytics'],
+          memberLimit: 500,
+          storageLimit: 500
+        },
+        {
+          id: 4,
+          name: 'Enterprise',
+          price: 25,
+          features: ['Everything in Business', '1 TB storage', 'Unlimited members', 'Custom integrations'],
+          memberLimit: 10000,
+          storageLimit: 1000
+        }
+      ]);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -181,10 +221,60 @@ export function SuperAdminDashboard() {
   };
 
   const handleCreateOrg = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Organization creation will be available in the next update."
+    if (!newOrgData.name || !newOrgData.domain || !newOrgData.adminEmail) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newOrg: Organization = {
+      id: organizations.length + 1,
+      name: newOrgData.name,
+      domain: newOrgData.domain,
+      plan: newOrgData.plan,
+      status: 'active',
+      members: 1,
+      memberLimit: getPlanLimits(newOrgData.plan).members,
+      storageUsed: 0,
+      storageLimit: getPlanLimits(newOrgData.plan).storage,
+      adminName: `${newOrgData.adminFirstName} ${newOrgData.adminLastName}`,
+      adminEmail: newOrgData.adminEmail,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setOrganizations(prev => [...prev, newOrg]);
+    setShowCreateOrgModal(false);
+    setNewOrgData({
+      name: '',
+      domain: '',
+      plan: 'free',
+      adminEmail: '',
+      adminFirstName: '',
+      adminLastName: ''
     });
+
+    toast({
+      title: "Organization Created",
+      description: `${newOrg.name} has been successfully created!`
+    });
+  };
+
+  const getPlanLimits = (plan: string) => {
+    const limits = {
+      free: { members: 10, storage: 1 },
+      pro: { members: 100, storage: 10 },
+      business: { members: 500, storage: 50 },
+      enterprise: { members: 10000, storage: 500 }
+    };
+    return limits[plan as keyof typeof limits] || limits.free;
+  };
+
+  const handleShowOrgManagement = (org: Organization) => {
+    setSelectedOrgForManagement(org);
+    setShowOrgManagementModal(true);
   };
 
   const handleSuspendOrg = (orgId: number) => {
@@ -256,11 +346,6 @@ export function SuperAdminDashboard() {
       title: "Feature Coming Soon",
       description: "User demotion will be available in the next update."
     });
-  };
-
-  const handleShowOrgManagement = (org: Organization) => {
-    setSelectedOrgForManagement(org);
-    setShowOrgManagementModal(true);
   };
 
   const handleShowAppManagement = (org: Organization) => {
@@ -625,6 +710,97 @@ export function SuperAdminDashboard() {
                 <Button variant="outline" onClick={() => setShowOrgManagementModal(false)}>
                   Cancel
                 </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Organization Modal */}
+        {showCreateOrgModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Create New Organization</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowCreateOrgModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Organization Name *</label>
+                    <Input 
+                      placeholder="e.g. Acme Corp"
+                      value={newOrgData.name}
+                      onChange={(e) => setNewOrgData(prev => ({...prev, name: e.target.value}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Domain *</label>
+                    <Input 
+                      placeholder="e.g. acmecorp.com"
+                      value={newOrgData.domain}
+                      onChange={(e) => setNewOrgData(prev => ({...prev, domain: e.target.value}))}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Pricing Plan</label>
+                  <Select value={newOrgData.plan} onValueChange={(value) => setNewOrgData(prev => ({...prev, plan: value}))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free - Up to 10 members, 1 GB storage</SelectItem>
+                      <SelectItem value="pro">Pro - Up to 100 members, 10 GB storage</SelectItem>
+                      <SelectItem value="business">Business - Up to 500 members, 50 GB storage</SelectItem>
+                      <SelectItem value="enterprise">Enterprise - Unlimited members, 500 GB storage</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">Administrator Details</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">First Name</label>
+                      <Input 
+                        placeholder="John"
+                        value={newOrgData.adminFirstName}
+                        onChange={(e) => setNewOrgData(prev => ({...prev, adminFirstName: e.target.value}))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Last Name</label>
+                      <Input 
+                        placeholder="Smith"
+                        value={newOrgData.adminLastName}
+                        onChange={(e) => setNewOrgData(prev => ({...prev, adminLastName: e.target.value}))}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 mt-4">
+                    <label className="text-sm font-medium">Admin Email *</label>
+                    <Input 
+                      type="email"
+                      placeholder="admin@acmecorp.com"
+                      value={newOrgData.adminEmail}
+                      onChange={(e) => setNewOrgData(prev => ({...prev, adminEmail: e.target.value}))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setShowCreateOrgModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateOrg}>
+                    <Building2 className="h-4 w-4 mr-2" />
+                    Create Organization
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
