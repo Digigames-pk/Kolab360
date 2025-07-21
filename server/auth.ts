@@ -10,7 +10,18 @@ import { registerSchema, loginSchema } from "@shared/schema";
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    interface User {
+      id: number;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: string;
+      createdAt: Date;
+      lastLoginAt: Date | null;
+      isActive: boolean;
+      profileImageUrl?: string | null;
+      updatedAt?: Date;
+    }
   }
 }
 
@@ -34,7 +45,6 @@ export function setupAuth(app: Express) {
     secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
     resave: false,
     saveUninitialized: false,
-    store: storage.sessionStore,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       httpOnly: true,
@@ -52,21 +62,32 @@ export function setupAuth(app: Express) {
       { usernameField: "email" },
       async (email, password, done) => {
         try {
+          console.log(`🔍 Authentication attempt for: ${email}`);
           const user = await storage.getUserByEmail(email);
+          console.log(`👤 User found:`, user ? `${user.email} (active: ${user.isActive})` : 'not found');
+          
           if (!user || !user.isActive) {
+            console.log('❌ User not found or inactive');
             return done(null, false);
           }
           
+          console.log(`🔑 Checking password for user ${user.email}`);
+          console.log(`🔑 Stored hash: ${user.password.substring(0, 20)}...`);
           const isValid = await comparePasswords(password, user.password);
+          console.log(`🔐 Password valid: ${isValid}`);
+          
           if (!isValid) {
+            console.log('❌ Invalid password');
             return done(null, false);
           }
 
           // Update last login
           await storage.updateUserLastLogin(user.id);
+          console.log('✅ Authentication successful');
           
           return done(null, user);
         } catch (error) {
+          console.error('🚫 Authentication error:', error);
           return done(error);
         }
       }
@@ -114,43 +135,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint
-  app.post("/api/login", (req, res, next) => {
-    // In development, always allow login with mock user
-    if (process.env.NODE_ENV === 'development') {
-      const mockUser = {
-        id: 3,
-        email: 'user@test.com',
-        firstName: 'Regular',
-        lastName: 'User',
-        role: 'user'
-      };
-      req.user = mockUser;
-      return res.json(mockUser);
-    }
-
-    try {
-      loginSchema.parse(req.body);
-    } catch (error) {
-      return res.status(400).json({ message: "Invalid login data" });
-    }
-
-    passport.authenticate("local", (err: any, user: User, info: any) => {
-      if (err) return next(err);
-      if (!user) return res.status(401).json({ message: "Invalid credentials" });
-
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.json({
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-        });
-      });
-    })(req, res, next);
-  });
+  // Note: Login endpoint is handled in routes.ts to avoid duplication
 
   // Logout endpoint
   app.post("/api/logout", (req, res, next) => {
@@ -161,26 +146,12 @@ export function setupAuth(app: Express) {
   });
 
   // Get current user
-  app.get("/api/user", (req, res) => {
-    // In development, always return mock user
-    if (process.env.NODE_ENV === 'development') {
-      const mockUser = {
-        id: 3,
-        email: 'user@test.com',
-        firstName: 'Regular',
-        lastName: 'User',
-        role: 'user',
-        lastLoginAt: new Date(),
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
-      };
-      return res.json(mockUser);
-    }
-
+  app.get("/api/auth/me", (req, res) => {
     if (!req.isAuthenticated() || !req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ error: "Not authenticated" });
     }
     
-    const user = req.user as User;
+    const user = req.user;
     res.json({
       id: user.id,
       email: user.email,
@@ -195,36 +166,10 @@ export function setupAuth(app: Express) {
 
 // Middleware for protecting routes
 export function requireAuth(req: any, res: any, next: any) {
-  // In development, bypass auth and use mock user
-  if (process.env.NODE_ENV === 'development') {
-    req.user = {
-      id: 3,
-      email: 'user@test.com',
-      firstName: 'Regular',
-      lastName: 'User',
-      role: 'user'
-    };
-    return next();
-  }
-
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Unauthorized" });
+  if (!req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ error: "Authentication required" });
   }
   next();
 }
 
-// Middleware for role-based access
-export function requireRole(...roles: string[]) {
-  return (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    
-    const user = req.user as User;
-    if (!roles.includes(user.role)) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    
-    next();
-  };
-}
+export { hashPassword, comparePasswords };

@@ -554,14 +554,14 @@ class MemoryStorage implements IStorage {
   // Stub implementations for required interface methods
   async getUser(id: number): Promise<User | undefined> {
     const mockUsers = [
-      { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "c7a628cbbfaf4b9c8c2596aad6b16b6bbfea08b43b4f8a7ba00f6a9e0b9e8ec28e8a31a3a9c3d4e9e7f6f2d4a9c6e8b7f5a1e6c9d3a2f5e4b7c1a8f9e2d6c5.f3b4c8a7e2d6f9a1c5e8b3f7a2d9c6e4b1f8a5d2c7e9f3b6a4c1d8e5f2a9c7b3d6e1f4a8c2e7f9d5b1a6e3c8f2a4d7c9e5b8f1a3d6e2c7f4a9b5e8c1d3f6", isActive: true, profileImageUrl: null, updatedAt: new Date() }
+      { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "868c3aab6b6da8a7ffeabea8dccdcb979ac02140202c61baf74adf354950709cb39b78e2537833e2805226bb024c2990dce597ea5498d6e3fea161d48783390f.de40c536d496db6e61469290bfbc6984", isActive: true, profileImageUrl: null, updatedAt: new Date() }
     ];
     return mockUsers.find(u => u.id === id);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const mockUsers = [
-      { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "c7a628cbbfaf4b9c8c2596aad6b16b6bbfea08b43b4f8a7ba00f6a9e0b9e8ec28e8a31a3a9c3d4e9e7f6f2d4a9c6e8b7f5a1e6c9d3a2f5e4b7c1a8f9e2d6c5.f3b4c8a7e2d6f9a1c5e8b3f7a2d9c6e4b1f8a5d2c7e9f3b6a4c1d8e5f2a9c7b3d6e1f4a8c2e7f9d5b1a6e3c8f2a4d7c9e5b8f1a3d6e2c7f4a9b5e8c1d3f6", isActive: true, profileImageUrl: null, updatedAt: new Date() }
+      { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "868c3aab6b6da8a7ffeabea8dccdcb979ac02140202c61baf74adf354950709cb39b78e2537833e2805226bb024c2990dce597ea5498d6e3fea161d48783390f.de40c536d496db6e61469290bfbc6984", isActive: true, profileImageUrl: null, updatedAt: new Date() }
     ];
     return mockUsers.find(u => u.email === email);
   }

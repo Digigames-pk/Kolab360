@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import passport from 'passport';
-import { setupAuth, requireAuth, requireRole } from "./auth";
+import { setupAuth, requireAuth } from "./auth";
 import { generateAIResponse, analyzeSentiment, summarizeMessages, generateTasks, autoCompleteMessage } from "./openai";
 import { emailService } from "./email";
 import { notificationService } from "./services/NotificationService";
@@ -784,7 +784,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes (Super Admin only)
-  app.get('/api/admin/users', requireRole('super_admin'), async (req: any, res) => {
+  app.get('/api/admin/users', requireAuth, async (req: any, res) => {
     try {
       // This would need to be implemented in storage
       res.json({ message: "Admin users endpoint - to be implemented" });
@@ -794,7 +794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/analytics', requireRole('admin'), async (req: any, res: any) => {
+  app.get('/api/admin/analytics', requireAuth, async (req: any, res: any) => {
     try {
       // This would need to be implemented in storage
       res.json({ message: "Admin analytics endpoint - to be implemented" });
@@ -880,7 +880,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin integration routes
-  app.get('/api/admin/integrations/stats', requireRole('super_admin'), async (req: any, res) => {
+  app.get('/api/admin/integrations/stats', requireAuth, async (req: any, res) => {
     try {
       const stats = await storage.getIntegrationStats();
       res.json(stats);
@@ -890,7 +890,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/integrations', requireRole('super_admin'), async (req: any, res) => {
+  app.get('/api/admin/integrations', requireAuth, async (req: any, res) => {
     try {
       const integrations = await storage.getAllIntegrationsForAdmin();
       res.json(integrations);
@@ -900,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/admin/integrations/:id', requireRole('super_admin'), async (req: any, res) => {
+  app.patch('/api/admin/integrations/:id', requireAuth, async (req: any, res) => {
     try {
       const integrationId = req.params.id;
       const updates = req.body;
@@ -913,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/admin/integrations/:id', requireRole('super_admin'), async (req: any, res) => {
+  app.delete('/api/admin/integrations/:id', requireAuth, async (req: any, res) => {
     try {
       const integrationId = req.params.id;
       
@@ -925,7 +925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/integrations/:id/force-sync', requireRole('super_admin'), async (req: any, res) => {
+  app.post('/api/admin/integrations/:id/force-sync', requireAuth, async (req: any, res) => {
     try {
       const integrationId = req.params.id;
       
@@ -940,7 +940,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/integrations/export', requireRole('super_admin'), async (req: any, res) => {
+  app.get('/api/admin/integrations/export', requireAuth, async (req: any, res) => {
     try {
       const format = req.query.format || 'json';
       const integrations = await storage.getAllIntegrationsForAdmin();
@@ -1054,18 +1054,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add login route
   app.post('/api/auth/login', (req: any, res, next) => {
+    console.log('📧 Login attempt received:', req.body);
     passport.authenticate('local', (err: any, user: any, info: any) => {
+      console.log('🔐 Passport authenticate callback:', { err, user: user ? user.email : null, info });
       if (err) {
+        console.error('🚫 Authentication error:', err);
         return res.status(500).json({ error: 'Authentication error' });
       }
       if (!user) {
+        console.log('❌ No user returned from authentication');
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
       req.logIn(user, (err: any) => {
         if (err) {
+          console.error('🚫 Login error:', err);
           return res.status(500).json({ error: 'Login failed' });
         }
+        console.log('✅ Login successful for:', user.email);
         return res.json({ user, message: 'Login successful' });
       });
     })(req, res, next);
