@@ -14,6 +14,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   error: any;
 }
@@ -43,6 +44,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        // Invalidate and refetch user data
+        queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
+
   const logout = async () => {
     try {
       // Clear local storage and session storage
@@ -71,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isLoading,
     isAuthenticated: !!user && !error,
+    login,
     logout,
     error
   };

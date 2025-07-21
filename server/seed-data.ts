@@ -1,9 +1,43 @@
 import { storage } from './storage';
 import { notificationService } from './services/NotificationService';
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
 
 export async function seedTestData() {
   try {
     console.log('🌱 Seeding test data...');
+
+    // Create super admin user if it doesn't exist
+    try {
+      const existingAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (!existingAdmin) {
+        console.log('Creating super admin user...');
+        const hashedPassword = await hashPassword('superadmin123');
+        
+        await storage.createUser({
+          email: 'superadmin@test.com',
+          password: hashedPassword,
+          firstName: 'Super',
+          lastName: 'Admin',
+          role: 'super_admin',
+          isActive: true
+        });
+        
+        console.log('✅ Super admin user created: superadmin@test.com / superadmin123');
+      } else {
+        console.log('✅ Super admin user already exists');
+      }
+    } catch (error) {
+      console.error('Error creating super admin user:', error);
+    }
 
     // Create test notifications for user 3 (the authenticated test user)
     const testUserId = '3';

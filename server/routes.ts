@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import passport from 'passport';
 import { setupAuth, requireAuth, requireRole } from "./auth";
 import { generateAIResponse, analyzeSentiment, summarizeMessages, generateTasks, autoCompleteMessage } from "./openai";
 import { emailService } from "./email";
@@ -1049,6 +1050,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.redirect('/');
       });
     });
+  });
+
+  // Add login route
+  app.post('/api/auth/login', (req: any, res, next) => {
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        return res.status(500).json({ error: 'Authentication error' });
+      }
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      req.logIn(user, (err: any) => {
+        if (err) {
+          return res.status(500).json({ error: 'Login failed' });
+        }
+        return res.json({ user, message: 'Login successful' });
+      });
+    })(req, res, next);
   });
 
   // Add auth check endpoint
