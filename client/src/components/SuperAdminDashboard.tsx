@@ -159,8 +159,14 @@ export function SuperAdminDashboard() {
 
   // Load data from APIs
   useEffect(() => {
+    console.log('SuperAdminDashboard mounted, current organizations:', organizations.length);
     loadData();
   }, []);
+
+  // Debug organizations state changes
+  useEffect(() => {
+    console.log('Organizations state changed:', organizations.length, organizations.map(o => o.name));
+  }, [organizations]);
 
   const loadData = async () => {
     try {
@@ -222,6 +228,7 @@ export function SuperAdminDashboard() {
   };
 
   const handleCreateOrg = () => {
+    console.log('Creating organization with data:', newOrgData);
     if (!newOrgData.name || !newOrgData.domain || !newOrgData.adminEmail) {
       toast({
         title: "Validation Error",
@@ -246,7 +253,11 @@ export function SuperAdminDashboard() {
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    setOrganizations(prev => [...prev, newOrg]);
+    setOrganizations(prev => {
+      const updated = [...prev, newOrg];
+      console.log('Organizations after creation:', updated);
+      return updated;
+    });
     setShowCreateOrgModal(false);
     setNewOrgData({
       name: '',
@@ -416,6 +427,10 @@ export function SuperAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{organizations.length}</div>
+                  {/* Debug info */}
+                  <div className="text-xs text-gray-500 mt-1">
+                    {organizations.map(org => org.name).join(', ')}
+                  </div>
                   <p className="text-xs text-muted-foreground">No new organizations this month</p>
                 </CardContent>
               </Card>
