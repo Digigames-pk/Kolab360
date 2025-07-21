@@ -65,20 +65,9 @@ export async function seedTestData() {
 
 // Real-time data for testing
 export const mockChannelUnreadCounts = {
-  'general': 4,
-  'random': 2, 
-  'dev-team': 7,
-  'design': 1,
-  'marketing': 0,
-  'support': 3
 };
 
 export const mockDMUnreadCounts = {
-  'Sarah Wilson': 3,
-  'Alex Johnson': 1,
-  'Mike Chen': 5,
-  'Lisa Rodriguez': 0,
-  'John Doe': 2,
   'Emma Davis': 1,
   'Tom Anderson': 0
 };

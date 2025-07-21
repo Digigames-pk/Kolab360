@@ -38,7 +38,7 @@ import { CreateWorkspaceModal } from '@/components/CreateWorkspaceModal';
 export default function Home() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
-  const [selectedChannel, setSelectedChannel] = useState('general');
+  const [selectedChannel, setSelectedChannel] = useState('');
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -141,60 +141,21 @@ export default function Home() {
     console.log('New workspace created:', workspaceWithInitial);
   };
 
-  // Mock workspace data with channels and DMs
-  const workspaceData = {
-    1: {
-      channels: [
-        { name: 'general', unread: 3, type: 'public', description: 'General discussion' },
-        { name: 'random', unread: 0, type: 'public', description: 'Random conversations' },
-        { name: 'announcements', unread: 1, type: 'public', description: 'Important announcements' },
-        { name: 'dev-team', unread: 0, type: 'private', description: 'Development team discussions' }
-      ],
-      directMessages: [
-        { name: 'Sarah Wilson', status: 'online', unread: 2, lastMessage: 'Thanks for the update!', id: 'sarah-wilson' },
-        { name: 'Mike Johnson', status: 'away', unread: 0, lastMessage: 'Let\'s sync up tomorrow', id: 'mike-johnson' },
-        { name: 'Lisa Chen', status: 'offline', unread: 1, lastMessage: 'Great work on the project', id: 'lisa-chen' }
-      ]
-    },
-    2: {
-      channels: [
-        { name: 'general', unread: 0, type: 'public', description: 'Marketing team chat' },
-        { name: 'campaigns', unread: 2, type: 'public', description: 'Campaign discussions' }
-      ],
-      directMessages: [
-        { name: 'Marketing Lead', status: 'online', unread: 0, lastMessage: 'Campaign looks great!', id: 'marketing-lead' }
-      ]
-    },
-    3: {
-      channels: [
-        { name: 'general', unread: 1, type: 'public', description: 'Development team' },
-        { name: 'code-review', unread: 0, type: 'public', description: 'Code reviews' }
-      ],
-      directMessages: [
-        { name: 'Dev Lead', status: 'online', unread: 0, lastMessage: 'Code review needed', id: 'dev-lead' }
-      ]
-    }
+  // Clean workspace data without hardcoded channels/DMs
+  const workspaceData: Record<number, {channels: any[], directMessages: any[]}> = {
+    1: { channels: [], directMessages: [] },
+    2: { channels: [], directMessages: [] },
+    3: { channels: [], directMessages: [] }
   };
 
   // Get current workspace data
   const currentWorkspaceData = workspaceData[selectedWorkspace] || workspaceData[1];
 
-  // Dynamic stats for debugging (initially based on mock data)
-  const [channelStats, setChannelStats] = useState([
-    { id: 'general', name: 'general', memberCount: 3, activeMembers: 2, lastActivity: new Date().toISOString(), messageCount: 45, type: 'public' as const },
-    { id: 'random', name: 'random', memberCount: 8, activeMembers: 1, lastActivity: new Date().toISOString(), messageCount: 12, type: 'public' as const },
-    { id: 'dev-team', name: 'dev-team', memberCount: 5, activeMembers: 4, lastActivity: new Date().toISOString(), messageCount: 89, type: 'private' as const },
-    { id: 'announcements', name: 'announcements', memberCount: 12, activeMembers: 0, lastActivity: new Date().toISOString(), messageCount: 3, type: 'public' as const },
-    { id: 'design', name: 'design', memberCount: 6, activeMembers: 1, lastActivity: new Date().toISOString(), messageCount: 22, type: 'public' as const },
-    { id: 'marketing', name: 'marketing', memberCount: 4, activeMembers: 2, lastActivity: new Date().toISOString(), messageCount: 15, type: 'private' as const }
-  ]);
+  // Empty channel stats - no hardcoded data
+  const [channelStats, setChannelStats] = useState([]);
 
-  const [dmStats, setDMStats] = useState([
-    { id: 'john-doe', name: 'John Doe', status: 'online' as const, lastSeen: new Date().toISOString(), unreadCount: 2, totalMessages: 156 },
-    { id: 'jane-smith', name: 'Jane Smith', status: 'away' as const, lastSeen: new Date(Date.now() - 300000).toISOString(), unreadCount: 0, totalMessages: 87 },
-    { id: 'mike-johnson', name: 'Mike Johnson', status: 'offline' as const, lastSeen: new Date(Date.now() - 3600000).toISOString(), unreadCount: 1, totalMessages: 234 },
-    { id: 'sarah-wilson', name: 'Sarah Wilson', status: 'online' as const, lastSeen: new Date().toISOString(), unreadCount: 3, totalMessages: 92 }
-  ]);
+  // Empty DM stats - no hardcoded data
+  const [dmStats, setDMStats] = useState([]);
 
   const channels = currentWorkspaceData.channels;
   const directMessages = currentWorkspaceData.directMessages;

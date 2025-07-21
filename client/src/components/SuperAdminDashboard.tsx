@@ -179,6 +179,7 @@ export function SuperAdminDashboard() {
       });
       // Initialize with empty arrays but keep existing organizations if any
       setCustomRoles([]);
+      // Don't reset organizations array to preserve created organizations
       setPricingPlans([
         {
           id: 1,

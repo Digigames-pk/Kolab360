@@ -61,14 +61,8 @@ export function ModernTopBar({
   unreadNotificationCount = 0
 }: ModernTopBarProps) {
   const getChannelInfo = () => {
-    const channels = {
-      'general': { name: 'general', description: 'Company-wide announcements and general discussion', members: 42, isPrivate: false },
-      'random': { name: 'random', description: 'Random chat and off-topic discussions', members: 38, isPrivate: false },
-      'dev-team': { name: 'dev-team', description: 'Development team coordination', members: 8, isPrivate: true },
-      'design': { name: 'design', description: 'Design discussions and feedback', members: 12, isPrivate: false },
-      'marketing': { name: 'marketing', description: 'Marketing campaigns and strategy', members: 15, isPrivate: true }
-    };
-    return channels[selectedChannel as keyof typeof channels] || channels['general'];
+    // Return empty channel data to avoid hardcoded channels
+    return { name: selectedChannel, description: '', members: 0, isPrivate: false };
   };
 
   const channelInfo = getChannelInfo();
