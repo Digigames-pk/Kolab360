@@ -238,34 +238,17 @@ export function ModernTopBar({
             AI Assistant
           </Button>
 
-          {/* Superadmin Debug Button */}
-          {import.meta.env.DEV && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onViewChange && onViewChange('test')}
-              className="h-8 ml-4 border-red-200 text-red-600"
-            >
-              Debug Test
-            </Button>
-          )}
+          {/* Super Admin Dashboard - Only visible to super admins */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewChange && onViewChange('admin')}
+            className="h-8 ml-4 border-blue-200 text-blue-600 hover:bg-blue-50"
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Admin Dashboard
+          </Button>
 
-          {/* Test Notification Button - Dev Only */}
-          {import.meta.env.DEV && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                // Call a test function passed from parent
-                if ((window as any).testNotifications) {
-                  (window as any).testNotifications();
-                }
-              }}
-              className="h-8 ml-2 border-green-200 text-green-600"
-            >
-              Test Notifications
-            </Button>
-          )}
 
         </div>
       </div>

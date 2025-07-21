@@ -23,15 +23,14 @@ import { SimpleVoiceVideoCall } from '@/components/SimpleVoiceVideoCall';
 import { InteractiveOnboarding } from '@/components/InteractiveOnboarding';
 import { GamificationSystem } from '@/components/GamificationSystem';
 import { EnterpriseAdminPanel } from '@/components/EnterpriseAdminPanel';
+import { SuperAdminDashboard } from '@/components/SuperAdminDashboard';
 import { ProfileModal } from '@/components/ProfileModal';
 import { InviteUsersModal } from '@/components/InviteUsersModal';
 import { ChannelInfoModal } from '@/components/ChannelInfoModal';
 import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DebugLogger, logger } from '@/components/DebugLogger';
-import { SystemTester } from '@/components/SystemTester';
-import { SuperAdminDebugger } from '@/components/SuperAdminDebugger';
-import { SuperAdminToggle } from '@/components/SuperAdminToggle';
+
+
 import { useNotifications } from '@/hooks/useNotifications';
 import { CreateWorkspaceModal } from '@/components/CreateWorkspaceModal';
 
@@ -39,7 +38,7 @@ export default function Home() {
   const [location, setLocation] = useLocation();
   const [selectedChannel, setSelectedChannel] = useState('general');
   const [selectedDM, setSelectedDM] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'test'>('chat');
+  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'admin'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [currentTheme, setCurrentTheme] = useState('slack-light');
 
@@ -53,24 +52,13 @@ export default function Home() {
     setTimeout(() => sendTestNotification('calendar'), 1000);
   };
 
-  // Component mount logging
+  // Component mount
   useEffect(() => {
-    logger.log('info', 'Home', 'Component mounted', { 
-      selectedChannel, 
-      activeView, 
-      selectedWorkspace 
-    });
-
     // Make test notification function available globally for dev testing
     if (import.meta.env.DEV) {
       (window as any).testNotifications = testNotificationBadge;
     }
   }, []);
-
-  // View change logging
-  useEffect(() => {
-    logger.log('info', 'Home', 'View changed', { activeView, selectedChannel });
-  }, [activeView, selectedChannel]);
   
   // Modal states
   const [showSearch, setShowSearch] = useState(false);
@@ -92,13 +80,13 @@ export default function Home() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [callType, setCallType] = useState<'voice' | 'video'>('voice');
-  const [userRole, setUserRole] = useState('admin');
 
-  // Mock user data - Dynamic role for testing
+
+  // Mock user data
   const user = {
     firstName: 'John',
     lastName: 'Doe',
-    role: userRole as 'admin' | 'super_admin'
+    role: 'admin' as 'admin' | 'super_admin'
   };
 
   // Mock workspace data with state management
@@ -331,6 +319,12 @@ export default function Home() {
             </div>
           )}
 
+          {activeView === "admin" && (
+            <div className="h-full w-full">
+              <SuperAdminDashboard />
+            </div>
+          )}
+
           {activeView === "search" && (
             <div className="min-h-full flex flex-col">
               <div className="p-6 border-b bg-white flex-shrink-0">
@@ -347,14 +341,7 @@ export default function Home() {
             </div>
           )}
 
-          {activeView === "test" && (
-            <div className="h-full w-full p-6">
-              <SystemTester 
-                onViewChange={setActiveView}
-                activeView={activeView}
-              />
-            </div>
-          )}
+
 
           {activeView === "integrations" && (
             <div className="p-6 overflow-y-auto w-full">
@@ -507,23 +494,7 @@ export default function Home() {
         channelName={selectedChannel}
       />
 
-      {/* Development Toggle - Only in dev mode */}
-      <SuperAdminToggle
-        currentRole={userRole}
-        onRoleChange={setUserRole}
-      />
 
-      {/* Super Admin Debugger - Only visible to super admin */}
-      <SuperAdminDebugger
-        userRole={user.role}
-        onUpdateChannelStats={setChannelStats}
-        onUpdateDMStats={setDMStats}
-        currentChannelStats={channelStats}
-        currentDMStats={dmStats}
-      />
-
-      {/* Debug Logger */}
-      <DebugLogger />
 
       {/* Create Workspace Modal */}
       <CreateWorkspaceModal
