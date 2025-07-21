@@ -60,15 +60,19 @@ import {
   Link,
   Shield,
   Key,
-  Workflow
+  Workflow,
+  AlertCircle,
+  CheckCircle,
+  Brain
 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Integration {
   id: string;
   name: string;
   description: string;
   icon: any;
-  category: 'productivity' | 'development' | 'communication' | 'storage' | 'design' | 'crm' | 'automation' | 'analytics';
+  category: 'productivity' | 'development' | 'communication' | 'storage' | 'design' | 'crm' | 'automation' | 'analytics' | 'ai';
   isConnected: boolean;
   isPremium: boolean;
   setupComplexity: 'easy' | 'medium' | 'advanced';
@@ -79,9 +83,58 @@ interface Integration {
   popular: boolean;
   rating: number;
   users: string;
+  requiredSecrets?: string[];
+  status?: 'connected' | 'disconnected' | 'partial';
 }
 
-const integrations: Integration[] = [
+const getBaseIntegrations = (): Integration[] => [
+  // AI Services - Real integrations with working APIs
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'Advanced AI assistance with GPT models, image generation, and audio transcription',
+    icon: Bot,
+    category: 'ai',
+    isConnected: false,
+    isPremium: false,
+    setupComplexity: 'easy',
+    features: ['Text generation', 'Image generation', 'Audio transcription', 'Vision analysis', 'Embeddings'],
+    requiredSecrets: ['OPENAI_API_KEY'],
+    popular: true,
+    rating: 4.9,
+    users: '1.5M+'
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic Claude',
+    description: 'Claude AI for advanced reasoning, analysis, and multimodal understanding',
+    icon: Brain,
+    category: 'ai',
+    isConnected: false,
+    isPremium: false,
+    setupComplexity: 'easy',
+    features: ['Text generation', 'Sentiment analysis', 'Image analysis', 'Code review'],
+    requiredSecrets: ['ANTHROPIC_API_KEY'],
+    popular: true,
+    rating: 4.8,
+    users: '800K+'
+  },
+  {
+    id: 'google',
+    name: 'Google Gemini',
+    description: 'Google\'s multimodal AI for text generation, image analysis, and translation',
+    icon: Zap,
+    category: 'ai',
+    isConnected: false,
+    isPremium: false,
+    setupComplexity: 'easy',
+    features: ['Text generation', 'Image analysis', 'Translation', 'Summarization'],
+    requiredSecrets: ['GEMINI_API_KEY'],
+    popular: true,
+    rating: 4.7,
+    users: '600K+'
+  },
+  
   // Development & Version Control
   {
     id: 'github',
@@ -92,21 +145,59 @@ const integrations: Integration[] = [
     isConnected: false,
     isPremium: false,
     setupComplexity: 'easy',
-    features: ['Repository sync', 'Commit tracking', 'PR notifications', 'Issue management'],
+    features: ['Repository sync', 'Commit tracking', 'PR notifications', 'Issue management', 'Webhooks'],
+    requiredSecrets: ['GITHUB_TOKEN'],
     popular: true,
     rating: 4.9,
     users: '2.1M+'
   },
+  
+  // Communication & Team Tools
   {
-    id: 'gitlab',
-    name: 'GitLab',
-    description: 'Integrate GitLab repositories and CI/CD pipelines with your team workflow',
-    icon: Globe,
-    category: 'development',
+    id: 'slack',
+    name: 'Slack',
+    description: 'Send notifications and messages to Slack channels from your workspace',
+    icon: MessageSquare,
+    category: 'communication',
+    isConnected: false,
+    isPremium: false,
+    setupComplexity: 'easy',
+    features: ['Send messages', 'Channel notifications', 'Rich message formatting', 'Bot integration'],
+    requiredSecrets: ['SLACK_BOT_TOKEN', 'SLACK_CHANNEL_ID'],
+    popular: true,
+    rating: 4.8,
+    users: '1.2M+'
+  },
+  
+  // Productivity Tools
+  {
+    id: 'notion',
+    name: 'Notion',
+    description: 'Sync tasks, notes, and databases with your Notion workspace',
+    icon: FileText,
+    category: 'productivity',
     isConnected: false,
     isPremium: false,
     setupComplexity: 'medium',
-    features: ['Repository management', 'Pipeline status', 'Merge requests', 'CI/CD monitoring'],
+    features: ['Database sync', 'Page creation', 'Task integration', 'Content management'],
+    requiredSecrets: ['NOTION_INTEGRATION_SECRET', 'NOTION_PAGE_URL'],
+    popular: true,
+    rating: 4.6,
+    users: '900K+'
+  },
+  
+  // Payment Processing
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    description: 'Process payments, manage subscriptions, and track customer data',
+    icon: Database,
+    category: 'automation',
+    isConnected: false,
+    isPremium: false,
+    setupComplexity: 'medium',
+    features: ['Payment processing', 'Subscription management', 'Customer tracking', 'Billing automation'],
+    requiredSecrets: ['STRIPE_SECRET_KEY', 'VITE_STRIPE_PUBLIC_KEY'],
     popular: true,
     rating: 4.7,
     users: '800K+'
@@ -313,6 +404,7 @@ const integrations: Integration[] = [
 
 const categories = [
   { id: 'all', name: 'All Integrations', icon: Globe },
+  { id: 'ai', name: 'AI & Machine Learning', icon: Bot },
   { id: 'productivity', name: 'Productivity', icon: Target },
   { id: 'development', name: 'Development', icon: Github },
   { id: 'communication', name: 'Communication', icon: MessageSquare },
@@ -329,9 +421,75 @@ interface IntegrationHubProps {
 export function IntegrationHub({ onIntegrationToggle }: IntegrationHubProps) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
+  const [integrations, setIntegrations] = useState<Integration[]>(getBaseIntegrations());
+  const [integrationStatus, setIntegrationStatus] = useState<any>({});
   const [showConfigDialog, setShowConfigDialog] = useState<string | null>(null);
   const [configData, setConfigData] = useState<{[key: string]: any}>({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch integration status from API
+  useEffect(() => {
+    const fetchIntegrationStatus = async () => {
+      try {
+        const response = await apiRequest('GET', '/api/integrations/status');
+        setIntegrationStatus(response);
+        
+        // Update integration connection status
+        setIntegrations(prev => prev.map(integration => ({
+          ...integration,
+          isConnected: getConnectionStatus(integration.id, response),
+          status: getDetailedStatus(integration.id, response)
+        })));
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch integration status:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchIntegrationStatus();
+  }, []);
+
+  const getConnectionStatus = (integrationId: string, status: any): boolean => {
+    switch (integrationId) {
+      case 'openai':
+        return status.openai?.connected || false;
+      case 'anthropic':
+        return status.anthropic?.connected || false;
+      case 'google':
+        return status.google?.geminiConnected || false;
+      case 'github':
+        return status.github?.connected || false;
+      case 'slack':
+        return status.slack?.connected && status.slack?.hasChannel || false;
+      case 'notion':
+        return status.notion?.connected && status.notion?.hasPageUrl || false;
+      case 'stripe':
+        return status.stripe?.connected && status.stripe?.hasPublicKey || false;
+      default:
+        return false;
+    }
+  };
+
+  const getDetailedStatus = (integrationId: string, status: any): 'connected' | 'disconnected' | 'partial' => {
+    switch (integrationId) {
+      case 'slack':
+        if (status.slack?.connected && status.slack?.hasChannel) return 'connected';
+        if (status.slack?.connected && !status.slack?.hasChannel) return 'partial';
+        return 'disconnected';
+      case 'notion':
+        if (status.notion?.connected && status.notion?.hasPageUrl) return 'connected';
+        if (status.notion?.connected && !status.notion?.hasPageUrl) return 'partial';
+        return 'disconnected';
+      case 'stripe':
+        if (status.stripe?.connected && status.stripe?.hasPublicKey) return 'connected';
+        if (status.stripe?.connected && !status.stripe?.hasPublicKey) return 'partial';
+        return 'disconnected';
+      default:
+        return getConnectionStatus(integrationId, status) ? 'connected' : 'disconnected';
+    }
+  };
 
   const filteredIntegrations = integrations.filter((integration) => {
     const matchesCategory = selectedCategory === 'all' || integration.category === selectedCategory;
@@ -344,31 +502,30 @@ export function IntegrationHub({ onIntegrationToggle }: IntegrationHubProps) {
     const integration = integrations.find(i => i.id === integrationId);
     if (!integration) return;
 
-    if (integration.setupComplexity === 'easy') {
-      // Simple toggle for easy integrations
-      const newConnectedState = !connectedIntegrations.has(integrationId);
-      const newConnectedIntegrations = new Set(connectedIntegrations);
-      
-      if (newConnectedState) {
-        newConnectedIntegrations.add(integrationId);
-      } else {
-        newConnectedIntegrations.delete(integrationId);
-      }
-      
-      setConnectedIntegrations(newConnectedIntegrations);
-      onIntegrationToggle?.(integrationId, newConnectedState);
-    } else {
-      // Show configuration dialog for complex integrations
+    // For real integrations, show configuration dialog to enter API keys
+    if (integration.requiredSecrets && integration.requiredSecrets.length > 0) {
       setShowConfigDialog(integrationId);
+    } else {
+      // For non-API integrations, just toggle
+      const isCurrentlyConnected = integration.isConnected;
+      setIntegrations(prev => prev.map(int => 
+        int.id === integrationId 
+          ? { ...int, isConnected: !isCurrentlyConnected }
+          : int
+      ));
+      onIntegrationToggle?.(integrationId, !isCurrentlyConnected);
     }
   };
 
   const handleConfigSave = () => {
     if (!showConfigDialog) return;
     
-    const newConnectedIntegrations = new Set(connectedIntegrations);
-    newConnectedIntegrations.add(showConfigDialog);
-    setConnectedIntegrations(newConnectedIntegrations);
+    // For now, just mark as connected - in a real app, you'd save the API keys
+    setIntegrations(prev => prev.map(int => 
+      int.id === showConfigDialog 
+        ? { ...int, isConnected: true, status: 'connected' }
+        : int
+    ));
     onIntegrationToggle?.(showConfigDialog, true);
     setShowConfigDialog(null);
   };
@@ -393,7 +550,7 @@ export function IntegrationHub({ onIntegrationToggle }: IntegrationHubProps) {
           <p className="text-muted-foreground">Connect your favorite tools and services</p>
         </div>
         <Badge variant="secondary" className="bg-primary/10 text-primary">
-          {connectedIntegrations.size} Connected
+          {integrations.filter(i => i.isConnected).length} Connected
         </Badge>
       </div>
 
@@ -467,12 +624,12 @@ export function IntegrationHub({ onIntegrationToggle }: IntegrationHubProps) {
                     </div>
                     <Button
                       size="sm"
-                      variant={connectedIntegrations.has(integration.id) ? "secondary" : "default"}
+                      variant={integration.isConnected ? "secondary" : "default"}
                       onClick={() => handleConnect(integration.id)}
                     >
-                      {connectedIntegrations.has(integration.id) ? (
+                      {integration.isConnected ? (
                         <>
-                          <Check className="h-4 w-4 mr-2" />
+                          <CheckCircle className="h-4 w-4 mr-2" />
                           Connected
                         </>
                       ) : (
@@ -519,10 +676,18 @@ export function IntegrationHub({ onIntegrationToggle }: IntegrationHubProps) {
                           )}
                         </div>
                       </div>
-                      <Switch
-                        checked={connectedIntegrations.has(integration.id)}
-                        onCheckedChange={() => handleConnect(integration.id)}
-                      />
+                      <div className="flex items-center gap-2">
+                        {integration.status === 'connected' && (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                        {integration.status === 'partial' && (
+                          <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        )}
+                        <Switch
+                          checked={integration.isConnected}
+                          onCheckedChange={() => handleConnect(integration.id)}
+                        />
+                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{integration.description}</p>
                     <div className="flex flex-wrap gap-1">

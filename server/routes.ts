@@ -22,6 +22,7 @@ import filesRoutes from "./routes/files";
 import simpleFilesRoutes from "./routes/simple-files";
 import simpleTasksRoutes from "./routes/simple-tasks";
 import workspaceUsersRoutes from './routes/workspace-users';
+import integrationsRouter from './integrations';
 
 const upload = multer({
   dest: "uploads/",
@@ -1095,6 +1096,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Workspace users routes
   app.use('/api/workspace', workspaceUsersRoutes);
+  
+  // Integrations routes
+  app.use('/api/integrations', integrationsRouter);
 
   // Data seeding endpoint for development
   app.post('/api/seed-test-data', async (req: any, res) => {
