@@ -65,12 +65,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       
       // Images
       if (mimetype.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'psd', 'ai', 'eps'].includes(ext)) {
-        return 'images';
+        return 'image';
       }
       
       // Videos
       if (mimetype.startsWith('video/') || ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', '3gp', 'm4v'].includes(ext)) {
-        return 'videos';
+        return 'video';
       }
       
       // Audio
@@ -81,27 +81,27 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       // Documents
       if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'pages'].includes(ext) || 
           mimetype.includes('pdf') || mimetype.includes('word') || mimetype.includes('text')) {
-        return 'documents';
+        return 'document';
       }
       
       // Spreadsheets
       if (['xls', 'xlsx', 'csv', 'ods', 'numbers'].includes(ext) || 
           mimetype.includes('excel') || mimetype.includes('spreadsheet')) {
-        return 'documents';
+        return 'document';
       }
       
       // Presentations
       if (['ppt', 'pptx', 'key', 'odp'].includes(ext) || mimetype.includes('presentation')) {
-        return 'documents';
+        return 'document';
       }
       
       // Archives
       if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2'].includes(ext) || mimetype.includes('zip') || mimetype.includes('compressed')) {
-        return 'documents';
+        return 'other';
       }
       
       // Default to documents
-      return 'documents';
+      return 'document';
     }
     
     const category = getFileCategory(req.file.mimetype, req.file.originalname);
