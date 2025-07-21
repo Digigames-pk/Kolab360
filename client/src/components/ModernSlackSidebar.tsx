@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { SidebarCustomizer, SidebarSettings, useSidebarSettings } from './SidebarCustomizer';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useAuth } from '@/hooks/useAuth.tsx';
 
 interface ChannelStat {
   id: string;
@@ -112,6 +113,7 @@ export function ModernSlackSidebar({
   
   // Get real notification count from API
   const { unreadCount } = useNotifications();
+  const { logout } = useAuth();
 
   // Track unread state per channel/DM - fetched from API
   const [channelUnreadCounts, setChannelUnreadCounts] = useState<Record<string, number>>({});
@@ -499,26 +501,7 @@ export function ModernSlackSidebar({
                 Integrations
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={async () => {
-                try {
-                  // Clear any local storage/session data
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  
-                  // Make a request to the logout endpoint
-                  const response = await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'include'
-                  });
-                  
-                  // Force a full page reload to clear any cached data
-                  window.location.reload();
-                } catch (error) {
-                  console.error('Logout error:', error);
-                  // Fallback: just reload the page
-                  window.location.reload();
-                }
-              }}>
+              <DropdownMenuItem onClick={logout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out
               </DropdownMenuItem>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth.tsx';
 import { ModernSlackSidebar } from '@/components/ModernSlackSidebar';
 import { ModernTopBar } from '@/components/ModernTopBar';
 import { RealTimeChat } from '@/components/RealTimeChat';
@@ -35,8 +36,41 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { CreateWorkspaceModal } from '@/components/CreateWorkspaceModal';
 
 export default function Home() {
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
   const [selectedChannel, setSelectedChannel] = useState('general');
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+          <h1 className="text-2xl font-bold text-center mb-6">Sign In Required</h1>
+          <p className="text-gray-600 text-center mb-6">
+            You have been signed out. Please sign in again to continue.
+          </p>
+          <Button 
+            onClick={() => window.location.href = '/api/auth/login'}
+            className="w-full"
+          >
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const [selectedDM, setSelectedDM] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'admin'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
@@ -82,11 +116,11 @@ export default function Home() {
   const [callType, setCallType] = useState<'voice' | 'video'>('voice');
 
 
-  // Mock user data
-  const user = {
-    firstName: 'John',
-    lastName: 'Doe',
-    role: 'admin' as 'admin' | 'super_admin'
+  // Mock additional user data for UI
+  const mockUserData = {
+    firstName: user?.firstName || 'John',
+    lastName: user?.lastName || 'Doe',
+    role: (user?.role as 'admin' | 'super_admin') || 'admin'
   };
 
   // Mock workspace data with state management
@@ -398,7 +432,7 @@ export default function Home() {
       <NotificationCenter
         isOpen={showNotifications}
         onClose={() => setShowNotifications(false)}
-        userRole={user.role}
+        userRole={mockUserData.role}
       />
 
       {/* Theme Customizer Modal */}

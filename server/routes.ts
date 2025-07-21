@@ -1051,6 +1051,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Add auth check endpoint
+  app.get('/api/auth/me', (req: any, res) => {
+    if (req.isAuthenticated() && req.user) {
+      res.json(req.user);
+    } else {
+      res.status(401).json({ error: 'Not authenticated' });
+    }
+  });
+
   // Files routes - mount the simple files router
   app.use('/api/files', simpleFilesRoutes);
   app.use('/api/simple-files', simpleFilesRoutes);
