@@ -126,12 +126,106 @@ export function SuperAdminDashboard() {
   const [showBillingModal, setShowBillingModal] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [showCreatePlanModal, setShowCreatePlanModal] = useState(false);
+  const [showOrgControlsModal, setShowOrgControlsModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [customRoles, setCustomRoles] = useState([
     { id: 1, name: 'Super Admin', users: 2, permissions: ['Full Access', 'User Management', 'System Control'], color: 'bg-red-500' },
     { id: 2, name: 'Organization Admin', users: 12, permissions: ['Org Management', 'User Control', 'Settings'], color: 'bg-purple-500' },
     { id: 3, name: 'Workspace Admin', users: 45, permissions: ['Workspace Control', 'Channel Management'], color: 'bg-blue-500' },
     { id: 4, name: 'Channel Moderator', users: 23, permissions: ['Channel Management', 'Message Control'], color: 'bg-green-500' },
     { id: 5, name: 'Member', users: 1847, permissions: ['Basic Access', 'Message Send'], color: 'bg-gray-500' }
+  ]);
+  
+  const [pricingPlans, setPricingPlans] = useState([
+    {
+      id: 1,
+      name: 'Free',
+      price: '$0',
+      billingPeriod: 'Forever',
+      description: 'Perfect for small teams getting started',
+      isCurrent: false,
+      isPopular: false,
+      isCore: true,
+      organizationCount: 15420,
+      limits: {
+        maxUsers: '10',
+        storage: '10GB total',
+        apiCalls: '1,000',
+        fileSize: '25MB'
+      },
+      features: {
+        core: ['Basic messaging', 'File sharing', 'Search history (10K messages)', 'Two-factor auth'],
+        advanced: [],
+        enterprise: []
+      }
+    },
+    {
+      id: 2,
+      name: 'Pro',
+      price: '$6.67',
+      billingPeriod: 'Per user/month (billed annually)',
+      description: 'Enhanced productivity for growing teams',
+      isCurrent: false,
+      isPopular: true,
+      isCore: true,
+      organizationCount: 8934,
+      limits: {
+        maxUsers: 'Unlimited',
+        storage: '20GB per user',
+        apiCalls: '10,000',
+        fileSize: '100MB'
+      },
+      features: {
+        core: ['Everything in Free', 'Unlimited message history', 'Guest access', 'Voice & video calls'],
+        advanced: ['Screen sharing', 'Unlimited integrations', 'Workflow automation', 'Advanced search'],
+        enterprise: []
+      }
+    },
+    {
+      id: 3,
+      name: 'Business+',
+      price: '$12.50',
+      billingPeriod: 'Per user/month (billed annually)',
+      description: 'Advanced features for larger organizations',
+      isCurrent: false,
+      isPopular: false,
+      isCore: true,
+      organizationCount: 2156,
+      limits: {
+        maxUsers: 'Unlimited',
+        storage: 'Unlimited',
+        apiCalls: '50,000',
+        fileSize: '1GB'
+      },
+      features: {
+        core: ['Everything in Pro', 'SSO (SAML)', 'Data exports', 'Custom user groups'],
+        advanced: ['Advanced identity management', 'Real-time activity monitoring', 'Custom retention policies', 'Advanced compliance tools'],
+        enterprise: []
+      }
+    },
+    {
+      id: 4,
+      name: 'Enterprise Grid',
+      price: '$21',
+      billingPeriod: 'Per user/month (billed annually)',
+      description: 'Complete enterprise-grade workspace management',
+      isCurrent: true,
+      isPopular: false,
+      isCore: true,
+      organizationCount: 347,
+      limits: {
+        maxUsers: 'Unlimited',
+        storage: 'Unlimited',
+        apiCalls: 'Unlimited',
+        fileSize: '20GB'
+      },
+      features: {
+        core: ['Everything in Business+', 'Unlimited workspaces', 'Cross-workspace discovery', 'Enterprise security'],
+        advanced: ['SCIM provisioning', 'Advanced DLP', 'Legal hold & eDiscovery', 'Enterprise key management'],
+        enterprise: ['24/7 premium support', 'Dedicated success manager', 'Custom SLA', 'Advanced analytics', 'Multi-region deployment']
+      }
+    }
   ]);
   const [newOrgData, setNewOrgData] = useState({
     name: '',
@@ -329,6 +423,40 @@ export function SuperAdminDashboard() {
       toast({
         title: "Organization Deleted",
         description: `${orgName} has been permanently deleted.`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Enhanced role management functions
+  const handleEditRole = (role: any) => {
+    setSelectedRole(role);
+    setShowCreateRoleModal(true);
+  };
+
+  const handleDeleteRole = (roleId: number) => {
+    if (confirm('Are you sure you want to delete this role? Users with this role will be moved to Member role.')) {
+      setCustomRoles(customRoles.filter(role => role.id !== roleId));
+      toast({
+        title: "Role Deleted",
+        description: "Custom role has been deleted successfully.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Enhanced pricing plan management functions
+  const handleEditPlan = (plan: any) => {
+    setSelectedPlan(plan);
+    setShowCreatePlanModal(true);
+  };
+
+  const handleDeletePlan = (planId: number) => {
+    if (confirm('Are you sure you want to delete this pricing plan? Organizations using this plan will be moved to Free plan.')) {
+      setPricingPlans(pricingPlans.filter(plan => plan.id !== planId));
+      toast({
+        title: "Pricing Plan Deleted",
+        description: "Custom pricing plan has been deleted successfully.",
         variant: "destructive"
       });
     }
@@ -2139,33 +2267,114 @@ export function SuperAdminDashboard() {
                 </TabsList>
                 
                 <TabsContent value="plans" className="space-y-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {[
-                      { name: 'Free', price: '$0', users: '10 users', storage: '10GB', features: ['Basic messaging', 'File sharing', 'Limited integrations'] },
-                      { name: 'Pro', price: '$6.67', users: 'Per user/month', storage: '20GB per user', features: ['Advanced messaging', 'Unlimited integrations', 'Video calls'] },
-                      { name: 'Business', price: '$12.50', users: 'Per user/month', storage: 'Unlimited', features: ['Everything in Pro', 'Advanced admin tools', 'SSO'] },
-                      { name: 'Business+', price: '$19', users: 'Per user/month', storage: 'Unlimited', features: ['Everything in Business', 'Advanced security', 'Compliance'] },
-                      { name: 'Enterprise', price: 'Custom', users: 'Contact sales', storage: 'Unlimited', features: ['Everything in Business+', 'Enterprise Grid', '24/7 support'] }
-                    ].map((plan, index) => (
-                      <Card key={index} className={plan.name === 'Enterprise' ? 'border-2 border-blue-500' : ''}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold">Pricing Tier Management</h3>
+                    <Button onClick={() => setShowCreatePlanModal(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Custom Plan
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {pricingPlans.map((plan, index) => (
+                      <Card key={index} className={plan.isCurrent ? 'border-2 border-blue-500' : 'border border-gray-200'}>
                         <CardHeader>
                           <CardTitle className="flex items-center justify-between">
-                            {plan.name}
-                            {plan.name === 'Enterprise' && <Badge>Current</Badge>}
+                            <div className="flex items-center space-x-2">
+                              <span>{plan.name}</span>
+                              {plan.isCurrent && <Badge className="bg-blue-100 text-blue-800">Current</Badge>}
+                              {plan.isPopular && <Badge className="bg-orange-100 text-orange-800">Popular</Badge>}
+                            </div>
+                            <div className="flex space-x-1">
+                              <Button variant="ghost" size="sm" onClick={() => handleEditPlan(plan)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              {!plan.isCurrent && !plan.isCore && (
+                                <Button variant="ghost" size="sm" onClick={() => handleDeletePlan(plan.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </CardTitle>
-                          <div className="text-2xl font-bold">{plan.price}</div>
-                          <div className="text-sm text-gray-600">{plan.users}</div>
+                          <div className="space-y-1">
+                            <div className="text-3xl font-bold">{plan.price}</div>
+                            <div className="text-sm text-gray-600">{plan.billingPeriod}</div>
+                            <div className="text-xs text-gray-500">{plan.description}</div>
+                          </div>
                         </CardHeader>
-                        <CardContent>
-                          <div className="text-sm text-gray-600 mb-2">{plan.storage}</div>
-                          <ul className="space-y-1 text-sm">
-                            {plan.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-center">
-                                <CheckCircle className="h-3 w-3 text-green-600 mr-2" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <div className="text-sm font-medium">Resource Limits</div>
+                            <div className="text-xs space-y-1">
+                              <div className="flex justify-between">
+                                <span>Max Users:</span>
+                                <span className="font-medium">{plan.limits.maxUsers}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Storage:</span>
+                                <span className="font-medium">{plan.limits.storage}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>API Calls/Hour:</span>
+                                <span className="font-medium">{plan.limits.apiCalls}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>File Size:</span>
+                                <span className="font-medium">{plan.limits.fileSize}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="text-sm font-medium">Core Features</div>
+                            <div className="space-y-1">
+                              {plan.features.core.map((feature, idx) => (
+                                <div key={idx} className="flex items-center text-xs">
+                                  <CheckCircle className="h-3 w-3 text-green-600 mr-2 flex-shrink-0" />
+                                  <span>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="text-sm font-medium">Advanced Features</div>
+                            <div className="space-y-1">
+                              {plan.features.advanced.map((feature, idx) => (
+                                <div key={idx} className="flex items-center text-xs">
+                                  {plan.features.advanced.length > 0 ? (
+                                    <CheckCircle className="h-3 w-3 text-green-600 mr-2 flex-shrink-0" />
+                                  ) : (
+                                    <X className="h-3 w-3 text-gray-400 mr-2 flex-shrink-0" />
+                                  )}
+                                  <span className={plan.features.advanced.length > 0 ? '' : 'text-gray-400'}>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="text-sm font-medium">Enterprise Features</div>
+                            <div className="space-y-1">
+                              {plan.features.enterprise.map((feature, idx) => (
+                                <div key={idx} className="flex items-center text-xs">
+                                  {plan.features.enterprise.length > 0 ? (
+                                    <CheckCircle className="h-3 w-3 text-green-600 mr-2 flex-shrink-0" />
+                                  ) : (
+                                    <X className="h-3 w-3 text-gray-400 mr-2 flex-shrink-0" />
+                                  )}
+                                  <span className={plan.features.enterprise.length > 0 ? '' : 'text-gray-400'}>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="pt-2 border-t">
+                            <div className="flex items-center justify-between text-xs">
+                              <span>Organizations using:</span>
+                              <span className="font-medium">{plan.organizationCount}</span>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
@@ -2341,6 +2550,502 @@ export function SuperAdminDashboard() {
                   Save Changes
                 </Button>
                 <Button variant="outline" onClick={() => setShowBillingModal(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create/Edit Pricing Plan Modal */}
+        {showCreatePlanModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">
+                  {selectedPlan ? 'Edit Pricing Plan' : 'Create Custom Pricing Plan'}
+                </h3>
+                <Button variant="ghost" size="sm" onClick={() => {
+                  setShowCreatePlanModal(false);
+                  setSelectedPlan(null);
+                }}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium">Basic Information</h4>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Plan Name</label>
+                    <Input placeholder="e.g., Team Pro" defaultValue={selectedPlan?.name || ''} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Price</label>
+                    <Input placeholder="e.g., $15.99" defaultValue={selectedPlan?.price || ''} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Billing Period</label>
+                    <Input placeholder="e.g., Per user/month" defaultValue={selectedPlan?.billingPeriod || ''} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <Input placeholder="Brief plan description" defaultValue={selectedPlan?.description || ''} />
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked={selectedPlan?.isPopular} />
+                      <span className="text-sm">Mark as Popular</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input type="checkbox" defaultChecked={selectedPlan?.isCurrent} />
+                      <span className="text-sm">Set as Current Plan</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h4 className="font-medium">Resource Limits</h4>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Max Users</label>
+                    <Input placeholder="e.g., Unlimited or 500" defaultValue={selectedPlan?.limits?.maxUsers || ''} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Storage Limit</label>
+                    <Input placeholder="e.g., 100GB per user" defaultValue={selectedPlan?.limits?.storage || ''} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">API Calls per Hour</label>
+                    <Input placeholder="e.g., 25,000" defaultValue={selectedPlan?.limits?.apiCalls || ''} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Max File Size</label>
+                    <Input placeholder="e.g., 2GB" defaultValue={selectedPlan?.limits?.fileSize || ''} />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 space-y-4">
+                <h4 className="font-medium">Feature Categories</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Core Features</label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {[
+                        'Basic messaging', 'File sharing', 'Search history', 'Two-factor auth',
+                        'Voice & video calls', 'Guest access', 'Mobile apps', 'Desktop apps'
+                      ].map((feature) => (
+                        <label key={feature} className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked={selectedPlan?.features?.core?.includes(feature)} />
+                          <span className="text-sm">{feature}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Advanced Features</label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {[
+                        'Screen sharing', 'Unlimited integrations', 'Workflow automation', 'Advanced search',
+                        'Custom user groups', 'Advanced analytics', 'Data exports', 'Real-time monitoring'
+                      ].map((feature) => (
+                        <label key={feature} className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked={selectedPlan?.features?.advanced?.includes(feature)} />
+                          <span className="text-sm">{feature}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Enterprise Features</label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {[
+                        'SSO (SAML)', 'SCIM provisioning', 'Advanced DLP', 'Legal hold & eDiscovery',
+                        '24/7 premium support', 'Dedicated success manager', 'Custom SLA', 'Multi-region deployment'
+                      ].map((feature) => (
+                        <label key={feature} className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked={selectedPlan?.features?.enterprise?.includes(feature)} />
+                          <span className="text-sm">{feature}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3 pt-6 border-t">
+                <Button onClick={() => {
+                  setShowCreatePlanModal(false);
+                  setSelectedPlan(null);
+                  toast({ 
+                    title: selectedPlan ? "Pricing Plan Updated" : "Pricing Plan Created", 
+                    description: `Pricing plan has been ${selectedPlan ? 'updated' : 'created'} successfully.` 
+                  });
+                }}>
+                  {selectedPlan ? 'Update Plan' : 'Create Plan'}
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setShowCreatePlanModal(false);
+                  setSelectedPlan(null);
+                }}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Organization Controls Modal */}
+        {showOrgControlsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Organization Admin Controls</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowOrgControlsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <Tabs defaultValue="employee" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="employee">Employee Management</TabsTrigger>
+                  <TabsTrigger value="channels">Channel Controls</TabsTrigger>
+                  <TabsTrigger value="permissions">Comment Permissions</TabsTrigger>
+                  <TabsTrigger value="limits">Organization Limits</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="employee" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Employee User Management</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Employee Account Types</h4>
+                          <div className="space-y-3">
+                            {[
+                              { name: 'Full Employee', users: 347, description: 'Complete access to all company channels', color: 'bg-green-500' },
+                              { name: 'Department Employee', users: 156, description: 'Access to department-specific channels only', color: 'bg-blue-500' },
+                              { name: 'Contractor', users: 89, description: 'Limited access with project-based permissions', color: 'bg-yellow-500' },
+                              { name: 'Read-Only Employee', users: 45, description: 'View-only access, cannot post or comment', color: 'bg-gray-500' }
+                            ].map((type, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 border rounded">
+                                <div className="flex items-center space-x-3">
+                                  <div className={`w-3 h-3 rounded-full ${type.color}`}></div>
+                                  <div>
+                                    <div className="font-medium">{type.name}</div>
+                                    <div className="text-sm text-gray-600">{type.description}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant="outline">{type.users} users</Badge>
+                                  <Button variant="ghost" size="sm">
+                                    <Settings className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Employee Onboarding</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Default Employee Role</label>
+                              <Select defaultValue="department">
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="full">Full Employee</SelectItem>
+                                  <SelectItem value="department">Department Employee</SelectItem>
+                                  <SelectItem value="contractor">Contractor</SelectItem>
+                                  <SelectItem value="readonly">Read-Only Employee</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Auto-assign to Channels</label>
+                              <div className="space-y-2">
+                                {['#general', '#announcements', '#hr-updates', '#company-news'].map((channel) => (
+                                  <label key={channel} className="flex items-center space-x-2">
+                                    <input type="checkbox" defaultChecked />
+                                    <span className="text-sm">{channel}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="channels" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Employee-Specific Channel Management</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Company Channels</h4>
+                          <div className="space-y-3">
+                            {[
+                              { name: '#all-employees', members: 637, type: 'Company-wide', restricted: false },
+                              { name: '#announcements', members: 637, type: 'Company-wide', restricted: true },
+                              { name: '#hr-policies', members: 45, type: 'HR Department', restricted: true },
+                              { name: '#employee-feedback', members: 423, type: 'Company-wide', restricted: false },
+                              { name: '#benefits-info', members: 356, type: 'HR Department', restricted: true }
+                            ].map((channel, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 border rounded">
+                                <div className="flex items-center space-x-3">
+                                  <div className={`w-3 h-3 rounded-full ${channel.restricted ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                                  <div>
+                                    <div className="font-medium">{channel.name}</div>
+                                    <div className="text-sm text-gray-600">{channel.type} • {channel.members} members</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant={channel.restricted ? "destructive" : "secondary"}>
+                                    {channel.restricted ? 'Admin Only' : 'Open'}
+                                  </Badge>
+                                  <Button variant="ghost" size="sm">
+                                    <Settings className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <Button variant="outline" className="w-full">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Employee Channel
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Channel Access Rules</h4>
+                          <div className="space-y-3">
+                            <div className="p-3 border rounded">
+                              <div className="font-medium mb-2">Department Isolation</div>
+                              <div className="text-sm text-gray-600 mb-2">Employees can only see channels within their department</div>
+                              <div className="flex items-center space-x-2">
+                                <input type="checkbox" defaultChecked />
+                                <span className="text-sm">Enable department isolation</span>
+                              </div>
+                            </div>
+                            <div className="p-3 border rounded">
+                              <div className="font-medium mb-2">Cross-Department Collaboration</div>
+                              <div className="text-sm text-gray-600 mb-2">Allow employees to join cross-department projects</div>
+                              <div className="flex items-center space-x-2">
+                                <input type="checkbox" defaultChecked />
+                                <span className="text-sm">Allow cross-department access</span>
+                              </div>
+                            </div>
+                            <div className="p-3 border rounded">
+                              <div className="font-medium mb-2">Guest Channel Access</div>
+                              <div className="text-sm text-gray-600 mb-2">Contractors can access specific project channels</div>
+                              <div className="flex items-center space-x-2">
+                                <input type="checkbox" />
+                                <span className="text-sm">Enable guest channel access</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="permissions" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Comment & Posting Permissions by Account Type</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Permission Matrix</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left p-2">Account Type</th>
+                                  <th className="text-center p-2">Post</th>
+                                  <th className="text-center p-2">Comment</th>
+                                  <th className="text-center p-2">React</th>
+                                  <th className="text-center p-2">File Upload</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b">
+                                  <td className="p-2 font-medium">Full Employee</td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                </tr>
+                                <tr className="border-b">
+                                  <td className="p-2 font-medium">Department Employee</td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-orange-600 mx-auto" /></td>
+                                </tr>
+                                <tr className="border-b">
+                                  <td className="p-2 font-medium">Contractor</td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-orange-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><X className="h-4 w-4 text-red-600 mx-auto" /></td>
+                                </tr>
+                                <tr>
+                                  <td className="p-2 font-medium">Read-Only Employee</td>
+                                  <td className="text-center p-2"><X className="h-4 w-4 text-red-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><X className="h-4 w-4 text-red-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><CheckCircle className="h-4 w-4 text-green-600 mx-auto" /></td>
+                                  <td className="text-center p-2"><X className="h-4 w-4 text-red-600 mx-auto" /></td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <div className="mt-2 text-xs text-gray-500">
+                              <CheckCircle className="h-3 w-3 text-green-600 inline mr-1" />Full Access 
+                              <CheckCircle className="h-3 w-3 text-orange-600 inline mr-1 ml-3" />Limited Access 
+                              <X className="h-3 w-3 text-red-600 inline mr-1 ml-3" />No Access
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Advanced Permission Controls</h4>
+                          <div className="space-y-3">
+                            <div className="p-3 border rounded">
+                              <div className="font-medium mb-2">Time-based Restrictions</div>
+                              <div className="space-y-2">
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" />
+                                  <span className="text-sm">Restrict posting during non-business hours</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" />
+                                  <span className="text-sm">Weekend posting restrictions</span>
+                                </label>
+                              </div>
+                            </div>
+                            <div className="p-3 border rounded">
+                              <div className="font-medium mb-2">Content Moderation</div>
+                              <div className="space-y-2">
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked />
+                                  <span className="text-sm">Require approval for contractor posts</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" />
+                                  <span className="text-sm">Auto-delete inappropriate content</span>
+                                </label>
+                              </div>
+                            </div>
+                            <div className="p-3 border rounded">
+                              <div className="font-medium mb-2">Channel-Specific Rules</div>
+                              <div className="space-y-2">
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked />
+                                  <span className="text-sm">Admin-only posting in #announcements</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" />
+                                  <span className="text-sm">Department leads can moderate their channels</span>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="limits" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Organization Resource Limits</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">User Limits</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Total Employee Limit</label>
+                              <Input type="number" defaultValue="1000" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Contractor Limit</label>
+                              <Input type="number" defaultValue="200" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Department Admin Limit</label>
+                              <Input type="number" defaultValue="50" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Guest User Limit</label>
+                              <Input type="number" defaultValue="100" />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Current Usage</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Total Users</span>
+                                <span>637 / 1,000</span>
+                              </div>
+                              <Progress value={64} />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Contractors</span>
+                                <span>89 / 200</span>
+                              </div>
+                              <Progress value={45} />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Department Admins</span>
+                                <span>12 / 50</span>
+                              </div>
+                              <Progress value={24} />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Guest Users</span>
+                                <span>23 / 100</span>
+                              </div>
+                              <Progress value={23} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="flex space-x-3 pt-6 border-t">
+                <Button onClick={() => {
+                  setShowOrgControlsModal(false);
+                  toast({ title: "Organization Controls Updated", description: "Employee management settings have been saved successfully." });
+                }}>
+                  Save Configuration
+                </Button>
+                <Button variant="outline" onClick={() => setShowOrgControlsModal(false)}>
                   Cancel
                 </Button>
               </div>
