@@ -6,7 +6,7 @@ import { setupAuth, requireAuth, requireRole } from "./auth";
 import { generateAIResponse, analyzeSentiment, summarizeMessages, generateTasks, autoCompleteMessage } from "./openai";
 import { emailService } from "./email";
 import { notificationService } from "./services/NotificationService";
-import { MessageEncryption } from './utils/encryption';
+
 import { 
   insertWorkspaceSchema, 
   insertChannelSchema, 
@@ -237,19 +237,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const messages = await storage.getChannelMessages(channelId, limit);
       
-      // Process messages: decrypt if needed and extract file metadata
+      // Extract file metadata from message metadata for frontend compatibility
       const processedMessages = messages.map(message => {
         const processedMessage = { ...message };
-        
-        // Decrypt message content if it's encrypted
-        if (message.content && typeof message.content === 'string') {
-          try {
-            processedMessage.content = MessageEncryption.smartDecrypt(message.content);
-          } catch (error) {
-            console.error('Failed to decrypt message:', error);
-            // Keep original content if decryption fails
-          }
-        }
         
         // If message has file metadata, extract it to top level for frontend compatibility
         if (message.metadata && message.messageType === 'file') {
@@ -288,23 +278,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasFileData: !!(fileUrl || fileName || fileType)
       });
       
-      // Smart encryption for sensitive messages
-      let processedContent = bodyData.content || '';
-      let isEncrypted = false;
-      
-      if (processedContent && typeof processedContent === 'string') {
-        const encryptionResult = MessageEncryption.smartEncrypt(processedContent);
-        processedContent = encryptionResult.content;
-        isEncrypted = encryptionResult.isEncrypted;
-        
-        if (isEncrypted) {
-          console.log('🔒 Message contains sensitive content - encrypted');
-        }
-      }
-      
       const messageData = insertMessageSchema.parse({
         ...bodyData,
-        content: processedContent,
         channelId: channelId,
       });
       

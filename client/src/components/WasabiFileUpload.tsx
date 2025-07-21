@@ -207,7 +207,7 @@ export function WasabiFileUpload({
           if (workspaceId) singleFormData.append('workspaceId', workspaceId);
           if (channelId) singleFormData.append('channelId', channelId);
 
-          const response = await fetch('/api/simple-files/upload-multiple', {
+          const response = await fetch('/api/files/upload', {
             method: 'POST',
             body: singleFormData,
           });

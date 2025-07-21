@@ -133,7 +133,7 @@ export const mockFiles = [
     size: 2847293,
     uploadDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
     uploader: { name: "Sarah Wilson" },
-    category: "document"
+    category: "documents"
   },
   {
     id: "2", 
@@ -143,7 +143,7 @@ export const mockFiles = [
     size: 45892847,
     uploadDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
     uploader: { name: "Alex Johnson" },
-    category: "video"
+    category: "videos"
   },
   {
     id: "3",
@@ -153,7 +153,7 @@ export const mockFiles = [
     size: 8394728,
     uploadDate: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
     uploader: { name: "Lisa Rodriguez" },
-    category: "design"
+    category: "documents"
   },
   {
     id: "4",
@@ -163,7 +163,7 @@ export const mockFiles = [
     size: 1594823,
     uploadDate: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
     uploader: { name: "Mike Chen" },
-    category: "document"
+    category: "documents"
   },
   {
     id: "5",
@@ -173,7 +173,7 @@ export const mockFiles = [
     size: 734829,
     uploadDate: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
     uploader: { name: "Emma Davis" },
-    category: "data"
+    category: "documents"
   },
   {
     id: "6",
@@ -183,6 +183,6 @@ export const mockFiles = [
     size: 12847392,
     uploadDate: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), // 8 hours ago
     uploader: { name: "Tom Anderson" },
-    category: "design"
+    category: "documents"
   }
 ];

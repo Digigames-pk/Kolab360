@@ -34,11 +34,11 @@ router.get('/', async (req, res) => {
     const filesWithUploaders = filteredFiles.map(file => ({
       ...file,
       name: file.originalName, // Map for compatibility with frontend
-      uploader: {
-        id: file.uploadedBy,
-        firstName: file.uploadedBy === 1 ? 'System' : 'Regular',
-        lastName: file.uploadedBy === 1 ? 'Admin' : 'User',
-        email: file.uploadedBy === 1 ? 'admin@demo.com' : 'user@test.com'
+      uploader: file.uploader || {
+        id: 1,
+        firstName: 'System',
+        lastName: 'User',
+        email: 'admin@demo.com'
       }
     }));
     
@@ -60,7 +60,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const { workspaceId = '1', channelId = 'general' } = req.body;
     
     // Comprehensive file category detection based on MIME type and extension
-    function getFileCategory(mimetype: string, filename: string): string {
+    const getFileCategory = (mimetype: string, filename: string): string => {
       const ext = filename.toLowerCase().split('.').pop() || '';
       
       // Images
@@ -112,12 +112,14 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       originalName: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype,
-      uploadedBy: 3, // Mock user ID
-      uploadedAt: new Date(),
-      workspaceId,
-      channelId,
+      uploadDate: new Date().toISOString(),
+      uploader: {
+        name: 'Regular User'
+      },
       category,
-      url: `/uploads/${req.file.filename}`
+      url: `/uploads/${req.file.filename}`,
+      workspaceId,
+      channelId
     };
     
     seedFiles.push(newFile);
@@ -128,11 +130,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         id: 3,
         firstName: 'Regular',
         lastName: 'User',
-        email: 'user@test.com'
+        email: 'user@test.com',
+        name: 'Regular User'
       }
     };
     
-    // Return in the format expected by frontend
+    // Return complete file data expected by frontend 
     const responseData = {
       success: true,
       id: newFile.id,
@@ -141,10 +144,17 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       size: newFile.size,
       mimetype: newFile.mimetype,
       url: newFile.url,
-      uploadedAt: newFile.uploadedAt.toISOString()
+      uploadedAt: newFile.uploadDate,
+      category: newFile.category,
+      workspaceId: newFile.workspaceId,
+      channelId: newFile.channelId,
+      uploader: fileWithUploader.uploader
     };
     
     console.log('📤 File upload response:', responseData);
+    
+    // Ensure proper headers to prevent Content-Length issues
+    res.setHeader('Content-Type', 'application/json');
     res.status(201).json(responseData);
   } catch (error) {
     console.error('Error uploading file:', error);
