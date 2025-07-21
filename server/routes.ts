@@ -1003,6 +1003,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auth routes
+  app.get('/api/auth/logout', (req: any, res) => {
+    req.logout((err: any) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ error: 'Failed to logout' });
+      }
+      
+      // Destroy the session
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error('Session destroy error:', err);
+          return res.status(500).json({ error: 'Failed to destroy session' });
+        }
+        
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
+        
+        // Redirect to the root which will show login if not authenticated
+        res.redirect('/');
+      });
+    });
+  });
+
   // Files routes - mount the simple files router
   app.use('/api/files', simpleFilesRoutes);
   app.use('/api/simple-files', simpleFilesRoutes);

@@ -499,7 +499,14 @@ export function ModernSlackSidebar({
                 Integrations
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => alert('Signing out...')}>
+              <DropdownMenuItem onClick={() => {
+                // Clear any local storage/session data
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect to logout endpoint or login page
+                window.location.href = '/api/auth/logout';
+              }}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out
               </DropdownMenuItem>

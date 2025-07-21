@@ -68,7 +68,7 @@ export function ModernTopBar({
       'design': { name: 'design', description: 'Design discussions and feedback', members: 12, isPrivate: false },
       'marketing': { name: 'marketing', description: 'Marketing campaigns and strategy', members: 15, isPrivate: true }
     };
-    return channels[selectedChannel] || channels['general'];
+    return channels[selectedChannel as keyof typeof channels] || channels['general'];
   };
 
   const channelInfo = getChannelInfo();
