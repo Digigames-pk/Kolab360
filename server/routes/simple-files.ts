@@ -59,15 +59,52 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     
     const { workspaceId = '1', channelId = 'general' } = req.body;
     
-    // Determine file category based on MIME type
-    let category = 'documents';
-    if (req.file.mimetype.startsWith('image/')) {
-      category = 'images';
-    } else if (req.file.mimetype.startsWith('video/')) {
-      category = 'videos';
-    } else if (req.file.mimetype.startsWith('audio/')) {
-      category = 'audio';
+    // Comprehensive file category detection based on MIME type and extension
+    function getFileCategory(mimetype: string, filename: string): string {
+      const ext = filename.toLowerCase().split('.').pop() || '';
+      
+      // Images
+      if (mimetype.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'psd', 'ai', 'eps'].includes(ext)) {
+        return 'images';
+      }
+      
+      // Videos
+      if (mimetype.startsWith('video/') || ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', '3gp', 'm4v'].includes(ext)) {
+        return 'videos';
+      }
+      
+      // Audio
+      if (mimetype.startsWith('audio/') || ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a'].includes(ext)) {
+        return 'audio';
+      }
+      
+      // Documents
+      if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'pages'].includes(ext) || 
+          mimetype.includes('pdf') || mimetype.includes('word') || mimetype.includes('text')) {
+        return 'documents';
+      }
+      
+      // Spreadsheets
+      if (['xls', 'xlsx', 'csv', 'ods', 'numbers'].includes(ext) || 
+          mimetype.includes('excel') || mimetype.includes('spreadsheet')) {
+        return 'documents';
+      }
+      
+      // Presentations
+      if (['ppt', 'pptx', 'key', 'odp'].includes(ext) || mimetype.includes('presentation')) {
+        return 'documents';
+      }
+      
+      // Archives
+      if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2'].includes(ext) || mimetype.includes('zip') || mimetype.includes('compressed')) {
+        return 'documents';
+      }
+      
+      // Default to documents
+      return 'documents';
     }
+    
+    const category = getFileCategory(req.file.mimetype, req.file.originalname);
     
     const newFile = {
       id: (seedFiles.length + 1).toString(),
