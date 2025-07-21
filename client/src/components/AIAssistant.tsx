@@ -395,7 +395,7 @@ export function AIAssistant({ channelId, workspaceId }: AIAssistantProps) {
             </div>
             <div>
               <h2 className="text-2xl font-semibold">AI Assistant</h2>
-              <p className="text-sm text-gray-600">Powered by OpenAI GPT-4</p>
+              <p className="text-sm text-gray-600">Intelligent workspace assistant</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">

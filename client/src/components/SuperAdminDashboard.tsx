@@ -41,7 +41,26 @@ import {
   Eye,
   EyeOff,
   Bell,
-  BellOff
+  BellOff,
+  Building2,
+  DollarSign,
+  Key,
+  Zap,
+  Globe,
+  Database,
+  ExternalLink,
+  Archive,
+  Plus,
+  Minus,
+  UserPlus,
+  Building,
+  CreditCard,
+  ShieldCheck,
+  Network,
+  Workflow,
+  TrendingUp,
+  PieChart,
+  BarChart2
 } from 'lucide-react';
 
 interface User {
@@ -367,10 +386,14 @@ export function SuperAdminDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="apps">Apps</TabsTrigger>
+            <TabsTrigger value="policies">Policies</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="audit">Audit Logs</TabsTrigger>
           </TabsList>
 
@@ -493,48 +516,496 @@ export function SuperAdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-4">
+          {/* Workspaces Tab */}
+          <TabsContent value="workspaces" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Workspace Analytics
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Building2 className="h-5 w-5 mr-2" />
+                    Workspace Management
+                  </div>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Workspace
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <BarChart3 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
-                  <p className="text-gray-600">Detailed analytics and reporting features coming soon.</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Track user engagement, message patterns, file usage, and workspace growth metrics.
-                  </p>
+                <div className="space-y-4">
+                  {[
+                    { name: 'Main Organization', members: 124, status: 'active', plan: 'Enterprise' },
+                    { name: 'Development Team', members: 45, status: 'active', plan: 'Business+' },
+                    { name: 'Marketing Hub', members: 23, status: 'active', plan: 'Business+' },
+                    { name: 'Client Projects', members: 67, status: 'archived', plan: 'Pro' }
+                  ].map((workspace, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="bg-blue-600 text-white">
+                            {workspace.name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-medium">{workspace.name}</h3>
+                          <p className="text-sm text-gray-600">{workspace.members} members • {workspace.plan}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={workspace.status === 'active' ? 'default' : 'secondary'}>
+                          {workspace.status}
+                        </Badge>
+                        <Button variant="outline" size="sm">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-4">
+          {/* Security & Compliance Tab */}
+          <TabsContent value="security" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <ShieldCheck className="h-5 w-5 mr-2" />
+                    Security Policies
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Single Sign-On (SSO)</h4>
+                      <p className="text-sm text-gray-600">SAML 2.0 integration enabled</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Two-Factor Authentication</h4>
+                      <p className="text-sm text-gray-600">Required for all admin users</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">Enforced</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">SCIM Provisioning</h4>
+                      <p className="text-sm text-gray-600">Automated user management</p>
+                    </div>
+                    <Badge variant="outline">Configured</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Data Loss Prevention</h4>
+                      <p className="text-sm text-gray-600">Monitor sensitive data sharing</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Monitoring</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Database className="h-5 w-5 mr-2" />
+                    Compliance & Data
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Data Retention</h4>
+                      <p className="text-sm text-gray-600">7 years for compliance</p>
+                    </div>
+                    <Button variant="outline" size="sm">Configure</Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">eDiscovery</h4>
+                      <p className="text-sm text-gray-600">Legal hold capabilities</p>
+                    </div>
+                    <Button variant="outline" size="sm">Manage</Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Data Export</h4>
+                      <p className="text-sm text-gray-600">Compliance reporting</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">SIEM Integration</h4>
+                      <p className="text-sm text-gray-600">Security monitoring</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Billing & Licensing Tab */}
+          <TabsContent value="billing" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    Subscription Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-medium">Enterprise Grid Plan</h3>
+                        <p className="text-gray-600">Unlimited users • Advanced security • 24/7 support</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold">$25/user/month</div>
+                        <p className="text-sm text-gray-600">Billed annually</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">124</div>
+                        <div className="text-sm text-gray-600">Active Users</div>
+                      </div>
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">$3,100</div>
+                        <div className="text-sm text-gray-600">Monthly Cost</div>
+                      </div>
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">89%</div>
+                        <div className="text-sm text-gray-600">Utilization</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Usage Alerts</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Storage Usage</span>
+                    <span className="font-medium">84%</span>
+                  </div>
+                  <Progress value={84} className="h-2" />
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>API Calls</span>
+                    <span className="font-medium">67%</span>
+                  </div>
+                  <Progress value={67} className="h-2" />
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Guest Users</span>
+                    <span className="font-medium">23%</span>
+                  </div>
+                  <Progress value={23} className="h-2" />
+                </CardContent>
+              </Card>
+            </div>
+
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Settings className="h-5 w-5 mr-2" />
-                  Workspace Settings
-                </CardTitle>
+                <CardTitle>Recent Invoices</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Settings className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Settings</h3>
-                  <p className="text-gray-600">Comprehensive workspace configuration panel coming soon.</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Configure security policies, integration settings, data retention, and organizational controls.
-                  </p>
+                <div className="space-y-3">
+                  {[
+                    { date: '2025-01-01', amount: '$3,100', status: 'paid', period: 'January 2025' },
+                    { date: '2024-12-01', amount: '$2,950', status: 'paid', period: 'December 2024' },
+                    { date: '2024-11-01', amount: '$2,875', status: 'paid', period: 'November 2024' }
+                  ].map((invoice, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded">
+                      <div>
+                        <div className="font-medium">{invoice.period}</div>
+                        <div className="text-sm text-gray-600">{invoice.date}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">{invoice.amount}</div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          {invoice.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Apps & Integrations Tab */}
+          <TabsContent value="apps" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Zap className="h-5 w-5 mr-2" />
+                    App Management
+                  </div>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Browse Apps
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { name: 'Google Drive', status: 'approved', users: 89, category: 'File Storage' },
+                    { name: 'Zoom', status: 'approved', users: 124, category: 'Video Conferencing' },
+                    { name: 'Jira', status: 'pending', users: 45, category: 'Project Management' },
+                    { name: 'GitHub', status: 'approved', users: 67, category: 'Development' },
+                    { name: 'Salesforce', status: 'restricted', users: 23, category: 'CRM' },
+                    { name: 'Custom Bot', status: 'review', users: 12, category: 'Automation' }
+                  ].map((app, index) => (
+                    <div key={index} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">{app.name}</h3>
+                        <Badge variant={
+                          app.status === 'approved' ? 'default' :
+                          app.status === 'pending' ? 'secondary' :
+                          app.status === 'restricted' ? 'destructive' : 'outline'
+                        }>
+                          {app.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">{app.category}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{app.users} users</span>
+                        <Button variant="ghost" size="sm">
+                          <Settings className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Policies Tab */}
+          <TabsContent value="policies" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Network className="h-5 w-5 mr-2" />
+                    Organization Policies
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Channel Creation</h4>
+                        <p className="text-sm text-gray-600">Who can create channels</p>
+                      </div>
+                      <Select defaultValue="admins">
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="everyone">Everyone</SelectItem>
+                          <SelectItem value="admins">Admins Only</SelectItem>
+                          <SelectItem value="restricted">Restricted</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">External Invitations</h4>
+                        <p className="text-sm text-gray-600">Guest user permissions</p>
+                      </div>
+                      <Select defaultValue="admins">
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="disabled">Disabled</SelectItem>
+                          <SelectItem value="admins">Admins Only</SelectItem>
+                          <SelectItem value="members">All Members</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">App Installation</h4>
+                        <p className="text-sm text-gray-600">Third-party app permissions</p>
+                      </div>
+                      <Select defaultValue="approval">
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="disabled">Disabled</SelectItem>
+                          <SelectItem value="approval">Requires Approval</SelectItem>
+                          <SelectItem value="open">Open</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Workflow className="h-5 w-5 mr-2" />
+                    Custom Roles
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'IT Administrator', users: 5, permissions: 'Full system access' },
+                      { name: 'Department Lead', users: 12, permissions: 'Workspace management' },
+                      { name: 'Project Manager', users: 8, permissions: 'Channel oversight' },
+                      { name: 'Security Officer', users: 3, permissions: 'Compliance monitoring' }
+                    ].map((role, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded">
+                        <div>
+                          <div className="font-medium">{role.name}</div>
+                          <div className="text-sm text-gray-600">{role.permissions}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">{role.users} users</div>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button variant="outline" className="w-full mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Custom Role
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Active Users Today</p>
+                      <p className="text-2xl font-bold text-green-600">89</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">+12% from yesterday</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Messages Sent</p>
+                      <p className="text-2xl font-bold text-blue-600">1,247</p>
+                    </div>
+                    <MessageSquare className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">+8% from last week</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Files Shared</p>
+                      <p className="text-2xl font-bold text-purple-600">156</p>
+                    </div>
+                    <FileText className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">+23% from last week</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">App Integrations</p>
+                      <p className="text-2xl font-bold text-orange-600">8</p>
+                    </div>
+                    <Zap className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">2 new this month</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart2 className="h-5 w-5 mr-2" />
+                    User Activity Trends
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <PieChart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-600">Interactive analytics charts coming soon</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="h-5 w-5 mr-2" />
+                    Most Active Channels
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'general', messages: 1247, trend: '+12%' },
+                      { name: 'dev-team', messages: 890, trend: '+8%' },
+                      { name: 'marketing', messages: 456, trend: '+15%' },
+                      { name: 'support', messages: 234, trend: '-3%' }
+                    ].map((channel, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                          <span className="font-medium">#{channel.name}</span>
+                        </div>
+                        <div className="text-right text-sm">
+                          <div className="font-medium">{channel.messages} messages</div>
+                          <div className={`text-xs ${channel.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                            {channel.trend}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Audit Logs Tab */}
