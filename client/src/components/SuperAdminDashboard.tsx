@@ -61,7 +61,10 @@ import {
   TrendingUp,
   PieChart,
   BarChart2,
-  X
+  X,
+  Upload,
+  MessageCircle,
+  MoreVertical
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -134,6 +137,7 @@ export function SuperAdminDashboard() {
   const [selectedOrgForManagement, setSelectedOrgForManagement] = useState<any>(null);
   const [showAppManagementModal, setShowAppManagementModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<any>(null);
+  const [showAppStoreModal, setShowAppStoreModal] = useState(false);
   const [customRoles, setCustomRoles] = useState([
     { id: 1, name: 'Super Admin', users: 2, permissions: ['Full Access', 'User Management', 'System Control'], color: 'bg-red-500' },
     { id: 2, name: 'Organization Admin', users: 12, permissions: ['Org Management', 'User Control', 'Settings'], color: 'bg-purple-500' },
@@ -1563,7 +1567,7 @@ export function SuperAdminDashboard() {
                     <Zap className="h-5 w-5 mr-2" />
                     App Management
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" onClick={() => setShowAppStoreModal(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Browse Apps
                   </Button>
@@ -3375,7 +3379,7 @@ export function SuperAdminDashboard() {
                   </div>
                   <div>
                     <span className="text-gray-600">Member Since:</span>
-                    <span className="font-medium ml-2">{selectedUser.joinedAt}</span>
+                    <span className="font-medium ml-2">{selectedUser.joinDate}</span>
                   </div>
                 </div>
               </div>
@@ -3498,7 +3502,7 @@ export function SuperAdminDashboard() {
                 
                 <TabsContent value="users" className="space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-medium">Organization Users Management</h4>
+                    <h4 className="font-medium text-lg">Organization Admin & User Control</h4>
                     <div className="flex space-x-2">
                       <Button size="sm">
                         <Plus className="h-4 w-4 mr-2" />
@@ -3511,28 +3515,109 @@ export function SuperAdminDashboard() {
                     </div>
                   </div>
                   
+                  {/* Organization Admins Section */}
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-blue-800">
+                        <Crown className="h-5 w-5 mr-2" />
+                        Organization Administrators
+                      </CardTitle>
+                      <p className="text-sm text-blue-600">Control who can manage this organization and its users</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[
+                          { name: 'John Smith', email: 'john@acme.com', role: 'Primary Admin', permissions: 'Full Control', lastActive: '2 hours ago' },
+                          { name: 'Sarah Johnson', email: 'sarah@acme.com', role: 'Secondary Admin', permissions: 'User Management', lastActive: '1 day ago' },
+                          { name: 'Mike Chen', email: 'mike@acme.com', role: 'Security Admin', permissions: 'Security & Compliance', lastActive: '3 hours ago' }
+                        ].map((admin, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <Avatar>
+                                <AvatarFallback className="bg-blue-600 text-white">{admin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{admin.name}</div>
+                                <div className="text-sm text-gray-600">{admin.email}</div>
+                                <div className="text-xs text-gray-500">{admin.permissions} • Last active: {admin.lastActive}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="default" className="bg-blue-600">{admin.role}</Badge>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit Permissions
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <MessageCircle className="h-4 w-4 mr-2" />
+                                    Send Message
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="text-red-600">
+                                    <UserX className="h-4 w-4 mr-2" />
+                                    Remove Admin
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        ))}
+                        <Button className="w-full" variant="outline" size="sm">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Promote User to Admin
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader>
-                        <CardTitle>User Statistics</CardTitle>
+                        <CardTitle>User Statistics & Controls</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
-                            <span>Admins</span>
-                            <Badge variant="outline">12 users</Badge>
+                            <span>Organization Admins</span>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="default" className="bg-blue-600">3 users</Badge>
+                              <Button size="sm" variant="ghost">
+                                <Settings className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Regular Users</span>
-                            <Badge variant="outline">234 users</Badge>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="outline">234 users</Badge>
+                              <Button size="sm" variant="ghost">
+                                <Settings className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Guests</span>
-                            <Badge variant="outline">45 users</Badge>
+                            <span>Guest Users</span>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="secondary">45 users</Badge>
+                              <Button size="sm" variant="ghost">
+                                <Settings className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Suspended</span>
-                            <Badge variant="destructive">3 users</Badge>
+                            <span>Suspended Users</span>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="destructive">3 users</Badge>
+                              <Button size="sm" variant="ghost">
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -3540,13 +3625,13 @@ export function SuperAdminDashboard() {
                     
                     <Card>
                       <CardHeader>
-                        <CardTitle>Role Management</CardTitle>
+                        <CardTitle>Admin Permissions Control</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
                           <Button className="w-full" variant="outline">
                             <Shield className="h-4 w-4 mr-2" />
-                            Create Custom Role
+                            Create Admin Role
                           </Button>
                           <Button className="w-full" variant="outline">
                             <Users className="h-4 w-4 mr-2" />
@@ -4039,6 +4124,100 @@ export function SuperAdminDashboard() {
                   Save Changes
                 </Button>
                 <Button variant="outline" onClick={() => setShowAppManagementModal(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Browse Apps Store Modal */}
+        {showAppStoreModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Browse Apps & Integrations</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowAppStoreModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex space-x-4 mb-4">
+                  <Input placeholder="Search apps..." className="flex-1" />
+                  <Select defaultValue="all">
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="productivity">Productivity</SelectItem>
+                      <SelectItem value="communication">Communication</SelectItem>
+                      <SelectItem value="development">Development</SelectItem>
+                      <SelectItem value="analytics">Analytics</SelectItem>
+                      <SelectItem value="marketing">Marketing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { name: 'Slack Bot Pro', category: 'Communication', price: 'Free', rating: 4.8, users: '2.1M', description: 'Advanced automation for Slack workflows', installed: false },
+                  { name: 'Google Workspace', category: 'Productivity', price: '$12/mo', rating: 4.9, users: '3.8M', description: 'Complete office suite integration', installed: true },
+                  { name: 'Microsoft Teams', category: 'Communication', price: '$15/mo', rating: 4.6, users: '1.5M', description: 'Enterprise video conferencing', installed: false },
+                  { name: 'Jira Integration', category: 'Development', price: 'Free', rating: 4.7, users: '980K', description: 'Project management and issue tracking', installed: true },
+                  { name: 'GitHub Actions', category: 'Development', price: 'Free', rating: 4.5, users: '1.2M', description: 'CI/CD pipeline automation', installed: false },
+                  { name: 'Salesforce CRM', category: 'Marketing', price: '$25/mo', rating: 4.4, users: '5.2M', description: 'Customer relationship management', installed: true },
+                  { name: 'Zoom Meetings', category: 'Communication', price: '$14.99/mo', rating: 4.3, users: '4.7M', description: 'High-quality video conferences', installed: false },
+                  { name: 'Trello Boards', category: 'Productivity', price: 'Free', rating: 4.6, users: '2.8M', description: 'Visual project management', installed: false },
+                  { name: 'Google Analytics', category: 'Analytics', price: 'Free', rating: 4.8, users: '6.1M', description: 'Web traffic analysis and insights', installed: true }
+                ].map((app, index) => (
+                  <Card key={index} className={app.installed ? 'border-green-200 bg-green-50' : ''}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-base">{app.name}</CardTitle>
+                          <p className="text-sm text-gray-600">{app.category}</p>
+                        </div>
+                        <Badge variant={app.installed ? 'default' : 'outline'} className={app.installed ? 'bg-green-600' : ''}>
+                          {app.installed ? 'Installed' : app.price}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-gray-700">{app.description}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>⭐ {app.rating} • {app.users} users</span>
+                      </div>
+                      <div className="flex space-x-2">
+                        {app.installed ? (
+                          <>
+                            <Button size="sm" variant="outline" className="flex-1" onClick={() => handleManageApp(app)}>
+                              <Settings className="h-3 w-3 mr-1" />
+                              Manage
+                            </Button>
+                            <Button size="sm" variant="destructive" className="flex-1">
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Remove
+                            </Button>
+                          </>
+                        ) : (
+                          <Button size="sm" className="w-full" onClick={() => {
+                            toast({ title: "App Installed", description: `${app.name} has been installed successfully.` });
+                          }}>
+                            <Plus className="h-3 w-3 mr-1" />
+                            Install
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-6 border-t mt-6">
+                <Button variant="outline" onClick={() => setShowAppStoreModal(false)}>
                   Close
                 </Button>
               </div>
