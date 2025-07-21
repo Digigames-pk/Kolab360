@@ -122,6 +122,17 @@ export function SuperAdminDashboard() {
   const [showEditOrgModal, setShowEditOrgModal] = useState(false);
   const [showOrgLimitsModal, setShowOrgLimitsModal] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<any>(null);
+  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [customRoles, setCustomRoles] = useState([
+    { id: 1, name: 'Super Admin', users: 2, permissions: ['Full Access', 'User Management', 'System Control'], color: 'bg-red-500' },
+    { id: 2, name: 'Organization Admin', users: 12, permissions: ['Org Management', 'User Control', 'Settings'], color: 'bg-purple-500' },
+    { id: 3, name: 'Workspace Admin', users: 45, permissions: ['Workspace Control', 'Channel Management'], color: 'bg-blue-500' },
+    { id: 4, name: 'Channel Moderator', users: 23, permissions: ['Channel Management', 'Message Control'], color: 'bg-green-500' },
+    { id: 5, name: 'Member', users: 1847, permissions: ['Basic Access', 'Message Send'], color: 'bg-gray-500' }
+  ]);
   const [newOrgData, setNewOrgData] = useState({
     name: '',
     domain: '',
@@ -1152,9 +1163,15 @@ export function SuperAdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <ShieldCheck className="h-5 w-5 mr-2" />
-                    Security Policies
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <ShieldCheck className="h-5 w-5 mr-2" />
+                      Security Policies
+                    </div>
+                    <Button size="sm" onClick={() => setShowSecurityModal(true)}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configure
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1163,28 +1180,48 @@ export function SuperAdminDashboard() {
                       <h4 className="font-medium">Single Sign-On (SSO)</h4>
                       <p className="text-sm text-gray-600">SAML 2.0 integration enabled</p>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                      <Button variant="ghost" size="sm" onClick={() => setShowSecurityModal(true)}>
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Two-Factor Authentication</h4>
                       <p className="text-sm text-gray-600">Required for all admin users</p>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">Enforced</Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">Enforced</Badge>
+                      <Button variant="ghost" size="sm" onClick={() => setShowSecurityModal(true)}>
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">SCIM Provisioning</h4>
                       <p className="text-sm text-gray-600">Automated user management</p>
                     </div>
-                    <Badge variant="outline">Configured</Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline">Configured</Badge>
+                      <Button variant="ghost" size="sm" onClick={() => setShowSecurityModal(true)}>
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Data Loss Prevention</h4>
                       <p className="text-sm text-gray-600">Monitor sensitive data sharing</p>
                     </div>
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Monitoring</Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Monitoring</Badge>
+                      <Button variant="ghost" size="sm" onClick={() => setShowSecurityModal(true)}>
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1238,9 +1275,15 @@ export function SuperAdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <CreditCard className="h-5 w-5 mr-2" />
-                    Subscription Overview
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <CreditCard className="h-5 w-5 mr-2" />
+                      Subscription Overview
+                    </div>
+                    <Button size="sm" onClick={() => setShowBillingModal(true)}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Manage Billing
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1447,36 +1490,47 @@ export function SuperAdminDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Workflow className="h-5 w-5 mr-2" />
-                    Custom Roles
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Workflow className="h-5 w-5 mr-2" />
+                      Custom Roles
+                    </div>
+                    <Button size="sm" onClick={() => setShowCreateRoleModal(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Role
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {[
-                      { name: 'IT Administrator', users: 5, permissions: 'Full system access' },
-                      { name: 'Department Lead', users: 12, permissions: 'Workspace management' },
-                      { name: 'Project Manager', users: 8, permissions: 'Channel oversight' },
-                      { name: 'Security Officer', users: 3, permissions: 'Compliance monitoring' }
-                    ].map((role, index) => (
+                    {customRoles.slice(0, 4).map((role, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded">
-                        <div>
-                          <div className="font-medium">{role.name}</div>
-                          <div className="text-sm text-gray-600">{role.permissions}</div>
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 rounded-full ${role.color}`}></div>
+                          <div>
+                            <div className="font-medium">{role.name}</div>
+                            <div className="text-sm text-gray-600">{role.permissions.slice(0, 2).join(', ')}</div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm font-medium">{role.users} users</div>
-                          <Button variant="ghost" size="sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="text-right">
+                            <div className="text-sm font-medium">{role.users} users</div>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => handleEditRole(role)}>
                             <Edit className="h-3 w-3" />
                           </Button>
+                          {role.name !== 'Super Admin' && role.name !== 'Member' && (
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteRole(role.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Custom Role
+                  <Button variant="outline" className="w-full mt-4" onClick={() => setShowBillingModal(true)}>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Billing Management
                   </Button>
                 </CardContent>
               </Card>
@@ -1491,7 +1545,7 @@ export function SuperAdminDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">Active Users Today</p>
-                      <p className="text-2xl font-bold text-green-600">89</p>
+                      <p className="text-2xl font-bold text-green-600">1,247</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-600" />
                   </div>
@@ -1504,7 +1558,7 @@ export function SuperAdminDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">Messages Sent</p>
-                      <p className="text-2xl font-bold text-blue-600">1,247</p>
+                      <p className="text-2xl font-bold text-blue-600">47,832</p>
                     </div>
                     <MessageSquare className="h-8 w-8 text-blue-600" />
                   </div>
@@ -1516,12 +1570,12 @@ export function SuperAdminDashboard() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Files Shared</p>
-                      <p className="text-2xl font-bold text-purple-600">156</p>
+                      <p className="text-sm text-gray-600">Revenue (MRR)</p>
+                      <p className="text-2xl font-bold text-green-600">$142,560</p>
                     </div>
-                    <FileText className="h-8 w-8 text-purple-600" />
+                    <DollarSign className="h-8 w-8 text-green-600" />
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">+23% from last week</div>
+                  <div className="text-xs text-gray-500 mt-1">+15% from last month</div>
                 </CardContent>
               </Card>
               
@@ -1529,28 +1583,39 @@ export function SuperAdminDashboard() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">App Integrations</p>
-                      <p className="text-2xl font-bold text-orange-600">8</p>
+                      <p className="text-sm text-gray-600">Organizations</p>
+                      <p className="text-2xl font-bold text-purple-600">348</p>
                     </div>
-                    <Zap className="h-8 w-8 text-orange-600" />
+                    <Building2 className="h-8 w-8 text-purple-600" />
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">2 new this month</div>
+                  <div className="text-xs text-gray-500 mt-1">12 new this month</div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <BarChart2 className="h-5 w-5 mr-2" />
-                    User Activity Trends
+                    User Growth
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <PieChart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600">Interactive analytics charts coming soon</p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">This Month</span>
+                      <span className="font-medium text-green-600">+2,347 users</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Last Month</span>
+                      <span className="font-medium">+1,892 users</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Growth Rate</span>
+                      <span className="font-medium text-green-600">+24.1%</span>
+                    </div>
+                    <Progress value={76} className="h-2" />
                   </div>
                 </CardContent>
               </Card>
@@ -1559,27 +1624,118 @@ export function SuperAdminDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Activity className="h-5 w-5 mr-2" />
-                    Most Active Channels
+                    System Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Uptime</span>
+                      <span className="font-medium text-green-600">99.98%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Response Time</span>
+                      <span className="font-medium">127ms</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">API Success Rate</span>
+                      <span className="font-medium text-green-600">99.94%</span>
+                    </div>
+                    <Progress value={99} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Globe className="h-5 w-5 mr-2" />
+                    Geographic Distribution
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {[
-                      { name: 'general', messages: 1247, trend: '+12%' },
-                      { name: 'dev-team', messages: 890, trend: '+8%' },
-                      { name: 'marketing', messages: 456, trend: '+15%' },
-                      { name: 'support', messages: 234, trend: '-3%' }
-                    ].map((channel, index) => (
+                      { region: 'North America', users: '45%', count: '12,847' },
+                      { region: 'Europe', users: '32%', count: '9,123' },
+                      { region: 'Asia Pacific', users: '18%', count: '5,134' },
+                      { region: 'Other', users: '5%', count: '1,425' }
+                    ].map((region, index) => (
                       <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                          <span className="font-medium">#{channel.name}</span>
+                        <span className="text-sm font-medium">{region.region}</span>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">{region.users}</div>
+                          <div className="text-xs text-gray-500">{region.count} users</div>
                         </div>
-                        <div className="text-right text-sm">
-                          <div className="font-medium">{channel.messages} messages</div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Channel Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'general', messages: 14247, users: 1847, trend: '+12%' },
+                      { name: 'dev-team', messages: 8901, users: 234, trend: '+8%' },
+                      { name: 'marketing', messages: 4567, users: 189, trend: '+15%' },
+                      { name: 'support', messages: 2341, users: 67, trend: '-3%' },
+                      { name: 'design', messages: 1892, users: 45, trend: '+5%' }
+                    ].map((channel, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                          <div>
+                            <span className="font-medium">#{channel.name}</span>
+                            <div className="text-xs text-gray-500">{channel.users} members</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">{channel.messages.toLocaleString()}</div>
                           <div className={`text-xs ${channel.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                             {channel.trend}
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Zap className="h-5 w-5 mr-2" />
+                    Integration Usage
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Slack Bot API', calls: 45672, status: 'active', success: 99.8 },
+                      { name: 'GitHub Integration', calls: 23456, status: 'active', success: 98.9 },
+                      { name: 'Jira Connector', calls: 12890, status: 'active', success: 99.2 },
+                      { name: 'Google Drive', calls: 8934, status: 'warning', success: 95.1 },
+                      { name: 'Zoom Meetings', calls: 5678, status: 'active', success: 99.9 }
+                    ].map((integration, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">{integration.name}</div>
+                          <div className="text-xs text-gray-500">{integration.calls.toLocaleString()} API calls</div>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant={integration.status === 'active' ? 'default' : 'destructive'}>
+                            {integration.success}% success
+                          </Badge>
                         </div>
                       </div>
                     ))}
@@ -1632,6 +1788,565 @@ export function SuperAdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Enhanced Role Management */}
+        {showCreateRoleModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">
+                  {selectedRole ? 'Edit Role' : 'Create Custom Role'}
+                </h3>
+                <Button variant="ghost" size="sm" onClick={() => {
+                  setShowCreateRoleModal(false);
+                  setSelectedRole(null);
+                }}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Role Name</label>
+                  <Input 
+                    placeholder="e.g., Project Manager" 
+                    defaultValue={selectedRole?.name || ''} 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <Input placeholder="Brief description of this role" />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Permissions</label>
+                  <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
+                    {[
+                      'User Management', 'Channel Creation', 'Message Deletion', 'File Management',
+                      'Integration Control', 'Analytics Access', 'Billing Access', 'Audit Logs',
+                      'Security Settings', 'Workspace Settings', 'App Management', 'API Access',
+                      'Role Management', 'Organization Control', 'Export Data', 'System Administration'
+                    ].map((permission) => (
+                      <label key={permission} className="flex items-center space-x-2">
+                        <input 
+                          type="checkbox" 
+                          className="rounded"
+                          defaultChecked={selectedRole?.permissions?.includes(permission)}
+                        />
+                        <span className="text-sm">{permission}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex space-x-3 pt-4">
+                  <Button onClick={() => {
+                    setShowCreateRoleModal(false);
+                    setSelectedRole(null);
+                    toast({ 
+                      title: selectedRole ? "Role Updated" : "Role Created", 
+                      description: `Custom role has been ${selectedRole ? 'updated' : 'created'} successfully.` 
+                    });
+                  }}>
+                    {selectedRole ? 'Update Role' : 'Create Role'}
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setShowCreateRoleModal(false);
+                    setSelectedRole(null);
+                  }}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Security Configuration Modal */}
+        {showSecurityModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Security & Compliance Configuration</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowSecurityModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <Tabs defaultValue="sso" className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="sso">SSO</TabsTrigger>
+                  <TabsTrigger value="2fa">2FA</TabsTrigger>
+                  <TabsTrigger value="scim">SCIM</TabsTrigger>
+                  <TabsTrigger value="dlp">DLP</TabsTrigger>
+                  <TabsTrigger value="compliance">Compliance</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="sso" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Single Sign-On Configuration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Identity Provider</label>
+                          <Select defaultValue="okta">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="okta">Okta</SelectItem>
+                              <SelectItem value="azure">Azure AD</SelectItem>
+                              <SelectItem value="google">Google Workspace</SelectItem>
+                              <SelectItem value="saml">Custom SAML</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Domain</label>
+                          <Input placeholder="company.com" defaultValue="kolab360.com" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">SSO URL</label>
+                        <Input placeholder="https://your-domain.okta.com/..." defaultValue="https://kolab360.okta.com/app/slack" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Entity ID</label>
+                        <Input placeholder="Entity identifier" defaultValue="https://kolab360.com/sso" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">X.509 Certificate</label>
+                        <textarea 
+                          className="w-full h-24 p-2 border rounded text-sm" 
+                          placeholder="Paste X.509 certificate..."
+                          defaultValue="-----BEGIN CERTIFICATE-----\nMIICXjCCAcegAwIBAgIJAK..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="sso-required" defaultChecked />
+                          <label htmlFor="sso-required" className="text-sm">Require SSO for all users</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="just-in-time" defaultChecked />
+                          <label htmlFor="just-in-time" className="text-sm">Enable Just-in-Time provisioning</label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="2fa" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Two-Factor Authentication</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">Require 2FA for Admins</h4>
+                            <p className="text-sm text-gray-600">All admin users must enable 2FA</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Enforced</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">Require 2FA for All Users</h4>
+                            <p className="text-sm text-gray-600">All workspace members must enable 2FA</p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            Enable
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">SMS Provider Configuration</h4>
+                            <p className="text-sm text-gray-600">Configure SMS delivery for 2FA codes</p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Configure
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">Backup Codes</h4>
+                            <p className="text-sm text-gray-600">Allow users to generate backup codes</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="scim" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>SCIM Provisioning</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">SCIM Endpoint</label>
+                          <Input value="https://api.kolab360.com/scim/v2" readOnly />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Bearer Token</label>
+                          <div className="flex space-x-2">
+                            <Input value="scim_••••••••••••••••••••••••" readOnly />
+                            <Button variant="outline" size="sm">
+                              <RefreshCw className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <h4 className="font-medium">Provisioning Status</h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="text-center p-3 border rounded">
+                            <div className="text-2xl font-bold text-green-600">1,247</div>
+                            <div className="text-sm text-gray-600">Users Synced</div>
+                          </div>
+                          <div className="text-center p-3 border rounded">
+                            <div className="text-2xl font-bold text-blue-600">2 min</div>
+                            <div className="text-sm text-gray-600">Last Sync</div>
+                          </div>
+                          <div className="text-center p-3 border rounded">
+                            <div className="text-2xl font-bold text-green-600">Active</div>
+                            <div className="text-sm text-gray-600">Status</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="dlp" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Data Loss Prevention</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">Credit Card Detection</h4>
+                            <p className="text-sm text-gray-600">Block messages containing credit card numbers</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Active</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">SSN Detection</h4>
+                            <p className="text-sm text-gray-600">Block messages containing social security numbers</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Active</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">Custom Keywords</h4>
+                            <p className="text-sm text-gray-600">Monitor for specific keywords or phrases</p>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Configure
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-medium">File Content Scanning</h4>
+                            <p className="text-sm text-gray-600">Scan uploaded files for sensitive content</p>
+                          </div>
+                          <Badge className="bg-yellow-100 text-yellow-800">Warning</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="compliance" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Compliance & Audit</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <h4 className="font-medium">Data Retention</h4>
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">Message Retention (years)</label>
+                            <Input type="number" defaultValue="7" />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">File Retention (years)</label>
+                            <Input type="number" defaultValue="7" />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <h4 className="font-medium">Compliance Standards</h4>
+                          <div className="space-y-2">
+                            {['SOC 2 Type II', 'HIPAA', 'GDPR', 'CCPA', 'ISO 27001'].map((standard) => (
+                              <label key={standard} className="flex items-center space-x-2">
+                                <input type="checkbox" defaultChecked />
+                                <span className="text-sm">{standard}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="flex space-x-3 pt-6 border-t">
+                <Button onClick={() => {
+                  setShowSecurityModal(false);
+                  toast({ title: "Security Configuration Saved", description: "All security settings have been updated successfully." });
+                }}>
+                  Save Configuration
+                </Button>
+                <Button variant="outline" onClick={() => setShowSecurityModal(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Billing Management Modal */}
+        {showBillingModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Enterprise Billing Management</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowBillingModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <Tabs defaultValue="plans" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="plans">Plans & Pricing</TabsTrigger>
+                  <TabsTrigger value="usage">Usage & Limits</TabsTrigger>
+                  <TabsTrigger value="invoicing">Invoicing</TabsTrigger>
+                  <TabsTrigger value="reports">Reports</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="plans" className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {[
+                      { name: 'Free', price: '$0', users: '10 users', storage: '10GB', features: ['Basic messaging', 'File sharing', 'Limited integrations'] },
+                      { name: 'Pro', price: '$6.67', users: 'Per user/month', storage: '20GB per user', features: ['Advanced messaging', 'Unlimited integrations', 'Video calls'] },
+                      { name: 'Business', price: '$12.50', users: 'Per user/month', storage: 'Unlimited', features: ['Everything in Pro', 'Advanced admin tools', 'SSO'] },
+                      { name: 'Business+', price: '$19', users: 'Per user/month', storage: 'Unlimited', features: ['Everything in Business', 'Advanced security', 'Compliance'] },
+                      { name: 'Enterprise', price: 'Custom', users: 'Contact sales', storage: 'Unlimited', features: ['Everything in Business+', 'Enterprise Grid', '24/7 support'] }
+                    ].map((plan, index) => (
+                      <Card key={index} className={plan.name === 'Enterprise' ? 'border-2 border-blue-500' : ''}>
+                        <CardHeader>
+                          <CardTitle className="flex items-center justify-between">
+                            {plan.name}
+                            {plan.name === 'Enterprise' && <Badge>Current</Badge>}
+                          </CardTitle>
+                          <div className="text-2xl font-bold">{plan.price}</div>
+                          <div className="text-sm text-gray-600">{plan.users}</div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-sm text-gray-600 mb-2">{plan.storage}</div>
+                          <ul className="space-y-1 text-sm">
+                            {plan.features.map((feature, idx) => (
+                              <li key={idx} className="flex items-center">
+                                <CheckCircle className="h-3 w-3 text-green-600 mr-2" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="usage" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Usage Controls & Limits</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Storage Limit per Org (GB)</label>
+                            <Input type="number" defaultValue="2000" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">API Rate Limit (requests/hour)</label>
+                            <Input type="number" defaultValue="10000" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Max Users per Org</label>
+                            <Input type="number" defaultValue="5000" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">File Size Limit (MB)</label>
+                            <Input type="number" defaultValue="100" />
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Current Usage</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Storage</span>
+                                <span>847GB / 2000GB</span>
+                              </div>
+                              <Progress value={42} />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>API Calls</span>
+                                <span>6.7K / 10K per hour</span>
+                              </div>
+                              <Progress value={67} />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Active Users</span>
+                                <span>1,247 / 5,000</span>
+                              </div>
+                              <Progress value={25} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="invoicing" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Invoicing & Payment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Payment Information</h4>
+                          <div className="flex items-center space-x-3 p-3 border rounded">
+                            <CreditCard className="h-5 w-5" />
+                            <div>
+                              <div className="font-medium">•••• •••• •••• 4242</div>
+                              <div className="text-sm text-gray-600">Expires 12/26</div>
+                            </div>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Billing Cycle</label>
+                            <Select defaultValue="annually">
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                <SelectItem value="annually">Annually (10% discount)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="auto-billing" defaultChecked />
+                            <label htmlFor="auto-billing" className="text-sm">Enable automatic billing</label>
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Recent Invoices</h4>
+                          <div className="space-y-2">
+                            {[
+                              { date: '2025-01-01', amount: '$37,200', status: 'paid', period: 'January 2025' },
+                              { date: '2024-12-01', amount: '$35,400', status: 'paid', period: 'December 2024' },
+                              { date: '2024-11-01', amount: '$34,500', status: 'paid', period: 'November 2024' },
+                              { date: '2024-10-01', amount: '$33,900', status: 'paid', period: 'October 2024' }
+                            ].map((invoice, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 border rounded text-sm">
+                                <div>
+                                  <div className="font-medium">{invoice.period}</div>
+                                  <div className="text-gray-600">{invoice.date}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-medium">{invoice.amount}</div>
+                                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                    {invoice.status}
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="reports" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Usage Reports & Analytics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="text-center p-4 border rounded">
+                          <div className="text-2xl font-bold text-green-600">$142,560</div>
+                          <div className="text-sm text-gray-600">Monthly Recurring Revenue</div>
+                        </div>
+                        <div className="text-center p-4 border rounded">
+                          <div className="text-2xl font-bold text-blue-600">1,247</div>
+                          <div className="text-sm text-gray-600">Active Paid Users</div>
+                        </div>
+                        <div className="text-center p-4 border rounded">
+                          <div className="text-2xl font-bold text-purple-600">348</div>
+                          <div className="text-sm text-gray-600">Paying Organizations</div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <Button variant="outline" className="w-full">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Usage Report (PDF)
+                        </Button>
+                        <Button variant="outline" className="w-full">
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Billing Data (CSV)
+                        </Button>
+                        <Button variant="outline" className="w-full">
+                          <Download className="h-4 w-4 mr-2" />
+                          Generate Invoice Summary
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="flex space-x-3 pt-6 border-t">
+                <Button onClick={() => {
+                  setShowBillingModal(false);
+                  toast({ title: "Billing Configuration Saved", description: "All billing settings have been updated successfully." });
+                }}>
+                  Save Changes
+                </Button>
+                <Button variant="outline" onClick={() => setShowBillingModal(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
