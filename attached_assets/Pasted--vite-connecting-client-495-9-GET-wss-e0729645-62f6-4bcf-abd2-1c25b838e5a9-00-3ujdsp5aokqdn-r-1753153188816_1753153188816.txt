@@ -1,0 +1,139 @@
+
+[vite] connecting... client:495:9
+GET
+wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=Nx6rIUr07tqV
+NS_ERROR_WEBSOCKET_CONNECTION_REFUSED
+
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=Nx6rIUr07tqV. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+    setupWebSocket client:552
+    <anonymous> client:531
+client:536
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+XHRGET
+https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/api/auth/me
+[HTTP/1.1 401 Unauthorized 116ms]
+
+Source map error: No sources are declared in this source map.
+Resource URL: https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WOOG5QLI.js?v=8b60e34d
+Source Map URL: chunk-WOOG5QLI.js.map
+
+Source map error: No sources are declared in this source map.
+Resource URL: https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-slot.js?v=8b60e34d
+Source Map URL: @radix-ui_react-slot.js.map
+
+Source map error: No sources are declared in this source map.
+Resource URL: https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/react.js?v=8b60e34d
+Source Map URL: react.js.map
+
+Source map error: No sources are declared in this source map.
+Resource URL: https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/clsx.js?v=8b60e34d
+Source Map URL: clsx.js.map
+
+Source map error: No sources are declared in this source map.
+Resource URL: https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/date-fns.js?v=8b60e34d
+Source Map URL: date-fns.js.map
+
+XHRPOST
+https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/api/auth/login
+[HTTP/1.1 401 Unauthorized 158ms]
+
+WebSocket: Using mock connection in development mode useWebSocket.ts:28:15
+Mock WebSocket message sent: 
+Object { type: "join_workspace", workspaceId: 1, userId: 1 }
+useWebSocket.ts:102:15
+XHRGET
+https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/api/users/undefined/messages
+[HTTP/1.1 500 Internal Server Error 203ms]
+
+SuperAdminDashboard mounted, current organizations: 0 SuperAdminDashboard.tsx:162:13
+🔍 [DEBUG] loadData - Starting to load organizations... SuperAdminDashboard.tsx:175:15
+🔍 [DEBUG] Checking authentication status... SuperAdminDashboard.tsx:178:15
+📊 [STATE] Organizations state changed: 0 
+Array []
+SuperAdminDashboard.tsx:168:13
+📊 [STATE] Full organizations array: 
+Array []
+SuperAdminDashboard.tsx:169:13
+🔍 [DEBUG] Auth response status: 200 SuperAdminDashboard.tsx:183:15
+🔍 [DEBUG] Auth data: 
+Object { id: 1, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin", lastLoginAt: "2025-07-22T02:59:01.835Z", createdAt: "2025-07-18T20:45:27.711Z" }
+SuperAdminDashboard.tsx:194:15
+🔍 [DEBUG] User role: super_admin SuperAdminDashboard.tsx:195:15
+🔍 [DEBUG] Now loading organizations... SuperAdminDashboard.tsx:199:17
+XHRGET
+https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/api/organizations
+[HTTP/1.1 500 Internal Server Error 116ms]
+
+🔍 [DEBUG] Organizations response status: 500 SuperAdminDashboard.tsx:204:17
+🔍 [DEBUG] Organizations response ok: false SuperAdminDashboard.tsx:205:17
+❌ [DEBUG] Organizations request failed: 500 {"error":"Failed to fetch organizations"} SuperAdminDashboard.tsx:216:19
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+📊 [STATE] Organizations state changed: 0 
+Array []
+SuperAdminDashboard.tsx:168:13
+📊 [STATE] Full organizations array: 
+Array []
+SuperAdminDashboard.tsx:169:13
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+🔍 [RENDER] Checking organizations.length: 0 organizations: 
+Array []
+SuperAdminDashboard.tsx:568:31
+
+​
+
