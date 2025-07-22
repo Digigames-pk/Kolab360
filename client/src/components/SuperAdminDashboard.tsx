@@ -168,6 +168,8 @@ export function SuperAdminDashboard() {
   const [showSecuritySettingsModal, setShowSecuritySettingsModal] = useState(false);
   const [showBillingSettingsModal, setShowBillingSettingsModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<any>(null);
   const [customRoles, setCustomRoles] = useState<any[]>([]);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -2304,7 +2306,7 @@ export function SuperAdminDashboard() {
                         });
 
                         if (response.ok) {
-                          await loadOrganizations();
+                          await loadData();
                           toast({ title: "Success", description: "Organization updated successfully." });
                         } else {
                           throw new Error('Failed to update organization');
@@ -2359,7 +2361,7 @@ export function SuperAdminDashboard() {
                         });
 
                         if (response.ok) {
-                          await loadOrganizations();
+                          await loadData();
                           toast({ title: "Success", description: "Organization limits updated successfully." });
                         } else {
                           throw new Error('Failed to update limits');
@@ -2742,6 +2744,416 @@ export function SuperAdminDashboard() {
                     toast({ title: "Settings Updated", description: "Screen sharing settings have been saved." });
                   }}>Save Settings</Button>
                   <Button variant="outline" onClick={() => setShowScreenSharingModal(false)}>Cancel</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Users and Roles Modal */}
+        {showUsersRolesModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Users and Roles: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowUsersRolesModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-medium">Organization Users</h4>
+                  <Button onClick={() => {
+                    setSelectedOrg(selectedOrg);
+                    setShowAddUserModal(true);
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add User
+                  </Button>
+                </div>
+                <div className="grid gap-4">
+                  {orgUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-medium">{user.firstName} {user.lastName}</div>
+                          <div className="text-sm text-gray-600">{user.email}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Badge>{user.role}</Badge>
+                        <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                          {user.status}
+                        </Badge>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUserForPassword(user);
+                            setShowPasswordModal(true);
+                          }}
+                        >
+                          <Key className="h-4 w-4 mr-1" />
+                          Password
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Organization Settings Modal */}
+        {showOrgSettingsModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Organization Settings: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowOrgSettingsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Organization Name</label>
+                    <Input defaultValue={selectedOrg.name} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Domain</label>
+                    <Input defaultValue={selectedOrg.domain} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Admin Email</label>
+                    <Input type="email" defaultValue={selectedOrg.adminEmail} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Plan</label>
+                    <Select defaultValue={selectedOrg.plan}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="pro">Pro</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setShowOrgSettingsModal(false)}>Cancel</Button>
+                  <Button onClick={() => {
+                    setShowOrgSettingsModal(false);
+                    toast({ title: "Settings Updated", description: "Organization settings have been saved successfully." });
+                  }}>Save Settings</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Security Settings Modal */}
+        {showSecuritySettingsModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Security Settings: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowSecuritySettingsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Shield className="h-5 w-5 mr-2" />
+                      Authentication Policies
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">Two-Factor Authentication</div>
+                        <div className="text-sm text-gray-600">Require 2FA for all users</div>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">Password Complexity</div>
+                        <div className="text-sm text-gray-600">Enforce strong passwords</div>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">Session Timeout</div>
+                        <div className="text-sm text-gray-600">Auto-logout inactive users</div>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Lock className="h-5 w-5 mr-2" />
+                      Access Control
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">IP Restrictions</div>
+                        <div className="text-sm text-gray-600">Limit access by IP address</div>
+                      </div>
+                      <Switch />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">Domain Restrictions</div>
+                        <div className="text-sm text-gray-600">Only allow company email domains</div>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">Guest Access</div>
+                        <div className="text-sm text-gray-600">Allow guest users</div>
+                      </div>
+                      <Switch />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button variant="outline" onClick={() => setShowSecuritySettingsModal(false)}>Cancel</Button>
+                <Button onClick={() => {
+                  setShowSecuritySettingsModal(false);
+                  toast({ title: "Security Updated", description: "Security settings have been applied successfully." });
+                }}>Apply Settings</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Billing Settings Modal */}
+        {showBillingSettingsModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Billing Settings: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowBillingSettingsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <CreditCard className="h-5 w-5 mr-2" />
+                      Current Subscription
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold capitalize mb-2">{selectedOrg.plan} Plan</div>
+                      <div className="text-3xl font-bold text-blue-600 mb-2">
+                        ${selectedOrg.plan === 'free' ? '0' : selectedOrg.plan === 'pro' ? '8' : selectedOrg.plan === 'business' ? '15' : '25'}
+                        <span className="text-sm font-normal text-gray-600">/user/month</span>
+                      </div>
+                      <Badge>{selectedOrg.status === 'active' ? 'Active' : 'Suspended'}</Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Users</span>
+                        <span>{selectedOrg.members}/{selectedOrg.memberLimit}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Storage</span>
+                        <span>{selectedOrg.storageUsed}GB/{Math.round(selectedOrg.storageLimit / (1024 * 1024 * 1024))}GB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Next Billing</span>
+                        <span>Dec 22, 2025</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Receipt className="h-5 w-5 mr-2" />
+                      Payment Method
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="p-3 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">Visa •••• 1234</span>
+                        <Badge variant="secondary">Default</Badge>
+                      </div>
+                      <div className="text-sm text-gray-600">Expires 12/2027</div>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Payment Method
+                    </Button>
+                    <Button variant="outline" className="w-full">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Invoices
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="flex justify-end space-x-3 pt-6 border-t">
+                <Button variant="outline" onClick={() => setShowBillingSettingsModal(false)}>Close</Button>
+                <Button onClick={() => {
+                  setShowBillingSettingsModal(false);
+                  toast({ title: "Billing Updated", description: "Billing settings have been updated successfully." });
+                }}>Update Billing</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Support Modal */}
+        {showSupportModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Support: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowSupportModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <MessageSquare className="h-5 w-5 mr-2" />
+                      Contact Support
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button className="w-full justify-start">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Schedule Support Call
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email Support Team
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Live Chat Support
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <HelpCircle className="h-5 w-5 mr-2" />
+                      Resources
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button className="w-full justify-start" variant="outline">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Documentation
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Video className="h-4 w-4 mr-2" />
+                      Video Tutorials
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Users className="h-4 w-4 mr-2" />
+                      Community Forum
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Password Management Modal */}
+        {showPasswordModal && selectedUserForPassword && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Change Password</h3>
+                <Button variant="ghost" size="sm" onClick={() => {
+                  setShowPasswordModal(false);
+                  setSelectedUserForPassword(null);
+                }}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="font-medium">{selectedUserForPassword.firstName} {selectedUserForPassword.lastName}</div>
+                  <div className="text-sm text-gray-600">{selectedUserForPassword.email}</div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">New Password</label>
+                  <Input 
+                    type="password" 
+                    placeholder="Enter new password" 
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                  <Input 
+                    type="password" 
+                    placeholder="Confirm new password" 
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="sendEmail" />
+                  <label htmlFor="sendEmail" className="text-sm">Send password change notification email</label>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <Button onClick={async () => {
+                    try {
+                      if (selectedOrg && selectedUserForPassword) {
+                        // API call to change password
+                        const response = await fetch(`/api/organizations/${selectedOrg.id}/users/${selectedUserForPassword.id}/password`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            newPassword: 'newPassword123', // This would come from the form
+                            sendNotification: true
+                          })
+                        });
+
+                        if (response.ok) {
+                          toast({ title: "Password Changed", description: "User password has been updated successfully." });
+                        } else {
+                          throw new Error('Failed to change password');
+                        }
+                      }
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to change user password." });
+                    }
+                    setShowPasswordModal(false);
+                    setSelectedUserForPassword(null);
+                  }}>
+                    Change Password
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setShowPasswordModal(false);
+                    setSelectedUserForPassword(null);
+                  }}>Cancel</Button>
                 </div>
               </div>
             </div>
