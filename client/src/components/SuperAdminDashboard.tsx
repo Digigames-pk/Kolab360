@@ -565,6 +565,7 @@ export function SuperAdminDashboard() {
               </Button>
             </div>
 
+            {console.log('🔍 [RENDER] Checking organizations.length:', organizations.length, 'organizations:', organizations)}
             {organizations.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
@@ -579,6 +580,7 @@ export function SuperAdminDashboard() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {console.log('🔍 [RENDER] About to render', organizations.length, 'organization cards')}
                 {organizations.map((org) => (
                   <Card key={org.id} className={`border-2 ${org.status === 'suspended' ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
                     <CardHeader className="pb-3">
