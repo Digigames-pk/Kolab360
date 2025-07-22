@@ -171,6 +171,25 @@ export function SuperAdminDashboard() {
   const loadData = async () => {
     try {
       setLoading(true);
+      
+      // Load organizations from API
+      try {
+        const response = await fetch('/api/organizations', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const orgs = await response.json();
+          setOrganizations(orgs);
+          console.log('✅ Organizations loaded from API:', orgs.length);
+        } else {
+          console.warn('Failed to load organizations:', response.status);
+          setOrganizations([]);
+        }
+      } catch (error) {
+        console.error('Error loading organizations:', error);
+        setOrganizations([]);
+      }
+      
       // Load real data from APIs
       setUsers([]);
       setStats({
@@ -185,7 +204,6 @@ export function SuperAdminDashboard() {
       });
       // Initialize with empty arrays but keep existing organizations if any
       setCustomRoles([]);
-      // Don't reset organizations array to preserve created organizations
       setPricingPlans([
         {
           id: 1,
@@ -227,7 +245,7 @@ export function SuperAdminDashboard() {
     }
   };
 
-  const handleCreateOrg = () => {
+  const handleCreateOrg = async () => {
     console.log('Creating organization with data:', newOrgData);
     if (!newOrgData.name || !newOrgData.domain || !newOrgData.adminEmail) {
       toast({
@@ -238,40 +256,64 @@ export function SuperAdminDashboard() {
       return;
     }
 
-    const newOrg: Organization = {
-      id: organizations.length + 1,
-      name: newOrgData.name,
-      domain: newOrgData.domain,
-      plan: newOrgData.plan,
-      status: 'active',
-      members: 1,
-      memberLimit: getPlanLimits(newOrgData.plan).members,
-      storageUsed: 0,
-      storageLimit: getPlanLimits(newOrgData.plan).storage,
-      adminName: `${newOrgData.adminFirstName} ${newOrgData.adminLastName}`,
-      adminEmail: newOrgData.adminEmail,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
+    try {
+      const planLimits = getPlanLimits(newOrgData.plan);
+      const orgData = {
+        name: newOrgData.name,
+        domain: newOrgData.domain,
+        plan: newOrgData.plan,
+        status: 'active' as const,
+        members: 1,
+        memberLimit: planLimits.members,
+        storageUsed: 0,
+        storageLimit: planLimits.storage,
+        adminName: `${newOrgData.adminFirstName} ${newOrgData.adminLastName}`,
+        adminEmail: newOrgData.adminEmail,
+        adminFirstName: newOrgData.adminFirstName,
+        adminLastName: newOrgData.adminLastName,
+      };
 
-    setOrganizations(prev => {
-      const updated = [...prev, newOrg];
-      console.log('Organizations after creation:', updated);
-      return updated;
-    });
-    setShowCreateOrgModal(false);
-    setNewOrgData({
-      name: '',
-      domain: '',
-      plan: 'free',
-      adminEmail: '',
-      adminFirstName: '',
-      adminLastName: ''
-    });
+      const response = await fetch('/api/organizations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(orgData),
+      });
 
-    toast({
-      title: "Organization Created",
-      description: `${newOrg.name} has been successfully created!`
-    });
+      if (response.ok) {
+        const newOrg = await response.json();
+        console.log('✅ Organization created via API:', newOrg);
+        
+        // Add to local state
+        setOrganizations(prev => [...prev, newOrg]);
+        setShowCreateOrgModal(false);
+        setNewOrgData({
+          name: '',
+          domain: '',
+          plan: 'free',
+          adminEmail: '',
+          adminFirstName: '',
+          adminLastName: ''
+        });
+
+        toast({
+          title: "Organization Created",
+          description: `${newOrg.name} has been successfully created!`
+        });
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create organization');
+      }
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      toast({
+        title: "Creation Failed",
+        description: error.message || 'Failed to create organization. Please try again.',
+        variant: "destructive"
+      });
+    }
   };
 
   const getPlanLimits = (plan: string) => {

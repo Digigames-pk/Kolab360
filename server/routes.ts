@@ -13,7 +13,8 @@ import {
   insertChannelSchema, 
   insertMessageSchema, 
   insertTaskSchema,
-  insertIntegrationSchema 
+  insertIntegrationSchema,
+  insertOrganizationSchema 
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -1209,6 +1210,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error marking DM as read:', error);
       res.status(500).json({ error: 'Failed to mark DM as read' });
+    }
+  });
+
+  // =================== ORGANIZATION MANAGEMENT API ===================
+  
+  // Get all organizations (Super Admin only)
+  app.get('/api/organizations', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+      
+      const organizations = await storage.getAllOrganizations();
+      res.json(organizations);
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+      res.status(500).json({ error: 'Failed to fetch organizations' });
+    }
+  });
+
+  // Create new organization
+  app.post('/api/organizations', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const orgData = insertOrganizationSchema.parse(req.body);
+      const organization = await storage.createOrganization(orgData);
+      
+      console.log('✅ Organization created:', organization.name, 'ID:', organization.id);
+      res.status(201).json(organization);
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      res.status(500).json({ error: 'Failed to create organization' });
+    }
+  });
+
+  // Get specific organization
+  app.get('/api/organizations/:id', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const organization = await storage.getOrganization(organizationId);
+      
+      if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+      
+      res.json(organization);
+    } catch (error) {
+      console.error('Error fetching organization:', error);
+      res.status(500).json({ error: 'Failed to fetch organization' });
+    }
+  });
+
+  // Update organization
+  app.put('/api/organizations/:id', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const organization = await storage.updateOrganization(organizationId, updates);
+      
+      if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+      
+      console.log('✅ Organization updated:', organization.name);
+      res.json(organization);
+    } catch (error) {
+      console.error('Error updating organization:', error);
+      res.status(500).json({ error: 'Failed to update organization' });
+    }
+  });
+
+  // Delete organization
+  app.delete('/api/organizations/:id', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const success = await storage.deleteOrganization(organizationId);
+      
+      if (!success) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+      
+      console.log('✅ Organization deleted:', organizationId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting organization:', error);
+      res.status(500).json({ error: 'Failed to delete organization' });
+    }
+  });
+
+  // Suspend organization
+  app.post('/api/organizations/:id/suspend', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const organization = await storage.suspendOrganization(organizationId);
+      
+      if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+      
+      console.log('✅ Organization suspended:', organization.name);
+      res.json(organization);
+    } catch (error) {
+      console.error('Error suspending organization:', error);
+      res.status(500).json({ error: 'Failed to suspend organization' });
+    }
+  });
+
+  // Reactivate organization
+  app.post('/api/organizations/:id/reactivate', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const organization = await storage.reactivateOrganization(organizationId);
+      
+      if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+      
+      console.log('✅ Organization reactivated:', organization.name);
+      res.json(organization);
+    } catch (error) {
+      console.error('Error reactivating organization:', error);
+      res.status(500).json({ error: 'Failed to reactivate organization' });
     }
   });
 

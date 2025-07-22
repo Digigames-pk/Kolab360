@@ -10,6 +10,7 @@ import {
   reactions,
   sessions,
   integrations,
+  organizations,
   type User,
   type InsertUser,
   type Workspace,
@@ -27,6 +28,8 @@ import {
   type Reaction,
   type Integration,
   type InsertIntegration,
+  type Organization,
+  type InsertOrganization,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
@@ -88,6 +91,15 @@ export interface IStorage {
   getAllIntegrationsForAdmin(): Promise<any[]>;
   adminUpdateIntegration(integrationId: string, updates: Partial<Integration>): Promise<Integration>;
   adminDeleteIntegration(integrationId: string): Promise<void>;
+
+  // Organization operations
+  createOrganization(orgData: InsertOrganization): Promise<Organization>;
+  getOrganization(id: number): Promise<Organization | undefined>;
+  getAllOrganizations(): Promise<Organization[]>;
+  updateOrganization(id: number, updates: Partial<Organization>): Promise<Organization | undefined>;
+  deleteOrganization(id: number): Promise<boolean>;
+  suspendOrganization(id: number): Promise<Organization | undefined>;
+  reactivateOrganization(id: number): Promise<Organization | undefined>;
   
   // Session store
   sessionStore: any;
@@ -545,6 +557,58 @@ export class DatabaseStorage implements IStorage {
   async adminDeleteIntegration(integrationId: string): Promise<void> {
     await db.delete(integrations).where(eq(integrations.id, integrationId));
   }
+
+  // Organization operations
+  async createOrganization(orgData: InsertOrganization): Promise<Organization> {
+    const [organization] = await db.insert(organizations).values(orgData).returning();
+    return organization;
+  }
+
+  async getOrganization(id: number): Promise<Organization | undefined> {
+    const [organization] = await db.select().from(organizations).where(eq(organizations.id, id));
+    return organization;
+  }
+
+  async getAllOrganizations(): Promise<Organization[]> {
+    return await db.select().from(organizations).orderBy(desc(organizations.createdAt));
+  }
+
+  async updateOrganization(id: number, updates: Partial<Organization>): Promise<Organization | undefined> {
+    const [organization] = await db
+      .update(organizations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(organizations.id, id))
+      .returning();
+    return organization;
+  }
+
+  async deleteOrganization(id: number): Promise<boolean> {
+    try {
+      await db.delete(organizations).where(eq(organizations.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+      return false;
+    }
+  }
+
+  async suspendOrganization(id: number): Promise<Organization | undefined> {
+    const [organization] = await db
+      .update(organizations)
+      .set({ status: 'suspended', updatedAt: new Date() })
+      .where(eq(organizations.id, id))
+      .returning();
+    return organization;
+  }
+
+  async reactivateOrganization(id: number): Promise<Organization | undefined> {
+    const [organization] = await db
+      .update(organizations)
+      .set({ status: 'active', updatedAt: new Date() })
+      .where(eq(organizations.id, id))
+      .returning();
+    return organization;
+  }
 }
 
 // Memory storage for immediate messaging functionality
@@ -691,6 +755,59 @@ class MemoryStorage implements IStorage {
   async adminGetAllIntegrations(): Promise<(Integration & { user: User; workspace: Workspace })[]> { return []; }
   async adminUpdateIntegration(integrationId: string, updates: Partial<Integration>): Promise<Integration> { throw new Error("Not implemented"); }
   async adminDeleteIntegration(integrationId: string): Promise<void> { }
+
+  // Organization operations - In-memory implementation
+  private organizations: Organization[] = [];
+
+  async createOrganization(orgData: InsertOrganization): Promise<Organization> {
+    const newOrg: Organization = {
+      id: this.organizations.length + 1,
+      ...orgData,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.organizations.push(newOrg);
+    return newOrg;
+  }
+
+  async getOrganization(id: number): Promise<Organization | undefined> {
+    return this.organizations.find(org => org.id === id);
+  }
+
+  async getAllOrganizations(): Promise<Organization[]> {
+    return [...this.organizations].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async updateOrganization(id: number, updates: Partial<Organization>): Promise<Organization | undefined> {
+    const index = this.organizations.findIndex(org => org.id === id);
+    if (index >= 0) {
+      this.organizations[index] = { 
+        ...this.organizations[index], 
+        ...updates, 
+        updatedAt: new Date() 
+      };
+      return this.organizations[index];
+    }
+    return undefined;
+  }
+
+  async deleteOrganization(id: number): Promise<boolean> {
+    const index = this.organizations.findIndex(org => org.id === id);
+    if (index >= 0) {
+      this.organizations.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  async suspendOrganization(id: number): Promise<Organization | undefined> {
+    return this.updateOrganization(id, { status: 'suspended' });
+  }
+
+  async reactivateOrganization(id: number): Promise<Organization | undefined> {
+    return this.updateOrganization(id, { status: 'active' });
+  }
 }
 
 // Use memory storage for immediate messaging functionality  

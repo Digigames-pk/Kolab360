@@ -196,6 +196,30 @@ export const emailNotifications = pgTable("email_notifications", {
   deliveredAt: timestamp("delivered_at"),
 });
 
+// Organizations table for Super Admin Dashboard
+export const organizations = pgTable("organizations", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: varchar("name", { length: 255 }).notNull(),
+  domain: varchar("domain", { length: 255 }).notNull().unique(),
+  plan: varchar("plan", { length: 50 }).notNull().default("free"), // free, pro, business, enterprise
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, suspended, inactive
+  members: integer("members").notNull().default(0),
+  memberLimit: integer("member_limit").notNull().default(10),
+  storageUsed: integer("storage_used").notNull().default(0), // in GB
+  storageLimit: integer("storage_limit").notNull().default(10), // in GB
+  adminName: varchar("admin_name", { length: 255 }).notNull(),
+  adminEmail: varchar("admin_email", { length: 255 }).notNull(),
+  adminFirstName: varchar("admin_first_name", { length: 100 }),
+  adminLastName: varchar("admin_last_name", { length: 100 }),
+  features: jsonb("features"), // JSON array of enabled features
+  billingEmail: varchar("billing_email", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  address: text("address"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   workspaces: many(workspaces),
@@ -204,6 +228,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   tasks: many(tasks),
   files: many(files),
   reactions: many(reactions),
+}));
+
+export const organizationsRelations = relations(organizations, ({ many }) => ({
+  // Future: organizationMembers when needed
 }));
 
 export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
@@ -275,6 +303,18 @@ export const insertIntegrationSchema = createInsertSchema(integrations).omit({
   updatedAt: true,
 });
 
+export const insertOrganizationSchema = createInsertSchema(organizations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFileSchema = createInsertSchema(files).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -311,3 +351,6 @@ export type InsertInAppNotification = typeof inAppNotifications.$inferInsert;
 
 export type EmailNotification = typeof emailNotifications.$inferSelect;
 export type InsertEmailNotification = typeof emailNotifications.$inferInsert;
+
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
