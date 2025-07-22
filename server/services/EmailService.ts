@@ -31,7 +31,7 @@ export class EmailService {
         from: options.from || this.defaultFrom,
         to: options.to,
         subject: options.subject,
-        html: options.html,
+        html: options.html || options.text || '',
         text: options.text
       });
 
@@ -83,10 +83,10 @@ export class EmailService {
     return { sent, failed, errors };
   }
 
-  async testEmailConfiguration(): Promise<{ success: boolean; error?: string }> {
+  async testEmailConfiguration(testEmail: string): Promise<{ success: boolean; error?: string }> {
     try {
       await this.sendEmail({
-        to: 'test@example.com',
+        to: testEmail,
         subject: 'Test Email Configuration',
         text: 'This is a test email to verify email configuration.',
         html: '<p>This is a test email to verify email configuration.</p>'

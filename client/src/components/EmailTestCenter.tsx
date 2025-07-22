@@ -162,7 +162,7 @@ const EmailTestCenter: React.FC<EmailTestCenterProps> = ({ className }) => {
               <Input
                 id="recipientEmail"
                 type="email"
-                placeholder="test@example.com"
+                placeholder="Enter recipient email address"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 className="mt-2"
