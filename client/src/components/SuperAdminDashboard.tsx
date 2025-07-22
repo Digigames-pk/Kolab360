@@ -47,6 +47,7 @@ import {
   Building2,
   DollarSign,
   Key,
+  User,
   Zap,
   Globe,
   Database,
@@ -130,6 +131,7 @@ export function SuperAdminDashboard() {
     email: '',
     firstName: '',
     lastName: '',
+    password: '',
     role: 'member' as 'admin' | 'member' | 'guest',
     status: 'active' as 'active' | 'suspended'
   });
@@ -666,7 +668,7 @@ export function SuperAdminDashboard() {
 
   const handleAddUser = async () => {
     try {
-      if (selectedOrgForManagement && newUserForm.email && newUserForm.firstName && newUserForm.lastName) {
+      if (selectedOrgForManagement && newUserForm.email && newUserForm.firstName && newUserForm.lastName && newUserForm.password) {
         const response = await fetch(`/api/organizations/${selectedOrgForManagement.id}/users`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -680,6 +682,7 @@ export function SuperAdminDashboard() {
             email: '',
             firstName: '',
             lastName: '',
+            password: '',
             role: 'member',
             status: 'active'
           });
@@ -2403,6 +2406,15 @@ export function SuperAdminDashboard() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1">Password</label>
+                  <Input 
+                    type="password" 
+                    placeholder="Enter password" 
+                    value={newUserForm.password}
+                    onChange={(e) => setNewUserForm({...newUserForm, password: e.target.value})}
+                  />
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-1">Role</label>
                   <Select value={newUserForm.role} onValueChange={(value: 'admin' | 'member' | 'guest') => setNewUserForm({...newUserForm, role: value})}>
                     <SelectTrigger>
@@ -2419,7 +2431,7 @@ export function SuperAdminDashboard() {
                   <Button onClick={handleAddUser}>Add User</Button>
                   <Button variant="outline" onClick={() => {
                     setShowAddUserModal(false);
-                    setNewUserForm({ email: '', firstName: '', lastName: '', role: 'member', status: 'active' });
+                    setNewUserForm({ email: '', firstName: '', lastName: '', password: '', role: 'member', status: 'active' });
                   }}>Cancel</Button>
                 </div>
               </div>

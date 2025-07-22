@@ -1601,11 +1601,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const organizationId = parseInt(req.params.id);
       const userData = insertOrganizationUserSchema.parse(req.body);
       
-      // Generate a temporary password for the user
-      const temporaryPassword = generateRandomPassword();
+      // Use provided password or generate a temporary password
+      const userPassword = userData.password || generateRandomPassword();
       
       // Hash the password using the same method as auth
-      const hashedPassword = await hashPassword(temporaryPassword);
+      const hashedPassword = await hashPassword(userPassword);
       
       const newUser = await storage.createOrganizationUser({
         organizationId,
@@ -1619,7 +1619,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           newUser.email,
           `${newUser.firstName} ${newUser.lastName}`,
           newUser.email,
-          temporaryPassword,
+          userPassword,
           newUser.role
         );
         console.log('✅ Welcome email sent to:', newUser.email);
