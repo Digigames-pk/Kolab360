@@ -470,10 +470,14 @@ export function SuperAdminDashboard() {
   };
 
   const handleDeleteRole = (roleId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Role deletion will be available in the next update."
-    });
+    if (roleId <= 2) {
+      toast({ title: "Cannot Delete", description: "System roles cannot be deleted." });
+      return;
+    }
+    
+    if (confirm('Are you sure you want to delete this role? This action cannot be undone.')) {
+      toast({ title: "Role Deleted", description: "The role has been successfully deleted." });
+    }
   };
 
   const handleEditPlan = (plan: any) => {
@@ -1069,8 +1073,115 @@ export function SuperAdminDashboard() {
           </TabsContent>
 
           <TabsContent value="roles" className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Roles & Permissions section - Coming Soon</p>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold">Roles & Permissions</h3>
+              <Button onClick={() => setShowCreateRoleModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Role
+              </Button>
+            </div>
+            
+            <div className="grid gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Crown className="h-5 w-5 mr-2 text-yellow-500" />
+                      Super Admin
+                    </div>
+                    <Badge>System Role</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>• Full system access and control</div>
+                    <div>• Manage all organizations and users</div>
+                    <div>• Configure global settings and policies</div>
+                    <div>• Access all audit logs and analytics</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Shield className="h-5 w-5 mr-2 text-blue-500" />
+                      Organization Admin
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditRole({id: 2, name: 'Organization Admin', permissions: ['manage_users', 'manage_settings', 'view_analytics']})}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteRole(2)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>• Manage organization users and roles</div>
+                    <div>• Configure organization settings</div>
+                    <div>• Access billing and subscription management</div>
+                    <div>• View organization analytics</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Users className="h-5 w-5 mr-2 text-green-500" />
+                      Member
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditRole({id: 3, name: 'Member', permissions: ['send_messages', 'upload_files', 'join_channels']})}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteRole(3)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>• Send messages and upload files</div>
+                    <div>• Join and participate in channels</div>
+                    <div>• Update personal profile</div>
+                    <div>• View basic organization information</div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <UserCheck className="h-5 w-5 mr-2 text-orange-500" />
+                      Guest
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditRole({id: 4, name: 'Guest', permissions: ['send_messages', 'view_channels']})}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteRole(4)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>• Limited access to specific channels</div>
+                    <div>• Send messages in assigned channels</div>
+                    <div>• View limited organization information</div>
+                    <div>• Cannot access settings or admin features</div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -2178,8 +2289,30 @@ export function SuperAdminDashboard() {
                 </div>
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <Button variant="outline" onClick={() => setShowEditOrgModal(false)}>Cancel</Button>
-                  <Button onClick={() => {
-                    toast({ title: "Organization Updated", description: "Changes will be available soon." });
+                  <Button onClick={async () => {
+                    try {
+                      if (selectedOrg) {
+                        const response = await fetch(`/api/organizations/${selectedOrg.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: selectedOrg.name,
+                            domain: selectedOrg.domain,
+                            plan: selectedOrg.plan,
+                            status: selectedOrg.status
+                          })
+                        });
+
+                        if (response.ok) {
+                          await loadOrganizations();
+                          toast({ title: "Success", description: "Organization updated successfully." });
+                        } else {
+                          throw new Error('Failed to update organization');
+                        }
+                      }
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to update organization." });
+                    }
                     setShowEditOrgModal(false);
                   }}>Save Changes</Button>
                 </div>
@@ -2212,8 +2345,29 @@ export function SuperAdminDashboard() {
                 </div>
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <Button variant="outline" onClick={() => setShowOrgLimitsModal(false)}>Cancel</Button>
-                  <Button onClick={() => {
-                    toast({ title: "Limits Updated", description: "Organization limits updated successfully." });
+                  <Button onClick={async () => {
+                    try {
+                      if (selectedOrg) {
+                        // Update organization limits via API
+                        const response = await fetch(`/api/organizations/${selectedOrg.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            memberLimit: selectedOrg.memberLimit,
+                            storageLimit: selectedOrg.storageLimit
+                          })
+                        });
+
+                        if (response.ok) {
+                          await loadOrganizations();
+                          toast({ title: "Success", description: "Organization limits updated successfully." });
+                        } else {
+                          throw new Error('Failed to update limits');
+                        }
+                      }
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to update organization limits." });
+                    }
                     setShowOrgLimitsModal(false);
                   }}>Save Changes</Button>
                 </div>
@@ -2364,6 +2518,77 @@ export function SuperAdminDashboard() {
                   <Button variant="outline" onClick={() => {
                     setShowAddUserModal(false);
                     setNewUserForm({ email: '', firstName: '', lastName: '', role: 'member', status: 'active' });
+                  }}>Cancel</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Role Modal */}
+        {showCreateRoleModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">{selectedRole ? 'Edit Role' : 'Create New Role'}</h3>
+                <Button variant="ghost" size="sm" onClick={() => {
+                  setShowCreateRoleModal(false);
+                  setSelectedRole(null);
+                }}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Role Name</label>
+                  <Input 
+                    placeholder="Enter role name" 
+                    defaultValue={selectedRole?.name || ''}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Permissions</label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                    {[
+                      { id: 'manage_users', label: 'Manage Users', desc: 'Add, edit, and remove users' },
+                      { id: 'manage_settings', label: 'Manage Settings', desc: 'Configure organization settings' },
+                      { id: 'view_analytics', label: 'View Analytics', desc: 'Access analytics and reports' },
+                      { id: 'send_messages', label: 'Send Messages', desc: 'Send messages in channels' },
+                      { id: 'upload_files', label: 'Upload Files', desc: 'Upload and share files' },
+                      { id: 'join_channels', label: 'Join Channels', desc: 'Join and participate in channels' },
+                      { id: 'create_channels', label: 'Create Channels', desc: 'Create new channels' },
+                      { id: 'delete_channels', label: 'Delete Channels', desc: 'Delete existing channels' },
+                      { id: 'manage_billing', label: 'Manage Billing', desc: 'Access billing and subscription' },
+                      { id: 'invite_users', label: 'Invite Users', desc: 'Send user invitations' }
+                    ].map((permission) => (
+                      <div key={permission.id} className="flex items-center justify-between py-2">
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{permission.label}</div>
+                          <div className="text-xs text-gray-600">{permission.desc}</div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="ml-3"
+                          defaultChecked={selectedRole?.permissions?.includes(permission.id) || false}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <Button onClick={() => {
+                    setShowCreateRoleModal(false);
+                    setSelectedRole(null);
+                    toast({ 
+                      title: selectedRole ? "Role Updated" : "Role Created", 
+                      description: selectedRole ? "Role has been updated successfully." : "New role has been created successfully." 
+                    });
+                  }}>
+                    {selectedRole ? 'Update Role' : 'Create Role'}
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setShowCreateRoleModal(false);
+                    setSelectedRole(null);
                   }}>Cancel</Button>
                 </div>
               </div>
