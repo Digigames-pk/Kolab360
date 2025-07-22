@@ -99,7 +99,7 @@ const INITIAL_COLUMNS: TaskColumn[] = [
       {
         id: '2',
         title: 'Setup development environment',
-        description: 'Configure local development environment for new team members',
+        description: 'Configure local development environment for new members',
         status: 'todo',
         priority: 'medium',
         assignee: 'Alex Rodriguez',

@@ -123,11 +123,9 @@ export default function Home() {
     role: (user?.role as 'admin' | 'super_admin') || 'admin'
   };
 
-  // Mock workspace data with state management
+  // Clean workspace data with state management
   const [workspaces, setWorkspaces] = useState([
-    { id: 1, name: 'Kolab360 Demo', initial: 'KD' },
-    { id: 2, name: 'Marketing Team', initial: 'MT' },
-    { id: 3, name: 'Development', initial: 'DV' }
+    { id: 1, name: 'Kolab360 Demo', initial: 'KD' }
   ]);
 
   // Handle workspace creation

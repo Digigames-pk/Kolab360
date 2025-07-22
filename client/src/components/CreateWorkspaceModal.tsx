@@ -68,7 +68,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onCreateWorkspace }: Cre
             <Label htmlFor="workspace-name">Workspace Name *</Label>
             <Input
               id="workspace-name"
-              placeholder="e.g., Acme Corp, Design Team, Marketing Hub"
+              placeholder="e.g., Acme Corp, Product Team, Innovation Hub"
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               className="text-lg"

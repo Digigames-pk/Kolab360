@@ -148,7 +148,7 @@ export function InteractiveOnboarding({
                     <span className="text-white font-bold">M</span>
                   </div>
                   <div>
-                    <h4 className="font-medium">Marketing Team</h4>
+                    <h4 className="font-medium">Product Team</h4>
                     <p className="text-sm text-muted-foreground">Campaign planning & execution</p>
                   </div>
                 </div>

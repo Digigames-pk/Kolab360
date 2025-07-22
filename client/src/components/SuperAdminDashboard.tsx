@@ -286,8 +286,8 @@ export function SuperAdminDashboard() {
         const newOrg = await response.json();
         console.log('✅ Organization created via API:', newOrg);
         
-        // Add to local state
-        setOrganizations(prev => [...prev, newOrg]);
+        // Refresh all data to ensure consistency
+        await loadData();
         setShowCreateOrgModal(false);
         setNewOrgData({
           name: '',

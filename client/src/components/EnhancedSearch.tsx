@@ -50,7 +50,7 @@ const MOCK_RESULTS: SearchResult[] = [
     id: '1',
     type: 'message',
     title: 'Project kickoff meeting notes',
-    content: 'We discussed the new project timeline and resource allocation. The development team will start with the authentication system...',
+    content: 'We discussed the new project timeline and resource allocation. The tech team will start with the authentication system...',
     author: 'Sarah Chen',
     channel: 'general',
     timestamp: '2024-01-15T10:30:00Z',
