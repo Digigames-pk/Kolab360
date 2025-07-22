@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -65,7 +66,9 @@ import {
   Upload,
   MessageCircle,
   MoreVertical,
-  HelpCircle
+  HelpCircle,
+  Receipt,
+  Video
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -1375,42 +1378,405 @@ export function SuperAdminDashboard() {
                 </TabsContent>
                 
                 <TabsContent value="users" className="space-y-4">
-                  <div className="text-center py-8">
-                    <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">User Management</h3>
-                    <p className="text-gray-500">Advanced user management features are coming soon.</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Users className="h-5 w-5 mr-2" />
+                          Organization Users
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <Avatar>
+                                <AvatarFallback>AD</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{selectedOrgForManagement.adminName}</div>
+                                <div className="text-sm text-gray-600">{selectedOrgForManagement.adminEmail}</div>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Badge>Admin</Badge>
+                              <Badge variant="secondary">Active</Badge>
+                            </div>
+                          </div>
+                          {[...Array(Math.max(0, (selectedOrgForManagement.members || 1) - 1))].map((_, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center space-x-3">
+                                <Avatar>
+                                  <AvatarFallback>U{i + 1}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <div className="font-medium">User {i + 1}</div>
+                                  <div className="text-sm text-gray-600">user{i + 1}@{selectedOrgForManagement.domain}</div>
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Badge variant="outline">Member</Badge>
+                                <Badge variant="secondary">Active</Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Shield className="h-5 w-5 mr-2" />
+                          Role Permissions
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Admin</span>
+                              <Badge>Full Access</Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              <div>• Create and manage channels</div>
+                              <div>• Invite and remove users</div>
+                              <div>• Access all organization settings</div>
+                              <div>• Manage billing and subscriptions</div>
+                            </div>
+                          </div>
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Member</span>
+                              <Badge variant="secondary">Limited Access</Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              <div>• Join and participate in channels</div>
+                              <div>• Send messages and files</div>
+                              <div>• View basic organization info</div>
+                              <div>• Update personal profile</div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="settings" className="space-y-4">
-                  <div className="text-center py-8">
-                    <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Organization Settings</h3>
-                    <p className="text-gray-500">Settings management will be available in the next update.</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Building2 className="h-5 w-5 mr-2" />
+                          Organization Details
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Organization Name</label>
+                          <Input value={selectedOrgForManagement.name} readOnly />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+                          <Input value={selectedOrgForManagement.domain} readOnly />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Plan</label>
+                          <Select value={selectedOrgForManagement.plan}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="pro">Pro</SelectItem>
+                              <SelectItem value="business">Business</SelectItem>
+                              <SelectItem value="enterprise">Enterprise</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                          <Select value={selectedOrgForManagement.status}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="suspended">Suspended</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Settings className="h-5 w-5 mr-2" />
+                          Workspace Configuration
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">File Sharing</div>
+                            <div className="text-sm text-gray-600">Allow members to upload files</div>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">External Integrations</div>
+                            <div className="text-sm text-gray-600">Enable third-party app connections</div>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Guest Access</div>
+                            <div className="text-sm text-gray-600">Allow external users to join channels</div>
+                          </div>
+                          <Switch />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Message History</div>
+                            <div className="text-sm text-gray-600">Retain full message history</div>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="security" className="space-y-4">
-                  <div className="text-center py-8">
-                    <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Security Settings</h3>
-                    <p className="text-gray-500">Security configuration features will be available soon.</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Shield className="h-5 w-5 mr-2" />
+                          Security Policies
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Two-Factor Authentication</div>
+                            <div className="text-sm text-gray-600">Require 2FA for all members</div>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Password Policy</div>
+                            <div className="text-sm text-gray-600">Enforce strong password requirements</div>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Session Timeout</div>
+                            <div className="text-sm text-gray-600">Auto-logout after inactivity</div>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">IP Restrictions</div>
+                            <div className="text-sm text-gray-600">Limit access to specific IP ranges</div>
+                          </div>
+                          <Switch />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Lock className="h-5 w-5 mr-2" />
+                          Data Protection
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-3 border rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium">Encryption</span>
+                            <Badge variant="secondary">AES-256</Badge>
+                          </div>
+                          <div className="text-sm text-gray-600">All data encrypted at rest and in transit</div>
+                        </div>
+                        <div className="p-3 border rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium">Backup Frequency</span>
+                            <Badge>Daily</Badge>
+                          </div>
+                          <div className="text-sm text-gray-600">Automated backups with 30-day retention</div>
+                        </div>
+                        <div className="p-3 border rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium">Compliance</span>
+                            <Badge variant="outline">GDPR</Badge>
+                          </div>
+                          <div className="text-sm text-gray-600">Full GDPR compliance with data portability</div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="billing" className="space-y-4">
-                  <div className="text-center py-8">
-                    <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Billing & Plans</h3>
-                    <p className="text-gray-500">Billing management features will be available in the next update.</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <CreditCard className="h-5 w-5 mr-2" />
+                          Current Plan
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="text-center p-6 border rounded-lg">
+                          <div className="text-2xl font-bold capitalize mb-2">{selectedOrgForManagement.plan} Plan</div>
+                          <div className="text-3xl font-bold text-blue-600 mb-4">
+                            ${selectedOrgForManagement.plan === 'free' ? '0' : selectedOrgForManagement.plan === 'pro' ? '8' : selectedOrgForManagement.plan === 'business' ? '15' : '25'}
+                            <span className="text-sm font-normal text-gray-600">/user/month</span>
+                          </div>
+                          <Badge className="mb-4">{selectedOrgForManagement.status === 'active' ? 'Active' : 'Suspended'}</Badge>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span>Members</span>
+                            <span>{selectedOrgForManagement.members}/{selectedOrgForManagement.memberLimit}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Storage Used</span>
+                            <span>{selectedOrgForManagement.storageUsed}GB/{selectedOrgForManagement.storageLimit}GB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Next Billing</span>
+                            <span>Dec 22, 2025</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Receipt className="h-5 w-5 mr-2" />
+                          Billing History
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">Nov 2025</div>
+                              <div className="text-sm text-gray-600">{selectedOrgForManagement.plan} Plan - {selectedOrgForManagement.members} users</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium">${((selectedOrgForManagement.plan === 'pro' ? 8 : selectedOrgForManagement.plan === 'business' ? 15 : selectedOrgForManagement.plan === 'enterprise' ? 25 : 0) * (selectedOrgForManagement.members || 1)).toFixed(2)}</div>
+                              <div className="text-sm text-green-600">Paid</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">Oct 2025</div>
+                              <div className="text-sm text-gray-600">{selectedOrgForManagement.plan} Plan - {selectedOrgForManagement.members} users</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium">${((selectedOrgForManagement.plan === 'pro' ? 8 : selectedOrgForManagement.plan === 'business' ? 15 : selectedOrgForManagement.plan === 'enterprise' ? 25 : 0) * (selectedOrgForManagement.members || 1)).toFixed(2)}</div>
+                              <div className="text-sm text-green-600">Paid</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">Sep 2025</div>
+                              <div className="text-sm text-gray-600">{selectedOrgForManagement.plan} Plan - {selectedOrgForManagement.members} users</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-medium">${((selectedOrgForManagement.plan === 'pro' ? 8 : selectedOrgForManagement.plan === 'business' ? 15 : selectedOrgForManagement.plan === 'enterprise' ? 25 : 0) * (selectedOrgForManagement.members || 1)).toFixed(2)}</div>
+                              <div className="text-sm text-green-600">Paid</div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="support" className="space-y-4">
-                  <div className="text-center py-8">
-                    <HelpCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Support</h3>
-                    <p className="text-gray-500">Support management features will be available soon.</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <MessageSquare className="h-5 w-5 mr-2" />
+                          Support Tickets
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="font-medium">Login Issues</div>
+                              <Badge>Open</Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 mb-1">Users unable to access workspace</div>
+                            <div className="text-xs text-gray-500">Created 2 hours ago</div>
+                          </div>
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="font-medium">File Upload Problem</div>
+                              <Badge variant="secondary">In Progress</Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 mb-1">Large files failing to upload</div>
+                            <div className="text-xs text-gray-500">Created 1 day ago</div>
+                          </div>
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="font-medium">Integration Request</div>
+                              <Badge variant="outline">Resolved</Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 mb-1">Need Slack integration setup</div>
+                            <div className="text-xs text-gray-500">Created 3 days ago</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <HelpCircle className="h-5 w-5 mr-2" />
+                          Support Resources
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Button className="w-full justify-start" variant="outline">
+                          <Phone className="h-4 w-4 mr-2" />
+                          Schedule Support Call
+                        </Button>
+                        <Button className="w-full justify-start" variant="outline">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Email Support Team
+                        </Button>
+                        <Button className="w-full justify-start" variant="outline">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Documentation Center
+                        </Button>
+                        <Button className="w-full justify-start" variant="outline">
+                          <Video className="h-4 w-4 mr-2" />
+                          Video Tutorials
+                        </Button>
+                        <div className="pt-4 border-t">
+                          <div className="text-sm font-medium mb-2">Plan Support Level</div>
+                          <div className="flex items-center space-x-2">
+                            <Badge className="bg-green-100 text-green-700">
+                              {selectedOrgForManagement.plan === 'enterprise' ? 'Priority' : selectedOrgForManagement.plan === 'business' ? 'Business' : selectedOrgForManagement.plan === 'pro' ? 'Standard' : 'Basic'}
+                            </Badge>
+                            <span className="text-sm text-gray-600">
+                              {selectedOrgForManagement.plan === 'enterprise' ? '24/7 phone & email' : selectedOrgForManagement.plan === 'business' ? 'Business hours support' : selectedOrgForManagement.plan === 'pro' ? 'Email support' : 'Community forum'}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -1684,6 +2050,202 @@ export function SuperAdminDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Action Modals */}
+        {showAddUserModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Add New User</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowAddUserModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <Input placeholder="Enter user name" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <Input type="email" placeholder="Enter email address" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Role</label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="guest">Guest</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <Button onClick={() => {
+                    setShowAddUserModal(false);
+                    toast({ title: "User Added", description: "New user has been successfully added." });
+                  }}>Add User</Button>
+                  <Button variant="outline" onClick={() => setShowAddUserModal(false)}>Cancel</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showBroadcastModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Broadcast Message</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowBroadcastModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Subject</label>
+                  <Input placeholder="Enter message subject" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Message</label>
+                  <textarea
+                    className="w-full border rounded-md p-3 h-32 resize-none"
+                    placeholder="Enter your broadcast message here..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Send To</label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select recipients" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Users</SelectItem>
+                      <SelectItem value="admins">Admins Only</SelectItem>
+                      <SelectItem value="members">Members Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <Button onClick={() => {
+                    setShowBroadcastModal(false);
+                    toast({ title: "Message Sent", description: "Broadcast message has been sent successfully." });
+                  }}>Send Message</Button>
+                  <Button variant="outline" onClick={() => setShowBroadcastModal(false)}>Cancel</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showManageSettingsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Organization Settings</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowManageSettingsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium">General Settings</h4>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">File Uploads</div>
+                      <div className="text-sm text-gray-600">Allow file sharing</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">External Apps</div>
+                      <div className="text-sm text-gray-600">Enable integrations</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-medium">Security Settings</h4>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Two-Factor Auth</div>
+                      <div className="text-sm text-gray-600">Require 2FA</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Session Timeout</div>
+                      <div className="text-sm text-gray-600">Auto logout</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-3 pt-6">
+                <Button onClick={() => {
+                  setShowManageSettingsModal(false);
+                  toast({ title: "Settings Saved", description: "Organization settings have been updated." });
+                }}>Save Changes</Button>
+                <Button variant="outline" onClick={() => setShowManageSettingsModal(false)}>Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showScreenSharingModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Screen Sharing Controls</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowScreenSharingModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div className="text-center py-4">
+                  <Eye className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+                  <h4 className="font-medium mb-2">Screen Sharing Management</h4>
+                  <p className="text-sm text-gray-600 mb-4">Configure screen sharing permissions and settings</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Allow Screen Sharing</div>
+                      <div className="text-sm text-gray-600">Enable for all users</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Recording</div>
+                      <div className="text-sm text-gray-600">Allow session recording</div>
+                    </div>
+                    <Switch />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Admin Override</div>
+                      <div className="text-sm text-gray-600">Admin can join any session</div>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <Button onClick={() => {
+                    setShowScreenSharingModal(false);
+                    toast({ title: "Settings Updated", description: "Screen sharing settings have been saved." });
+                  }}>Save Settings</Button>
+                  <Button variant="outline" onClick={() => setShowScreenSharingModal(false)}>Cancel</Button>
+                </div>
               </div>
             </div>
           </div>
