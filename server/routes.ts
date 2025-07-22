@@ -14,7 +14,11 @@ import {
   insertMessageSchema, 
   insertTaskSchema,
   insertIntegrationSchema,
-  insertOrganizationSchema 
+  insertOrganizationSchema,
+  insertOrganizationSettingsSchema,
+  insertOrganizationUserSchema,
+  updateUserRoleSchema,
+  changePasswordSchema
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -1432,6 +1436,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error reactivating organization:', error);
       res.status(500).json({ error: 'Failed to reactivate organization' });
+    }
+  });
+
+  // Get organization settings
+  app.get('/api/organizations/:id/settings', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const settings = await storage.getOrganizationSettings(organizationId);
+      
+      if (!settings) {
+        // Create default settings if none exist
+        const defaultSettings = await storage.createOrganizationSettings(organizationId, {
+          organizationId,
+          fileSharing: true,
+          externalIntegrations: true,
+          guestAccess: false,
+          messageHistory: true,
+          twoFactorAuth: false,
+          passwordPolicy: false,
+          sessionTimeout: false,
+          ipRestrictions: false,
+          screenSharing: true,
+          recordingSessions: false,
+          adminOverride: true,
+        });
+        return res.json(defaultSettings);
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error('Error fetching organization settings:', error);
+      res.status(500).json({ error: 'Failed to fetch organization settings' });
+    }
+  });
+
+  // Update organization settings
+  app.put('/api/organizations/:id/settings', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const settingsData = insertOrganizationSettingsSchema.parse(req.body);
+      
+      // Check if settings exist
+      let settings = await storage.getOrganizationSettings(organizationId);
+      
+      if (!settings) {
+        // Create new settings
+        settings = await storage.createOrganizationSettings(organizationId, {
+          organizationId,
+          ...settingsData,
+        });
+      } else {
+        // Update existing settings
+        settings = await storage.updateOrganizationSettings(organizationId, settingsData);
+      }
+      
+      console.log('✅ Organization settings updated for organization:', organizationId);
+      res.json(settings);
+    } catch (error) {
+      console.error('Error updating organization settings:', error);
+      res.status(500).json({ error: 'Failed to update organization settings' });
+    }
+  });
+
+  // Get organization users
+  app.get('/api/organizations/:id/users', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const users = await storage.getOrganizationUsers(organizationId);
+      
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching organization users:', error);
+      res.status(500).json({ error: 'Failed to fetch organization users' });
+    }
+  });
+
+  // Create organization user
+  app.post('/api/organizations/:id/users', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const userData = insertOrganizationUserSchema.parse(req.body);
+      
+      const newUser = await storage.createOrganizationUser({
+        organizationId,
+        ...userData,
+      });
+      
+      console.log('✅ Organization user created:', newUser.email);
+      res.status(201).json(newUser);
+    } catch (error) {
+      console.error('Error creating organization user:', error);
+      res.status(500).json({ error: 'Failed to create organization user' });
+    }
+  });
+
+  // Update organization user role
+  app.put('/api/organizations/:id/users/:userId/role', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const userId = parseInt(req.params.userId);
+      const roleData = updateUserRoleSchema.parse(req.body);
+      
+      const updatedUser = await storage.updateOrganizationUser(userId, roleData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('✅ User role updated:', updatedUser.email, 'to', updatedUser.role);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      res.status(500).json({ error: 'Failed to update user role' });
+    }
+  });
+
+  // Change organization user password
+  app.put('/api/organizations/:id/users/:userId/password', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const userId = parseInt(req.params.userId);
+      const passwordData = changePasswordSchema.parse(req.body);
+      
+      // Hash the new password
+      const crypto = await import('node:crypto');
+      const { scrypt, randomBytes } = crypto;
+      const { promisify } = await import('node:util');
+      const scryptAsync = promisify(scrypt);
+      
+      const salt = randomBytes(16).toString("hex");
+      const buf = await scryptAsync(passwordData.newPassword, salt, 64);
+      const hashedPassword = `${buf.toString("hex")}.${salt}`;
+      
+      const updatedUser = await storage.updateOrganizationUserPassword(userId, hashedPassword);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('✅ User password changed for:', updatedUser.email);
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      console.error('Error changing user password:', error);
+      res.status(500).json({ error: 'Failed to change user password' });
+    }
+  });
+
+  // Delete organization user
+  app.delete('/api/organizations/:id/users/:userId', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const userId = parseInt(req.params.userId);
+      const success = await storage.deleteOrganizationUser(userId);
+      
+      if (!success) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('✅ Organization user deleted:', userId);
+      res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting organization user:', error);
+      res.status(500).json({ error: 'Failed to delete organization user' });
     }
   });
 

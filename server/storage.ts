@@ -11,6 +11,8 @@ import {
   sessions,
   integrations,
   organizations,
+  organizationSettings,
+  organizationUsers,
   type User,
   type InsertUser,
   type Workspace,
@@ -30,6 +32,10 @@ import {
   type InsertIntegration,
   type Organization,
   type InsertOrganization,
+  type OrganizationSettings,
+  type InsertOrganizationSettings,
+  type OrganizationUser,
+  type InsertOrganizationUser,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
@@ -44,6 +50,8 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserLastLogin(id: number): Promise<void>;
+  updateUserPassword(id: number, newPassword: string): Promise<User | undefined>;
+  updateUserRole(id: number, role: string): Promise<User | undefined>;
   
   // Workspace operations
   createWorkspace(workspace: InsertWorkspace & { ownerId: number }): Promise<Workspace>;
@@ -101,6 +109,18 @@ export interface IStorage {
   suspendOrganization(id: number): Promise<Organization | undefined>;
   reactivateOrganization(id: number): Promise<Organization | undefined>;
   
+  // Organization Settings operations
+  getOrganizationSettings(orgId: number): Promise<OrganizationSettings | undefined>;
+  updateOrganizationSettings(orgId: number, settings: Partial<OrganizationSettings>): Promise<OrganizationSettings>;
+  createOrganizationSettings(orgId: number, settings: InsertOrganizationSettings): Promise<OrganizationSettings>;
+  
+  // Organization User operations
+  getOrganizationUsers(orgId: number): Promise<OrganizationUser[]>;
+  createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser>;
+  updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined>;
+  deleteOrganizationUser(id: number): Promise<boolean>;
+  updateOrganizationUserPassword(id: number, hashedPassword: string): Promise<OrganizationUser | undefined>;
+  
   // Session store
   sessionStore: any;
 }
@@ -135,6 +155,24 @@ export class DatabaseStorage implements IStorage {
     await db.update(users)
       .set({ lastLoginAt: new Date() })
       .where(eq(users.id, id));
+  }
+
+  async updateUserPassword(id: number, newPassword: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ password: newPassword, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 
   // Workspace operations
@@ -609,10 +647,85 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return organization;
   }
+
+  // Organization Settings operations
+  async getOrganizationSettings(orgId: number): Promise<OrganizationSettings | undefined> {
+    const [settings] = await db.select().from(organizationSettings).where(eq(organizationSettings.organizationId, orgId));
+    return settings;
+  }
+
+  async updateOrganizationSettings(orgId: number, settingsData: Partial<OrganizationSettings>): Promise<OrganizationSettings> {
+    const [settings] = await db
+      .update(organizationSettings)
+      .set({ ...settingsData, updatedAt: new Date() })
+      .where(eq(organizationSettings.organizationId, orgId))
+      .returning();
+    return settings;
+  }
+
+  async createOrganizationSettings(orgId: number, settingsData: InsertOrganizationSettings): Promise<OrganizationSettings> {
+    const [settings] = await db.insert(organizationSettings).values({
+      organizationId: orgId,
+      ...settingsData,
+    }).returning();
+    return settings;
+  }
+
+  // Organization User operations
+  async getOrganizationUsers(orgId: number): Promise<OrganizationUser[]> {
+    return await db.select().from(organizationUsers).where(eq(organizationUsers.organizationId, orgId));
+  }
+
+  async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {
+    const [user] = await db.insert(organizationUsers).values(userData).returning();
+    return user;
+  }
+
+  async updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined> {
+    const [user] = await db
+      .update(organizationUsers)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(organizationUsers.id, id))
+      .returning();
+    return user;
+  }
+
+  async deleteOrganizationUser(id: number): Promise<boolean> {
+    try {
+      await db.delete(organizationUsers).where(eq(organizationUsers.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting organization user:", error);
+      return false;
+    }
+  }
+
+  async updateOrganizationUserPassword(id: number, hashedPassword: string): Promise<OrganizationUser | undefined> {
+    const [user] = await db
+      .update(organizationUsers)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(organizationUsers.id, id))
+      .returning();
+    return user;
+  }
+
+  async getIntegrationStats(): Promise<any> {
+    const result = await db.select().from(integrations);
+    return {
+      total: result.length,
+      active: result.filter(i => i.isEnabled).length,
+      services: [...new Set(result.map(i => i.service))].length,
+    };
+  }
+
+  async getAllIntegrationsForAdmin(): Promise<any[]> {
+    return await db.select().from(integrations);
+  }
 }
 
 // Memory storage for immediate messaging functionality
 class MemoryStorage implements IStorage {
+  sessionStore: any = null;
   private mockMessages: (Message & { author: User })[] = [];
 
   // Stub implementations for required interface methods
@@ -809,6 +922,55 @@ class MemoryStorage implements IStorage {
 
   async reactivateOrganization(id: number): Promise<Organization | undefined> {
     return this.updateOrganization(id, { status: 'active' });
+  }
+
+  // Stub implementations for missing interface methods
+  async updateUserPassword(id: number, newPassword: string): Promise<User | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getOrganizationSettings(orgId: number): Promise<OrganizationSettings | undefined> {
+    return undefined;
+  }
+
+  async updateOrganizationSettings(orgId: number, settings: Partial<OrganizationSettings>): Promise<OrganizationSettings> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async createOrganizationSettings(orgId: number, settings: InsertOrganizationSettings): Promise<OrganizationSettings> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getOrganizationUsers(orgId: number): Promise<OrganizationUser[]> {
+    return [];
+  }
+
+  async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async deleteOrganizationUser(id: number): Promise<boolean> {
+    return false;
+  }
+
+  async updateOrganizationUserPassword(id: number, hashedPassword: string): Promise<OrganizationUser | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getIntegrationStats(): Promise<any> {
+    return { total: 0, active: 0, services: 0 };
+  }
+
+  async getAllIntegrationsForAdmin(): Promise<any[]> {
+    return [];
   }
 }
 

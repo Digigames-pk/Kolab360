@@ -207,7 +207,7 @@ export const organizations = pgTable("organizations", {
   memberLimit: integer("member_limit").notNull().default(10),
   storageUsed: integer("storage_used").notNull().default(0), // in GB
   storageLimit: integer("storage_limit").notNull().default(10), // in GB
-  adminName: varchar("admin_name", { length: 255 }).notNull(),
+  adminName: varchar("admin_name", { length: 255 }),
   adminEmail: varchar("admin_email", { length: 255 }).notNull(),
   adminFirstName: varchar("admin_first_name", { length: 100 }),
   adminLastName: varchar("admin_last_name", { length: 100 }),
@@ -216,6 +216,41 @@ export const organizations = pgTable("organizations", {
   phone: varchar("phone", { length: 50 }),
   address: text("address"),
   isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Organization Settings table for persistent configuration
+export const organizationSettings = pgTable("organization_settings", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  fileSharing: boolean("file_sharing").default(true).notNull(),
+  externalIntegrations: boolean("external_integrations").default(true).notNull(),
+  guestAccess: boolean("guest_access").default(false).notNull(),
+  messageHistory: boolean("message_history").default(true).notNull(),
+  twoFactorAuth: boolean("two_factor_auth").default(false).notNull(),
+  passwordPolicy: boolean("password_policy").default(false).notNull(),
+  sessionTimeout: boolean("session_timeout").default(false).notNull(),
+  ipRestrictions: boolean("ip_restrictions").default(false).notNull(),
+  screenSharing: boolean("screen_sharing").default(true).notNull(),
+  recordingSessions: boolean("recording_sessions").default(false).notNull(),
+  adminOverride: boolean("admin_override").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User Roles table for organization members
+export const organizationUsers = pgTable("organization_users", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  userId: integer("user_id").references(() => users.id),
+  email: varchar("email", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  role: varchar("role", { length: 50 }).default("member").notNull(), // admin, member, guest
+  status: varchar("status", { length: 20 }).default("active").notNull(), // active, inactive, suspended
+  password: varchar("password", { length: 255 }), // Hashed password
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -230,8 +265,30 @@ export const usersRelations = relations(users, ({ many }) => ({
   reactions: many(reactions),
 }));
 
-export const organizationsRelations = relations(organizations, ({ many }) => ({
-  // Future: organizationMembers when needed
+export const organizationsRelations = relations(organizations, ({ many, one }) => ({
+  settings: one(organizationSettings, { 
+    fields: [organizations.id], 
+    references: [organizationSettings.organizationId] 
+  }),
+  users: many(organizationUsers),
+}));
+
+export const organizationSettingsRelations = relations(organizationSettings, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationSettings.organizationId],
+    references: [organizations.id]
+  }),
+}));
+
+export const organizationUsersRelations = relations(organizationUsers, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationUsers.organizationId],
+    references: [organizations.id]
+  }),
+  user: one(users, {
+    fields: [organizationUsers.userId],
+    references: [users.id]
+  }),
 }));
 
 export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
@@ -355,3 +412,33 @@ export type InsertEmailNotification = typeof emailNotifications.$inferInsert;
 
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+
+export type OrganizationSettings = typeof organizationSettings.$inferSelect;
+export type InsertOrganizationSettings = typeof organizationSettings.$inferInsert;
+
+export type OrganizationUser = typeof organizationUsers.$inferSelect;
+export type InsertOrganizationUser = typeof organizationUsers.$inferInsert;
+
+// Validation schemas
+export const insertOrganizationSettingsSchema = createInsertSchema(organizationSettings).omit({
+  id: true,
+  organizationId: true, // This will be provided from URL parameter
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOrganizationUserSchema = createInsertSchema(organizationUsers).omit({
+  id: true,
+  organizationId: true, // This will be provided from URL parameter
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateUserRoleSchema = z.object({
+  role: z.enum(["admin", "member", "guest"]),
+  status: z.enum(["active", "inactive", "suspended"]).optional(),
+});
+
+export const changePasswordSchema = z.object({
+  newPassword: z.string().min(6),
+});
