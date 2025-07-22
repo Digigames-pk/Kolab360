@@ -97,6 +97,7 @@ Calendar Requirements: Advanced calendar with enhanced features, multiple view m
 4. **Secure Access Control**: Presigned URLs for secure file access with configurable expiration and permission-based access
 5. **Smart Organization**: Automatic file categorization, per-channel/workspace organization, and visual file browsing interface
 6. **Performance Optimization**: Efficient upload with progress tracking, drag-and-drop support, and mobile-optimized file management
+7. **MANDATORY WASABI UPLOADS**: ALL file uploads (images, video, documents, audio) MUST go to Wasabi storage - no local storage allowed
 
 ## Data Flow
 
@@ -332,6 +333,14 @@ Required environment variables:
 - **API ENDPOINT VERIFICATION**: Confirmed all organization CRUD operations work correctly with auto-authentication (GET returns empty array, POST creates successfully)
 - **DEBUGGING RESOLVED**: Eliminated the frustrating authentication loop that required manual login after every server restart
 - **PRODUCTION SAFETY**: Auto-authentication only applies to organization routes in development environment, maintaining security for production
+
+### July 22, 2025 - Database Schema Fix and Wasabi File Upload Enforcement
+- **CRITICAL DATABASE FIX**: Added missing "features" column to organizations table - resolved organization creation failures
+- **WASABI STORAGE MANDATE**: Updated ALL file upload routes to use Wasabi cloud storage exclusively - no local storage allowed
+- **PERSISTENT ORGANIZATIONS**: Switched from MemoryStorage to DatabaseStorage to ensure organizations survive server restarts
+- **FILE UPLOAD ENHANCEMENT**: Increased file size limit to 50MB and configured memory storage for cloud uploads
+- **CLOUD STORAGE INTEGRATION**: All images, videos, documents, and audio files now properly stored in Wasabi with database metadata
+- **TECHNICAL REQUIREMENT**: Documented mandatory Wasabi usage for all future file upload features
 
 ### Performance Improvements
 - Centralized API utility (`/lib/api.ts`) with proper error handling and JSON validation

@@ -24,10 +24,12 @@ import simpleFilesRoutes from "./routes/simple-files";
 import simpleTasksRoutes from "./routes/simple-tasks";
 import workspaceUsersRoutes from './routes/workspace-users';
 import integrationsRouter from './integrations';
+import { uploadFileToWasabi } from "./wasabi";
 
+// Configure multer for memory storage - files will be uploaded to Wasabi
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for cloud storage
 });
 
 interface WebSocketConnection extends WebSocket {
@@ -472,7 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload routes
+  // File upload routes - ALL uploads go to Wasabi cloud storage
   app.post('/api/workspaces/:workspaceId/files', requireAuth, upload.single('file'), async (req: any, res) => {
     try {
       if (!req.file) {
@@ -480,8 +482,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const userId = req.user.id;
+      const user = req.user;
+      
+      // Upload to Wasabi cloud storage
+      const uploadResult = await uploadFileToWasabi(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        {
+          originalName: req.file.originalname,
+          size: req.file.size,
+          mimetype: req.file.mimetype,
+          uploadedBy: `${user.firstName} ${user.lastName}`,
+          workspace: req.params.workspaceId,
+          channel: req.body.channelId || undefined,
+          category: req.file.mimetype.startsWith('image/') ? 'image' :
+                   req.file.mimetype.startsWith('video/') ? 'video' :
+                   req.file.mimetype.startsWith('audio/') ? 'audio' : 'document'
+        }
+      );
+
+      // Store file metadata in database with Wasabi URL
       const fileData = {
-        filename: req.file.filename,
+        filename: uploadResult.key, // Use Wasabi key as filename
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size,
@@ -489,13 +512,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workspaceId: req.params.workspaceId,
         channelId: req.body.channelId || null,
         messageId: req.body.messageId || null,
+        url: uploadResult.url, // Store the Wasabi URL
       };
 
       const file = await storage.createFile(fileData);
-      res.json(file);
+      res.json({
+        ...file,
+        wasabiUrl: uploadResult.url,
+        cloudKey: uploadResult.key
+      });
     } catch (error) {
-      console.error("Error uploading file:", error);
-      res.status(500).json({ message: "Failed to upload file" });
+      console.error("Error uploading file to Wasabi:", error);
+      res.status(500).json({ message: "Failed to upload file to cloud storage" });
     }
   });
 
