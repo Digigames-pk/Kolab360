@@ -847,8 +847,43 @@ export function SuperAdminDashboard() {
               </div>
             )}
           </TabsContent>
-          
-          {/* Other tab contents would continue here */}
+
+          {/* Placeholder content for other tabs */}
+          <TabsContent value="users" className="space-y-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">User Management section - Coming Soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="roles" className="space-y-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Roles & Permissions section - Coming Soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pricing" className="space-y-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Pricing Plans section - Coming Soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Security section - Coming Soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Analytics section - Coming Soon</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="audit" className="space-y-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">Audit Logs section - Coming Soon</p>
+            </div>
+          </TabsContent>
         </Tabs>
 
         {/* Organization Management Modal with Fixed Active Users */}
@@ -1267,3 +1302,8 @@ export function SuperAdminDashboard() {
               </div>
             </div>
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
