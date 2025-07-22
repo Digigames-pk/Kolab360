@@ -18,12 +18,14 @@ import {
   UserPlus
 } from "lucide-react";
 import { useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import kolab360LogoPath from "@assets/KOLAB360 purple version Ai-_1753213895701.png";
 
 import KOLAB360_white_version_Ai from "@assets/KOLAB360 white version Ai.png";
 
 export default function HomePage() {
+  const [, setLocation] = useLocation();
+  
   useEffect(() => {
     document.title = "KOLAB360 - Transform Your Team's Productivity";
   }, []);
@@ -100,18 +102,29 @@ export default function HomePage() {
           </nav>
           
           <div className="flex items-center gap-3">
-            <Link href="/auth">
-              <Button variant="outline" size="sm" className="border-purple-200 text-purple-600 hover:bg-purple-50">
-                <LogIn className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/auth">
-              <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Sign Up Free
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-purple-200 text-purple-600 hover:bg-purple-50"
+              onClick={() => {
+                console.log('Sign In button clicked - navigating to /auth');
+                setLocation('/auth');
+              }}
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+            <Button 
+              size="sm" 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => {
+                console.log('Sign Up button clicked - navigating to /auth');
+                setLocation('/auth');
+              }}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Sign Up Free
+            </Button>
           </div>
         </div>
       </header>
@@ -134,12 +147,17 @@ export default function HomePage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link href="/auth">
-              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => {
+                console.log('Start Free Trial button clicked - navigating to /auth');
+                setLocation('/auth');
+              }}
+            >
+              Start Free Trial
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
             <Link href="/landing">
               <Button size="lg" variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
                 Learn More
