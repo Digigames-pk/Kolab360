@@ -15,6 +15,7 @@ import LandingPage from "@/pages/LandingPage";
 import HomePage from "@/pages/HomePage";
 import PricingPage from "@/pages/PricingPage";
 import AboutPage from "@/pages/AboutPage";
+import FeaturesPage from "@/pages/FeaturesPage";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/about" component={AboutPage} />
+      <Route path="/features" component={FeaturesPage} />
       <Route path="/landing" component={LandingPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/dashboard" component={Home} />
