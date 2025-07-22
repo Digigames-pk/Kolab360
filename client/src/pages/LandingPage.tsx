@@ -20,18 +20,18 @@ import { useEffect } from "react";
 export default function LandingPage() {
   useEffect(() => {
     // Set SEO meta tags
-    document.title = "TeamSync AI - Advanced Collaboration Platform with AI-Powered Productivity | Enterprise Team Communication";
+    document.title = "KOLAB360 - Advanced Collaboration Platform with AI-Powered Productivity | Enterprise Team Communication";
     
     // Meta description
     const metaDescription = document.querySelector('meta[name="description"]') || document.createElement('meta');
     metaDescription.setAttribute('name', 'description');
-    metaDescription.setAttribute('content', 'Transform your team productivity with TeamSync AI - the ultimate collaboration platform featuring AI-powered insights, advanced task management, real-time communication, and enterprise-grade security. Start your free trial today.');
+    metaDescription.setAttribute('content', 'Transform your team productivity with KOLAB360 - the ultimate collaboration platform featuring AI-powered insights, advanced task management, real-time communication, and enterprise-grade security. Start your free trial today.');
     document.head.appendChild(metaDescription);
 
     // Open Graph tags
     const ogTitle = document.querySelector('meta[property="og:title"]') || document.createElement('meta');
     ogTitle.setAttribute('property', 'og:title');
-    ogTitle.setAttribute('content', 'TeamSync AI - AI-Powered Team Collaboration Platform');
+    ogTitle.setAttribute('content', 'KOLAB360 - AI-Powered Team Collaboration Platform');
     document.head.appendChild(ogTitle);
 
     const ogDescription = document.querySelector('meta[property="og:description"]') || document.createElement('meta');
@@ -41,12 +41,12 @@ export default function LandingPage() {
 
     const ogImage = document.querySelector('meta[property="og:image"]') || document.createElement('meta');
     ogImage.setAttribute('property', 'og:image');
-    ogImage.setAttribute('content', '/teamsync-og-image.svg');
+    ogImage.setAttribute('content', '/kolab360-og-image.svg');
     document.head.appendChild(ogImage);
 
     const ogUrl = document.querySelector('meta[property="og:url"]') || document.createElement('meta');
     ogUrl.setAttribute('property', 'og:url');
-    ogUrl.setAttribute('content', 'https://teamsync-ai.com');
+    ogUrl.setAttribute('content', 'https://kolab360.com');
     document.head.appendChild(ogUrl);
 
     // Twitter Card tags
@@ -65,9 +65,9 @@ export default function LandingPage() {
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "TeamSync AI",
+      "name": "KOLAB360",
       "description": "Advanced collaboration platform with AI-powered productivity insights",
-      "url": "https://teamsync-ai.com",
+      "url": "https://kolab360.com",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web Browser",
       "offers": {
@@ -99,7 +99,7 @@ export default function LandingPage() {
 
     return () => {
       // Cleanup on unmount
-      document.title = "TeamSync AI";
+      document.title = "KOLAB360";
     };
   }, []);
 
@@ -302,7 +302,7 @@ export default function LandingPage() {
             Ready to Transform Your Team?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of teams already using TeamSync AI to boost productivity
+            Join thousands of teams already using KOLAB360 to boost productivity
           </p>
           <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-50">
             Start Your Free Trial Today
@@ -316,7 +316,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">TeamSync AI</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">KOLAB360</h3>
               <p className="text-gray-400 text-sm">
                 The future of team collaboration, powered by artificial intelligence.
               </p>
@@ -350,7 +350,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 TeamSync AI. All rights reserved.</p>
+            <p>&copy; 2025 KOLAB360. All rights reserved.</p>
           </div>
         </div>
       </footer>

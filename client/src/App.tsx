@@ -12,15 +12,17 @@ import Home from "@/pages/home";
 import Workspace from "@/pages/workspace";
 import EmailTest from "@/pages/email-test";
 import LandingPage from "@/pages/LandingPage";
+import HomePage from "@/pages/HomePage";
 
 function Router() {
   const { user, isLoading } = useAuth();
 
   return (
     <Switch>
+      <Route path="/" component={HomePage} />
       <Route path="/landing" component={LandingPage} />
       <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/" component={Home} />
+      <ProtectedRoute path="/dashboard" component={Home} />
       <ProtectedRoute path="/workspace/:workspaceId" component={Workspace} />
       <ProtectedRoute path="/email-test" component={EmailTest} />
       <Route component={NotFound} />

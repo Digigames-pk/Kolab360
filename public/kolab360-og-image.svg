@@ -38,8 +38,7 @@
     </g>
     
     <!-- Company Name -->
-    <text x="120" y="35" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="url(#text-gradient)">TeamSync</text>
-    <text x="120" y="75" font-family="Arial, sans-serif" font-size="32" font-weight="normal" fill="#6B7280">AI</text>
+    <text x="120" y="55" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="url(#text-gradient)">KOLAB360</text>
   </g>
   
   <!-- Main Headline -->
