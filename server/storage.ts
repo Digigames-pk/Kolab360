@@ -812,5 +812,5 @@ class MemoryStorage implements IStorage {
   }
 }
 
-// Use memory storage for immediate messaging functionality  
-export const storage = process.env.NODE_ENV === 'development' ? new MemoryStorage() : new DatabaseStorage();
+// Use database storage for persistence - organizations need to survive server restarts
+export const storage = new DatabaseStorage();
