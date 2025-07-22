@@ -28,6 +28,7 @@ import { SuperAdminDashboard } from '@/components/SuperAdminDashboard';
 import { ProfileModal } from '@/components/ProfileModal';
 import { InviteUsersModal } from '@/components/InviteUsersModal';
 import { ChannelInfoModal } from '@/components/ChannelInfoModal';
+import WorkspaceMoodBoard from '@/components/WorkspaceMoodBoard';
 import { MessageSquare, Bell, Star, Users, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -72,7 +73,7 @@ export default function Home() {
     );
   }
   const [selectedDM, setSelectedDM] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'admin'>('chat');
+  const [activeView, setActiveView] = useState<'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'admin' | 'mood-board'>('chat');
   const [selectedWorkspace, setSelectedWorkspace] = useState(1);
   const [currentTheme, setCurrentTheme] = useState('slack-light');
 
@@ -343,6 +344,12 @@ export default function Home() {
                   console.log(`Integration ${integrationId} ${isConnected ? 'connected' : 'disconnected'}`);
                 }}
               />
+            </div>
+          )}
+
+          {activeView === "mood-board" && (
+            <div className="h-full w-full overflow-y-auto">
+              <WorkspaceMoodBoard workspaceId={selectedChannel || '1'} />
             </div>
           )}
 

@@ -286,6 +286,38 @@ export const organizationUsers = pgTable("organization_users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Workspace Mood Board System
+export const workspaceMoodBoards = pgTable("workspace_mood_boards", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  primaryColor: varchar("primary_color", { length: 7 }).notNull(), // Hex color
+  secondaryColor: varchar("secondary_color", { length: 7 }).notNull(),
+  accentColor: varchar("accent_color", { length: 7 }).notNull(),
+  backgroundColor: varchar("background_color", { length: 7 }).notNull(),
+  textColor: varchar("text_color", { length: 7 }).notNull(),
+  moodCategory: varchar("mood_category", { length: 50 }).notNull(), // energizing, calming, focused, creative, collaborative
+  psychologyInsights: jsonb("psychology_insights").notNull(),
+  colorPalette: jsonb("color_palette").notNull(), // Array of color objects with names and hex values
+  isActive: boolean("is_active").default(false).notNull(),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  teamRating: integer("team_rating").default(0), // Average team rating 1-5
+  usageStats: jsonb("usage_stats").default({}), // Track adoption metrics
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const moodBoardVotes = pgTable("mood_board_votes", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id).notNull(),
+  moodBoardId: integer("mood_board_id").references(() => workspaceMoodBoards.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  rating: integer("rating").notNull(), // 1-5 star rating
+  feedback: text("feedback"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   workspaces: many(workspaces),
@@ -330,11 +362,39 @@ export const organizationUsersRelations = relations(organizationUsers, ({ one })
   }),
 }));
 
+export const workspaceMoodBoardsRelations = relations(workspaceMoodBoards, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [workspaceMoodBoards.workspaceId],
+    references: [workspaces.id]
+  }),
+  creator: one(users, {
+    fields: [workspaceMoodBoards.createdBy],
+    references: [users.id]
+  }),
+  votes: many(moodBoardVotes),
+}));
+
+export const moodBoardVotesRelations = relations(moodBoardVotes, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [moodBoardVotes.workspaceId],
+    references: [workspaces.id]
+  }),
+  moodBoard: one(workspaceMoodBoards, {
+    fields: [moodBoardVotes.moodBoardId],
+    references: [workspaceMoodBoards.id]
+  }),
+  user: one(users, {
+    fields: [moodBoardVotes.userId],
+    references: [users.id]
+  }),
+}));
+
 export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
   owner: one(users, { fields: [workspaces.ownerId], references: [users.id] }),
   members: many(workspaceMembers),
   channels: many(channels),
   tasks: many(tasks),
+  moodBoards: many(workspaceMoodBoards),
 }));
 
 export const messagesRelations = relations(messages, ({ one, many }) => ({
@@ -458,6 +518,12 @@ export type InsertOrganizationSettings = typeof organizationSettings.$inferInser
 export type OrganizationUser = typeof organizationUsers.$inferSelect;
 export type InsertOrganizationUser = typeof organizationUsers.$inferInsert;
 
+export type WorkspaceMoodBoard = typeof workspaceMoodBoards.$inferSelect;
+export type InsertWorkspaceMoodBoard = typeof workspaceMoodBoards.$inferInsert;
+
+export type MoodBoardVote = typeof moodBoardVotes.$inferSelect;
+export type InsertMoodBoardVote = typeof moodBoardVotes.$inferInsert;
+
 // Validation schemas
 export const insertOrganizationSettingsSchema = createInsertSchema(organizationSettings).omit({
   id: true,
@@ -480,6 +546,46 @@ export const updateUserRoleSchema = z.object({
 
 export const changePasswordSchema = z.object({
   newPassword: z.string().min(6),
+});
+
+// Mood Board Schemas
+export const insertWorkspaceMoodBoardSchema = createInsertSchema(workspaceMoodBoards).omit({
+  id: true,
+  createdBy: true,
+  createdAt: true,
+  updatedAt: true,
+  teamRating: true,
+  usageStats: true,
+});
+
+export const updateWorkspaceMoodBoardSchema = insertWorkspaceMoodBoardSchema.partial();
+
+export const insertMoodBoardVoteSchema = createInsertSchema(moodBoardVotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const moodBoardColorPaletteSchema = z.object({
+  name: z.string(),
+  colors: z.array(z.object({
+    name: z.string(),
+    hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+    role: z.enum(["primary", "secondary", "accent", "background", "text", "neutral"]),
+  })),
+  description: z.string(),
+});
+
+export const psychologyInsightsSchema = z.object({
+  mood: z.enum(["energizing", "calming", "focused", "creative", "collaborative"]),
+  effects: z.array(z.string()),
+  bestFor: z.array(z.string()),
+  productivity: z.object({
+    focus: z.number().min(1).max(5),
+    energy: z.number().min(1).max(5),
+    creativity: z.number().min(1).max(5),
+    collaboration: z.number().min(1).max(5),
+  }),
+  tips: z.array(z.string()),
 });
 
 // Pricing Plan Schemas

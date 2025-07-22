@@ -14,6 +14,8 @@ import {
   organizationSettings,
   organizationUsers,
   pricingPlans,
+  workspaceMoodBoards,
+  moodBoardVotes,
   type User,
   type InsertUser,
   type Workspace,
@@ -40,6 +42,10 @@ import {
   type PricingPlan,
   type InsertPricingPlan,
   type UpdatePricingPlan,
+  type WorkspaceMoodBoard,
+  type InsertWorkspaceMoodBoard,
+  type MoodBoardVote,
+  type InsertMoodBoardVote,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
@@ -133,6 +139,17 @@ export interface IStorage {
   updatePricingPlan(id: number, updates: UpdatePricingPlan): Promise<PricingPlan | undefined>;
   deletePricingPlan(id: number): Promise<boolean>;
   initializeDefaultPricingPlans(): Promise<void>;
+  
+  // Mood Board operations
+  getWorkspaceMoodBoards(workspaceId: string): Promise<WorkspaceMoodBoard[]>;
+  getWorkspaceMoodBoard(id: number): Promise<WorkspaceMoodBoard | undefined>;
+  createWorkspaceMoodBoard(moodBoardData: InsertWorkspaceMoodBoard & { createdBy: number }): Promise<WorkspaceMoodBoard>;
+  updateWorkspaceMoodBoard(id: number, updates: Partial<WorkspaceMoodBoard>): Promise<WorkspaceMoodBoard | undefined>;
+  deleteWorkspaceMoodBoard(id: number): Promise<boolean>;
+  activateWorkspaceMoodBoard(workspaceId: string, moodBoardId: number): Promise<WorkspaceMoodBoard | undefined>;
+  voteMoodBoard(voteData: InsertMoodBoardVote): Promise<MoodBoardVote>;
+  getMoodBoardVotes(moodBoardId: number): Promise<MoodBoardVote[]>;
+  initializeDefaultMoodBoards(): Promise<void>;
   
   // Session store
   sessionStore: any;
@@ -968,6 +985,254 @@ export class DatabaseStorage implements IStorage {
       active: result.filter(i => i.isEnabled).length,
       services: [...new Set(result.map(i => i.service))].length,
     };
+  }
+
+  // Mood Board operations
+  async getWorkspaceMoodBoards(workspaceId: string): Promise<WorkspaceMoodBoard[]> {
+    return await db.select({
+      id: workspaceMoodBoards.id,
+      workspaceId: workspaceMoodBoards.workspaceId,
+      name: workspaceMoodBoards.name,
+      description: workspaceMoodBoards.description,
+      primaryColor: workspaceMoodBoards.primaryColor,
+      secondaryColor: workspaceMoodBoards.secondaryColor,
+      accentColor: workspaceMoodBoards.accentColor,
+      backgroundColor: workspaceMoodBoards.backgroundColor,
+      textColor: workspaceMoodBoards.textColor,
+      moodCategory: workspaceMoodBoards.moodCategory,
+      psychologyInsights: workspaceMoodBoards.psychologyInsights,
+      colorPalette: workspaceMoodBoards.colorPalette,
+      isActive: workspaceMoodBoards.isActive,
+      createdBy: workspaceMoodBoards.createdBy,
+      teamRating: workspaceMoodBoards.teamRating,
+      createdAt: workspaceMoodBoards.createdAt,
+      updatedAt: workspaceMoodBoards.updatedAt
+    })
+      .from(workspaceMoodBoards)
+      .where(eq(workspaceMoodBoards.workspaceId, workspaceId))
+      .orderBy(desc(workspaceMoodBoards.isActive), desc(workspaceMoodBoards.teamRating));
+  }
+
+  async getWorkspaceMoodBoard(id: number): Promise<WorkspaceMoodBoard | undefined> {
+    const [moodBoard] = await db.select()
+      .from(workspaceMoodBoards)
+      .where(eq(workspaceMoodBoards.id, id));
+    return moodBoard;
+  }
+
+  async createWorkspaceMoodBoard(moodBoardData: InsertWorkspaceMoodBoard & { createdBy: number }): Promise<WorkspaceMoodBoard> {
+    const [moodBoard] = await db.insert(workspaceMoodBoards)
+      .values(moodBoardData)
+      .returning();
+    return moodBoard;
+  }
+
+  async updateWorkspaceMoodBoard(id: number, updates: Partial<WorkspaceMoodBoard>): Promise<WorkspaceMoodBoard | undefined> {
+    const [moodBoard] = await db.update(workspaceMoodBoards)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(workspaceMoodBoards.id, id))
+      .returning();
+    return moodBoard;
+  }
+
+  async deleteWorkspaceMoodBoard(id: number): Promise<boolean> {
+    const result = await db.delete(workspaceMoodBoards)
+      .where(eq(workspaceMoodBoards.id, id));
+    return result.rowCount > 0;
+  }
+
+  async activateWorkspaceMoodBoard(workspaceId: string, moodBoardId: number): Promise<WorkspaceMoodBoard | undefined> {
+    // Deactivate all existing mood boards for this workspace
+    await db.update(workspaceMoodBoards)
+      .set({ isActive: false })
+      .where(eq(workspaceMoodBoards.workspaceId, workspaceId));
+      
+    // Activate the selected mood board
+    const [moodBoard] = await db.update(workspaceMoodBoards)
+      .set({ isActive: true, updatedAt: new Date() })
+      .where(eq(workspaceMoodBoards.id, moodBoardId))
+      .returning();
+    return moodBoard;
+  }
+
+  async voteMoodBoard(voteData: InsertMoodBoardVote): Promise<MoodBoardVote> {
+    // Delete existing vote if present
+    await db.delete(moodBoardVotes)
+      .where(and(
+        eq(moodBoardVotes.moodBoardId, voteData.moodBoardId),
+        eq(moodBoardVotes.userId, voteData.userId)
+      ));
+      
+    // Insert new vote
+    const [vote] = await db.insert(moodBoardVotes)
+      .values(voteData)
+      .returning();
+      
+    // Update mood board average rating
+    await this.updateMoodBoardRating(voteData.moodBoardId);
+    
+    return vote;
+  }
+
+  async getMoodBoardVotes(moodBoardId: number): Promise<MoodBoardVote[]> {
+    return await db.select()
+      .from(moodBoardVotes)
+      .where(eq(moodBoardVotes.moodBoardId, moodBoardId))
+      .orderBy(desc(moodBoardVotes.createdAt));
+  }
+
+  private async updateMoodBoardRating(moodBoardId: number): Promise<void> {
+    const votes = await this.getMoodBoardVotes(moodBoardId);
+    const averageRating = votes.length > 0 
+      ? Math.round(votes.reduce((sum, vote) => sum + vote.rating, 0) / votes.length)
+      : 0;
+      
+    await db.update(workspaceMoodBoards)
+      .set({ teamRating: averageRating })
+      .where(eq(workspaceMoodBoards.id, moodBoardId));
+  }
+
+  async initializeDefaultMoodBoards(): Promise<void> {
+    // Check if mood boards already exist
+    const existing = await db.select().from(workspaceMoodBoards).limit(1);
+    if (existing.length > 0) {
+      console.log('📋 [MOOD] Default mood boards already exist');
+      return;
+    }
+
+    // Create default mood boards for demo workspace
+    const defaultMoodBoards: (InsertWorkspaceMoodBoard & { createdBy: number })[] = [
+      {
+        workspaceId: '1',
+        name: 'Energizing Orange',
+        description: 'Boost energy and enthusiasm for high-intensity work sessions',
+        primaryColor: '#FF6B35',
+        secondaryColor: '#F7931E',
+        accentColor: '#FFB800',
+        backgroundColor: '#FFF8F0',
+        textColor: '#2D1B04',
+        moodCategory: 'energizing',
+        psychologyInsights: {
+          mood: 'energizing',
+          effects: ['Increases motivation', 'Stimulates creativity', 'Promotes enthusiasm', 'Enhances confidence'],
+          bestFor: ['Brainstorming sessions', 'Product launches', 'Team building', 'Marketing campaigns'],
+          productivity: { focus: 4, energy: 5, creativity: 5, collaboration: 4 },
+          tips: ['Use during morning meetings', 'Great for kickoff sessions', 'Pair with upbeat music', 'Limit to 2-hour sessions to avoid overstimulation']
+        },
+        colorPalette: {
+          name: 'Sunset Energy',
+          colors: [
+            { name: 'Primary Orange', hex: '#FF6B35', role: 'primary' },
+            { name: 'Golden Yellow', hex: '#F7931E', role: 'secondary' },
+            { name: 'Bright Amber', hex: '#FFB800', role: 'accent' },
+            { name: 'Cream White', hex: '#FFF8F0', role: 'background' },
+            { name: 'Deep Brown', hex: '#2D1B04', role: 'text' }
+          ],
+          description: 'Warm energizing palette inspired by sunset colors'
+        },
+        isActive: false,
+        createdBy: 1
+      },
+      {
+        workspaceId: '1',
+        name: 'Calming Blue',
+        description: 'Reduce stress and promote focus for concentrated work',
+        primaryColor: '#4A90E2',
+        secondaryColor: '#7BB3F0',
+        accentColor: '#5DADE2',
+        backgroundColor: '#F8FBFF',
+        textColor: '#1A365D',
+        moodCategory: 'calming',
+        psychologyInsights: {
+          mood: 'calming',
+          effects: ['Reduces stress', 'Improves focus', 'Lowers blood pressure', 'Promotes trust'],
+          bestFor: ['Deep work sessions', 'Client presentations', 'Problem solving', 'Strategic planning'],
+          productivity: { focus: 5, energy: 3, creativity: 3, collaboration: 4 },
+          tips: ['Perfect for afternoon work', 'Use during high-pressure periods', 'Combine with natural lighting', 'Great for client-facing work']
+        },
+        colorPalette: {
+          name: 'Ocean Calm',
+          colors: [
+            { name: 'Ocean Blue', hex: '#4A90E2', role: 'primary' },
+            { name: 'Sky Blue', hex: '#7BB3F0', role: 'secondary' },
+            { name: 'Azure', hex: '#5DADE2', role: 'accent' },
+            { name: 'Cloud White', hex: '#F8FBFF', role: 'background' },
+            { name: 'Navy Blue', hex: '#1A365D', role: 'text' }
+          ],
+          description: 'Serene palette inspired by ocean and sky'
+        },
+        isActive: true,
+        createdBy: 1
+      },
+      {
+        workspaceId: '1',
+        name: 'Creative Purple',
+        description: 'Stimulate imagination and innovative thinking',
+        primaryColor: '#8B5CF6',
+        secondaryColor: '#A78BFA',
+        accentColor: '#C084FC',
+        backgroundColor: '#FAF7FF',
+        textColor: '#3C1A78',
+        moodCategory: 'creative',
+        psychologyInsights: {
+          mood: 'creative',
+          effects: ['Stimulates imagination', 'Encourages innovation', 'Promotes artistic thinking', 'Inspires originality'],
+          bestFor: ['Design work', 'Creative writing', 'Art projects', 'Innovation workshops'],
+          productivity: { focus: 3, energy: 4, creativity: 5, collaboration: 3 },
+          tips: ['Use during creative blocks', 'Perfect for design sessions', 'Combine with inspirational quotes', 'Great for solo creative work']
+        },
+        colorPalette: {
+          name: 'Mystic Purple',
+          colors: [
+            { name: 'Royal Purple', hex: '#8B5CF6', role: 'primary' },
+            { name: 'Lavender', hex: '#A78BFA', role: 'secondary' },
+            { name: 'Amethyst', hex: '#C084FC', role: 'accent' },
+            { name: 'Lilac White', hex: '#FAF7FF', role: 'background' },
+            { name: 'Deep Violet', hex: '#3C1A78', role: 'text' }
+          ],
+          description: 'Mystical palette to unlock creative potential'
+        },
+        isActive: false,
+        createdBy: 1
+      },
+      {
+        workspaceId: '1',
+        name: 'Nature Green',
+        description: 'Connect with nature for balanced and sustainable productivity',
+        primaryColor: '#10B981',
+        secondaryColor: '#34D399',
+        accentColor: '#6EE7B7',
+        backgroundColor: '#F0FDF4',
+        textColor: '#064E3B',
+        moodCategory: 'focused',
+        psychologyInsights: {
+          mood: 'focused',
+          effects: ['Reduces eye strain', 'Promotes growth mindset', 'Increases harmony', 'Balances emotions'],
+          bestFor: ['All-day work', 'Team collaboration', 'Learning sessions', 'Sustainable productivity'],
+          productivity: { focus: 4, energy: 4, creativity: 4, collaboration: 5 },
+          tips: ['Ideal for extended work sessions', 'Great for team spaces', 'Pair with plants', 'Perfect for learning environments']
+        },
+        colorPalette: {
+          name: 'Forest Fresh',
+          colors: [
+            { name: 'Emerald Green', hex: '#10B981', role: 'primary' },
+            { name: 'Mint Green', hex: '#34D399', role: 'secondary' },
+            { name: 'Sage Green', hex: '#6EE7B7', role: 'accent' },
+            { name: 'Ivory', hex: '#F0FDF4', role: 'background' },
+            { name: 'Forest Green', hex: '#064E3B', role: 'text' }
+          ],
+          description: 'Natural palette for balanced productivity'
+        },
+        isActive: false,
+        createdBy: 1
+      }
+    ];
+
+    for (const moodBoard of defaultMoodBoards) {
+      await this.createWorkspaceMoodBoard(moodBoard);
+    }
+
+    console.log('✅ [MOOD] Default mood boards created successfully');
   }
 
   async getAllIntegrationsForAdmin(): Promise<any[]> {

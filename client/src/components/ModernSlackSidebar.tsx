@@ -44,7 +44,8 @@ import {
   VolumeX,
   Circle,
   Edit3,
-  Settings2
+  Settings2,
+  Palette
 } from 'lucide-react';
 import { SidebarCustomizer, SidebarSettings, useSidebarSettings } from './SidebarCustomizer';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -297,6 +298,15 @@ export function ModernSlackSidebar({
           >
             <Users className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
             People
+          </Button>
+          
+          <Button 
+            variant={currentView === 'mood-board' ? 'default' : 'ghost'} 
+            className={`w-full justify-start ${settings.compactMode ? 'h-8 text-sm' : 'h-10'}`}
+            onClick={() => onViewChange('mood-board')}
+          >
+            <Palette className={`${settings.compactMode ? 'h-3 w-3' : 'h-4 w-4'} mr-3`} />
+            Mood Board
           </Button>
         </div>
       )}

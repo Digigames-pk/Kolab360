@@ -29,6 +29,7 @@ import filesRoutes from "./routes/files";
 import simpleFilesRoutes from "./routes/simple-files";
 import simpleTasksRoutes from "./routes/simple-tasks";
 import workspaceUsersRoutes from './routes/workspace-users';
+import moodBoardRoutes from './routes/mood-boards';
 import integrationsRouter from './integrations';
 import { uploadFileToWasabi } from "./wasabi";
 
@@ -1171,6 +1172,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Workspace users routes
   app.use('/api/workspace', workspaceUsersRoutes);
+  
+  // Mood board routes
+  app.use('/api/mood-boards', moodBoardRoutes);
   
   // Integrations routes
   app.use('/api/integrations', integrationsRouter);
