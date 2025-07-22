@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, MessageSquare, Users, Zap, Shield } from "lucide-react";
 
 export default function AuthPage() {
-  const { user, login } = useAuth();
+  const { user, login, register } = useAuth();
   const [, setLocation] = useLocation();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({
@@ -25,7 +25,7 @@ export default function AuthPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      setLocation("/");
+      setLocation("/dashboard");
     }
   }, [user, setLocation]);
 
@@ -41,7 +41,7 @@ export default function AuthPage() {
     try {
       const success = await login(loginData.email, loginData.password);
       if (success) {
-        setLocation("/");
+        setLocation("/dashboard");
       } else {
         setError("Login failed. Please check your credentials.");
       }
@@ -58,9 +58,14 @@ export default function AuthPage() {
     setError("");
     
     try {
-      const success = await login(registerData.email, registerData.password);
+      const success = await register(
+        registerData.email, 
+        registerData.password,
+        registerData.firstName,
+        registerData.lastName
+      );
       if (success) {
-        setLocation("/");
+        setLocation("/dashboard");
       } else {
         setError("Registration failed. Please try again.");
       }
