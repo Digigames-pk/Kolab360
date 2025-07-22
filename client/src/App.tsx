@@ -13,6 +13,8 @@ import Workspace from "@/pages/workspace";
 import EmailTest from "@/pages/email-test";
 import LandingPage from "@/pages/LandingPage";
 import HomePage from "@/pages/HomePage";
+import PricingPage from "@/pages/PricingPage";
+import AboutPage from "@/pages/AboutPage";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -20,6 +22,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/pricing" component={PricingPage} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/landing" component={LandingPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/dashboard" component={Home} />

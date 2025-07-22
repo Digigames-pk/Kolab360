@@ -86,14 +86,14 @@ export default function HomePage() {
           </div>
           
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/landing" className="text-gray-600 hover:text-purple-600 transition-colors">
-              Features
+            <Link href="/about" className="text-gray-600 hover:text-purple-600 transition-colors">
+              About
             </Link>
-            <Link href="/landing" className="text-gray-600 hover:text-purple-600 transition-colors">
+            <Link href="/pricing" className="text-gray-600 hover:text-purple-600 transition-colors">
               Pricing
             </Link>
             <Link href="/landing" className="text-gray-600 hover:text-purple-600 transition-colors">
-              About
+              Features
             </Link>
           </nav>
           
