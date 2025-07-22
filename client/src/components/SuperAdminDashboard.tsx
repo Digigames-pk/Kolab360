@@ -147,6 +147,15 @@ export function SuperAdminDashboard() {
   const [selectedApp, setSelectedApp] = useState<any>(null);
   const [showAppStoreModal, setShowAppStoreModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [showManageSettingsModal, setShowManageSettingsModal] = useState(false);
+  const [showScreenSharingModal, setShowScreenSharingModal] = useState(false);
+  const [showUsersRolesModal, setShowUsersRolesModal] = useState(false);
+  const [showOrgSettingsModal, setShowOrgSettingsModal] = useState(false);
+  const [showSecuritySettingsModal, setShowSecuritySettingsModal] = useState(false);
+  const [showBillingSettingsModal, setShowBillingSettingsModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [customRoles, setCustomRoles] = useState<any[]>([]);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -709,17 +718,66 @@ export function SuperAdminDashboard() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
                               setSelectedOrg(org);
-                              setShowSecurityModal(true);
+                              setShowAddUserModal(true);
                             }}>
-                              <Shield className="h-4 w-4 mr-2" />
-                              Security Settings
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Add New User
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
                               setSelectedOrg(org);
-                              setShowBillingModal(true);
+                              setShowBroadcastModal(true);
+                            }}>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Broadcast Message
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowManageSettingsModal(true);
+                            }}>
+                              <Settings className="h-4 w-4 mr-2" />
+                              Manage Settings
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowScreenSharingModal(true);
+                            }}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Screen Sharing
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowUsersRolesModal(true);
+                            }}>
+                              <Users className="h-4 w-4 mr-2" />
+                              Users and Roles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowOrgSettingsModal(true);
+                            }}>
+                              <Building2 className="h-4 w-4 mr-2" />
+                              Organization Settings
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowSecuritySettingsModal(true);
+                            }}>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Security
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowBillingSettingsModal(true);
                             }}>
                               <DollarSign className="h-4 w-4 mr-2" />
-                              Billing & Plans
+                              Billing
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowSupportModal(true);
+                            }}>
+                              <HelpCircle className="h-4 w-4 mr-2" />
+                              Support
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleShowAppManagement(org)}>
                               <Zap className="h-4 w-4 mr-2" />
@@ -1136,42 +1194,76 @@ export function SuperAdminDashboard() {
                 </Button>
               </div>
               
-              <div className="text-center py-8">
-                <BarChart2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
-                <p className="text-gray-500">Advanced analytics and reporting will be available soon.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-2xl font-bold">247</div>
+                    <div className="text-sm text-gray-600">Total Users</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-2xl font-bold">189</div>
+                    <div className="text-sm text-gray-600">Active Today</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-2xl font-bold">45.2GB</div>
+                    <div className="text-sm text-gray-600">Storage Used</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-2xl font-bold">98.5%</div>
+                    <div className="text-sm text-gray-600">Uptime</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span>Messages Sent</span>
+                        <span className="font-medium">1,247</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Files Uploaded</span>
+                        <span className="font-medium">89</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Channels Created</span>
+                        <span className="font-medium">23</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Security Metrics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span>Login Attempts</span>
+                        <span className="font-medium">456</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Failed Logins</span>
+                        <span className="font-medium text-red-600">3</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>2FA Enabled</span>
+                        <span className="font-medium text-green-600">78%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Browse Apps Modal */}
-        {showAppStoreModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold">Browse Applications</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowAppStoreModal(false)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="mb-6">
-                <Input 
-                  placeholder="Search applications..." 
-                  className="max-w-md"
-                />
-              </div>
-
-              <div className="text-center py-8">
-                <Zap className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">App Store Coming Soon</h3>
-                <p className="text-gray-500">The application marketplace will be available in the next update.</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
