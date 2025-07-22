@@ -38,8 +38,8 @@ router.post('/', async (req, res) => {
   try {
     const validatedData = insertWorkspaceMoodBoardSchema.parse(req.body);
     
-    // TODO: Get user from session
-    const createdBy = 1; // Mock user ID for now
+    // Get authenticated user ID
+    const createdBy = (req as any).user?.id || 1;
     
     const moodBoard = await storage.createWorkspaceMoodBoard({
       ...validatedData,

@@ -1,15 +1,14 @@
 import { Router } from 'express';
+import { storage } from '../storage';
 
 const router = Router();
-
-// Production ready - tasks loaded from database
 
 // GET /api/tasks - Get all tasks
 router.get('/', async (req, res) => {
   try {
     const workspaceId = req.query.workspaceId || '1';
     
-    // Return empty array - production will load from database
+    // Return empty array for now - production will use database
     res.json([]);
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -22,17 +21,19 @@ router.post('/', async (req, res) => {
   try {
     const { title, description, priority = 'medium', category = 'General', workspaceId = '1' } = req.body;
     
-    // Production ready - task creation will use database
+    // Mock task creation for deployment
     const newTask = {
       id: Date.now().toString(),
       title,
       description,
       status: 'todo',
       priority,
-      createdAt: new Date(),
-      updatedAt: new Date(),
       workspaceId,
-      category
+      assignedTo: null,
+      dueDate: null,
+      createdBy: (req as any).user?.id || 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     
     res.status(201).json(newTask);
@@ -48,7 +49,7 @@ router.put('/:id', async (req, res) => {
     const taskId = req.params.id;
     const updates = req.body;
     
-    // Production ready - task update will use database
+    // Mock task update for deployment
     const updatedTask = {
       id: taskId,
       ...updates,
@@ -67,7 +68,8 @@ router.delete('/:id', async (req, res) => {
   try {
     const taskId = req.params.id;
     
-    // Production ready - task deletion will use database
+    // Mock task deletion for deployment
+    
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error('Error deleting task:', error);
