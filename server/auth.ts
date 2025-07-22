@@ -181,6 +181,12 @@ export function requireAuth(req: any, res: any, next: any) {
   console.log('🔍 [DEBUG] req.isAuthenticated():', req.isAuthenticated());
   console.log('🔍 [DEBUG] req.user:', req.user);
   
+  // Public endpoints that don't require authentication
+  if (req.originalUrl === '/api/pricing-plans' && req.method === 'GET') {
+    console.log('✅ [PUBLIC] Allowing public access to pricing plans');
+    return next();
+  }
+  
   // Auto-authenticate for organization routes if not already authenticated
   if (req.originalUrl && req.originalUrl.includes('/api/organizations') && !req.isAuthenticated()) {
     console.log('🔧 [AUTO-AUTH] Auto-authenticating for organization routes');

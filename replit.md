@@ -352,13 +352,15 @@ Required environment variables:
 - **QUICK ACTION MODALS**: Created functional modals for Add User, Broadcast Message, Manage Settings, and Screen Sharing controls with proper form inputs
 - **COMPREHENSIVE FUNCTIONALITY**: All dashboard features now fully operational with no placeholder "coming soon" messages anywhere in the interface
 
-### July 22, 2025 - Complete KOLAB360 Rebranding and Authentication Enhancement
+### July 22, 2025 - Complete KOLAB360 Rebranding and Pricing API Fix
 - **COMPREHENSIVE REBRANDING**: Changed all references from TeamSync AI to KOLAB360 throughout the application
 - **MODERN HOME PAGE**: Created beautiful modern home page with KOLAB360 logo, sign-in/signup buttons, and professional design
 - **DYNAMIC PRICING PAGE**: Built fully functional pricing page that pulls real data from backend pricing plans API
 - **COMPREHENSIVE ABOUT PAGE**: Created detailed about page with company mission, values, team information, and journey timeline
 - **DEMO ACCOUNTS REMOVED**: Eliminated demo accounts section from auth page for professional production appearance
 - **SUPER ADMIN ACCOUNT**: Created super admin account for Marty@onlinechannel.tv with password 123456
+- **PRICING API FIXED**: Resolved authentication requirement blocking public access to pricing plans API - marketing website now displays real plans
+- **PUBLIC ENDPOINT**: Made /api/pricing-plans publicly accessible without authentication for marketing purposes
 - **AUTOMATIC FREE TIER**: Enhanced registration process - new users automatically get free tier access (5 members, basic features)
 - **COMPLETE PAGE SYSTEM**: Home (/), Pricing (/pricing), About (/about), Landing (/landing), Dashboard (/dashboard) for authenticated users
 - **LOGO INTEGRATION**: Integrated provided KOLAB360 purple logo throughout all branding and marketing materials

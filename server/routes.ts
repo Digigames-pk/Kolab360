@@ -1702,14 +1702,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // =================== PRICING PLAN MANAGEMENT API ===================
 
-  // Get all pricing plans
-  app.get('/api/pricing-plans', requireAuth, async (req: any, res) => {
+  // Get all pricing plans (public endpoint for marketing website)
+  app.get('/api/pricing-plans', async (req: any, res) => {
     try {
-      const user = req.user;
-      if (user.role !== 'super_admin') {
-        return res.status(403).json({ error: 'Super admin access required' });
-      }
-
       const plans = await storage.getPricingPlans();
       res.json(plans);
     } catch (error) {
