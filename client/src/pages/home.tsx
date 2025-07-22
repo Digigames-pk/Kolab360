@@ -169,7 +169,7 @@ export default function Home() {
             setActiveView('chat');
             setSelectedDM(null);
           }}
-          onViewChange={setActiveView}
+          onViewChange={(view: string) => setActiveView(view as 'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'admin')}
           currentView={activeView}
           onShowThemeCustomizer={() => setShowThemeCustomizer(true)}
           onShowSearch={() => setShowSearch(true)}
@@ -203,7 +203,7 @@ export default function Home() {
               markAllAsRead();
             }
           }}
-          onViewChange={setActiveView}
+          onViewChange={(view: string) => setActiveView(view as 'chat' | 'tasks' | 'calendar' | 'files' | 'documents' | 'ai' | 'search' | 'integrations' | 'threads' | 'mentions' | 'saved' | 'people' | 'admin')}
           onStartCall={(type) => {
             setCallType(type);
             setShowVoiceCall(true);
@@ -221,7 +221,7 @@ export default function Home() {
             <RealTimeChat
               channelId={selectedDM ? undefined : selectedChannel}
               recipientId={selectedDM ? directMessages.find(dm => dm.name === selectedDM)?.id : undefined}
-              recipientName={selectedDM}
+              recipientName={selectedDM || undefined}
             />
           )}
 
@@ -407,7 +407,7 @@ export default function Home() {
             <WorkspaceThemeCustomizer
               workspaceId={selectedWorkspace}
               currentTheme={currentTheme}
-              onThemeChange={setCurrentTheme}
+              onThemeChange={(theme: any) => setCurrentTheme(theme)}
             />
           </div>
         </div>
@@ -460,7 +460,7 @@ export default function Home() {
       />
 
       {/* Enterprise Admin Panel */}
-      {user.role === 'super_admin' && (
+      {user && user.role === 'super_admin' && (
         <EnterpriseAdminPanel
           isOpen={showEnterprisePanel}
           onClose={() => setShowEnterprisePanel(false)}
