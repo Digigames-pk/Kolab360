@@ -516,6 +516,29 @@ export function SuperAdminDashboard() {
     }
   };
 
+  const handleActivateUser = async (userId: number | string) => {
+    try {
+      if (selectedOrg || selectedOrgForManagement) {
+        const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+        if (!orgId) return;
+        const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'active' })
+        });
+
+        if (response.ok) {
+          await loadOrgUsers(orgId);
+          toast({ title: "Success", description: "User has been activated." });
+        } else {
+          throw new Error('Failed to activate user');
+        }
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to activate user." });
+    }
+  };
+
   const handleDeleteUser = async (userId: number | string) => {
     if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
@@ -543,8 +566,9 @@ export function SuperAdminDashboard() {
     try {
       if (selectedOrg || selectedOrgForManagement) {
         const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
-        const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
-          method: 'PATCH',
+        if (!orgId) return;
+        const response = await fetch(`/api/organizations/${orgId}/users/${userId}/role`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: 'admin' })
         });
@@ -565,8 +589,9 @@ export function SuperAdminDashboard() {
     try {
       if (selectedOrg || selectedOrgForManagement) {
         const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
-        const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
-          method: 'PATCH',
+        if (!orgId) return;
+        const response = await fetch(`/api/organizations/${orgId}/users/${userId}/role`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: 'member' })
         });

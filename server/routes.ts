@@ -1576,6 +1576,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update organization user status/info
+  app.patch('/api/organizations/:id/users/:userId', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const userId = parseInt(req.params.userId);
+      const updateData = req.body;
+      
+      const updatedUser = await storage.updateOrganizationUser(userId, updateData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('✅ User updated:', updatedUser.email, updateData);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ error: 'Failed to update user' });
+    }
+  });
+
   // Change organization user password
   app.put('/api/organizations/:id/users/:userId/password', requireAuth, async (req: any, res) => {
     try {
