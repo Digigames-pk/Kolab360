@@ -21,6 +21,8 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import kolab360LogoPath from "@assets/KOLAB360 purple version Ai-_1753213895701.png";
 
+import KOLAB360_white_version_Ai from "@assets/KOLAB360 white version Ai.png";
+
 export default function HomePage() {
   useEffect(() => {
     document.title = "KOLAB360 - Transform Your Team's Productivity";
@@ -113,7 +115,6 @@ export default function HomePage() {
           </div>
         </div>
       </header>
-
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4">
         <div className="max-w-6xl mx-auto text-center">
@@ -156,7 +157,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Features Preview */}
       <section className="py-16 px-4 bg-white/50">
         <div className="max-w-6xl mx-auto">
@@ -188,7 +188,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="py-16 px-4 bg-gradient-to-r from-purple-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
@@ -217,14 +216,13 @@ export default function HomePage() {
           </p>
         </div>
       </section>
-
       {/* Footer */}
       <footer className="py-12 px-4 bg-gray-900">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src={kolab360LogoPath} alt="KOLAB360" className="h-6 w-auto" />
+                <img src={KOLAB360_white_version_Ai} alt="KOLAB360" className="h-6 w-auto" />
               </div>
               <p className="text-gray-400 text-sm">
                 The future of team collaboration, powered by artificial intelligence.
