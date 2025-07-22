@@ -357,7 +357,7 @@ export function SuperAdminDashboard() {
       console.error('Error creating organization:', error);
       toast({
         title: "Creation Failed",
-        description: error.message || 'Failed to create organization. Please try again.',
+        description: (error as Error).message || 'Failed to create organization. Please try again.',
         variant: "destructive"
       });
     }
@@ -565,7 +565,7 @@ export function SuperAdminDashboard() {
               </Button>
             </div>
 
-            {console.log('🔍 [RENDER] Checking organizations.length:', organizations.length, 'organizations:', organizations)}
+            {(() => { console.log('🔍 [RENDER] Checking organizations.length:', organizations.length, 'organizations:', organizations); return null; })()}
             {organizations.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
@@ -580,9 +580,11 @@ export function SuperAdminDashboard() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {console.log('🔍 [RENDER] About to render', organizations.length, 'organization cards')}
-                {organizations.map((org) => (
-                  <Card key={org.id} className={`border-2 ${org.status === 'suspended' ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
+                {(() => { console.log('🔍 [RENDER] About to render', organizations.length, 'organization cards'); return null; })()}
+                {organizations.map((org) => {
+                  console.log('🔍 [RENDER] Rendering organization:', org.name, 'ID:', org.id);
+                  return (
+                  <Card key={org.id} className={`border-4 border-blue-500 bg-blue-50 min-h-[300px] shadow-lg`}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -592,7 +594,7 @@ export function SuperAdminDashboard() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="font-bold text-lg">{org.name}</h3>
+                            <h3 className="font-bold text-lg text-red-600">🔥 ORGANIZATION: {org.name}</h3>
                             <p className="text-sm text-gray-600">{org.domain}</p>
                           </div>
                         </div>
@@ -695,7 +697,8 @@ export function SuperAdminDashboard() {
                       <Progress value={(org.storageUsed / org.storageLimit) * 100} className="h-2" />
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>

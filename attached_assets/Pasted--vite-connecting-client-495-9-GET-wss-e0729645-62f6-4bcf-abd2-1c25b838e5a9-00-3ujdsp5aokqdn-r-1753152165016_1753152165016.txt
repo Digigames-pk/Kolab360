@@ -1,0 +1,106 @@
+
+[vite] connecting... client:495:9
+GET
+wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=loyS8MJO2dtv
+NS_ERROR_WEBSOCKET_CONNECTION_REFUSED
+
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=loyS8MJO2dtv. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+    setupWebSocket client:552
+    <anonymous> client:531
+client:536
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+WebSocket: Using mock connection in development mode useWebSocket.ts:28:15
+Mock WebSocket message sent: 
+Object { type: "join_workspace", workspaceId: 1, userId: 2 }
+useWebSocket.ts:102:15
+📥 Messages loaded from API: 
+Array []
+RealTimeChat.tsx:178:17
+🔍 File metadata check: 
+Array []
+RealTimeChat.tsx:179:17
+SuperAdminDashboard mounted, current organizations: 0 SuperAdminDashboard.tsx:162:13
+🔍 [DEBUG] loadData - Starting to load organizations... SuperAdminDashboard.tsx:175:15
+🔍 [DEBUG] Checking authentication status... SuperAdminDashboard.tsx:178:15
+📊 [STATE] Organizations state changed: 0 
+Array []
+SuperAdminDashboard.tsx:168:13
+📊 [STATE] Full organizations array: 
+Array []
+SuperAdminDashboard.tsx:169:13
+🔍 [DEBUG] Auth response status: 200 SuperAdminDashboard.tsx:183:15
+🔍 [DEBUG] Auth data: 
+Object { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin", lastLoginAt: null, createdAt: "2025-07-22T02:41:31.075Z" }
+SuperAdminDashboard.tsx:194:15
+🔍 [DEBUG] User role: super_admin SuperAdminDashboard.tsx:195:15
+🔍 [DEBUG] Now loading organizations... SuperAdminDashboard.tsx:199:17
+🔍 [DEBUG] Organizations response status: 200 SuperAdminDashboard.tsx:204:17
+🔍 [DEBUG] Organizations response ok: true SuperAdminDashboard.tsx:205:17
+📊 [DEBUG] Raw organizations from API: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:209:19
+📊 [DEBUG] Setting organizations state with: 1 items SuperAdminDashboard.tsx:210:19
+✅ [DEBUG] Organizations loaded from API: 1 SuperAdminDashboard.tsx:212:19
+✅ [DEBUG] Organizations data: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:213:19
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+📊 [STATE] Organizations state changed: 1 
+Array [ "fds" ]
+SuperAdminDashboard.tsx:168:13
+📊 [STATE] Full organizations array: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:169:13
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+🔍 [RENDER] Checking organizations.length: 1 organizations: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:568:22
+🔍 [RENDER] About to render 1 organization cards SuperAdminDashboard.tsx:583:26
+Source map error: No sources are declared in this source map.
+Resource URL: https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/date-fns.js?v=8b60e34d
+Source Map URL: date-fns.js.map
+
+​
+
