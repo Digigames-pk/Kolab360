@@ -123,6 +123,15 @@ interface Organization {
 
 export function SuperAdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
+  const [orgUsers, setOrgUsers] = useState<any[]>([]);
+  const [orgSettings, setOrgSettings] = useState<any>(null);
+  const [newUserForm, setNewUserForm] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    role: 'member' as 'admin' | 'member' | 'guest',
+    status: 'active' as 'active' | 'suspended'
+  });
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -387,8 +396,10 @@ export function SuperAdminDashboard() {
     return limits[plan as keyof typeof limits] || limits.free;
   };
 
-  const handleShowOrgManagement = (org: Organization) => {
+  const handleShowOrgManagement = async (org: Organization) => {
     setSelectedOrgForManagement(org);
+    await loadOrgUsers(org.id);
+    await loadOrgSettings(org.id);
     setShowOrgManagementModal(true);
   };
 
@@ -482,33 +493,176 @@ export function SuperAdminDashboard() {
     setShowEditUserModal(true);
   };
 
-  const handleSuspendUser = (userId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "User suspension will be available in the next update."
-    });
+  const handleSuspendUser = async (userId: number | string) => {
+    try {
+      if (selectedOrg || selectedOrgForManagement) {
+        const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+        const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'suspended' })
+        });
+
+        if (response.ok) {
+          await loadOrgUsers(orgId);
+          toast({ title: "Success", description: "User has been suspended." });
+        } else {
+          throw new Error('Failed to suspend user');
+        }
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to suspend user." });
+    }
   };
 
-  const handleDeleteUser = (userId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "User deletion will be available in the next update."
-    });
+  const handleDeleteUser = async (userId: number | string) => {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        if (selectedOrg || selectedOrgForManagement) {
+          const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+          const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
+            method: 'DELETE'
+          });
+
+          if (response.ok) {
+            await loadOrgUsers(orgId);
+            toast({ title: "Success", description: "User has been deleted." });
+          } else {
+            throw new Error('Failed to delete user');
+          }
+        }
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to delete user." });
+      }
+    }
   };
 
-  const handlePromoteUser = (userId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "User promotion will be available in the next update."
-    });
+  const handlePromoteUser = async (userId: number | string) => {
+    try {
+      if (selectedOrg || selectedOrgForManagement) {
+        const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+        const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'admin' })
+        });
+
+        if (response.ok) {
+          await loadOrgUsers(orgId);
+          toast({ title: "Success", description: "User has been promoted to admin." });
+        } else {
+          throw new Error('Failed to promote user');
+        }
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to promote user." });
+    }
   };
 
-  const handleDemoteUser = (userId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "User demotion will be available in the next update."
-    });
+  const handleDemoteUser = async (userId: number | string) => {
+    try {
+      if (selectedOrg || selectedOrgForManagement) {
+        const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+        const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'member' })
+        });
+
+        if (response.ok) {
+          await loadOrgUsers(orgId);
+          toast({ title: "Success", description: "User has been demoted to member." });
+        } else {
+          throw new Error('Failed to demote user');
+        }
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to demote user." });
+    }
   };
+
+
+
+  // API Functions for Organization Management
+  const loadOrgUsers = async (orgId: number) => {
+    try {
+      const response = await fetch(`/api/organizations/${orgId}/users`);
+      if (response.ok) {
+        const users = await response.json();
+        setOrgUsers(users);
+      }
+    } catch (error) {
+      console.error('Failed to load organization users:', error);
+    }
+  };
+
+  const loadOrgSettings = async (orgId: number) => {
+    try {
+      const response = await fetch(`/api/organizations/${orgId}/settings`);
+      if (response.ok) {
+        const settings = await response.json();
+        setOrgSettings(settings);
+      }
+    } catch (error) {
+      console.error('Failed to load organization settings:', error);
+    }
+  };
+
+  const updateOrgSettings = async (orgId: number, settingsData: any) => {
+    try {
+      const response = await fetch(`/api/organizations/${orgId}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settingsData)
+      });
+
+      if (response.ok) {
+        const updatedSettings = await response.json();
+        setOrgSettings(updatedSettings);
+        toast({ title: "Success", description: "Organization settings updated." });
+        return updatedSettings;
+      } else {
+        throw new Error('Failed to update settings');
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update organization settings." });
+      throw error;
+    }
+  };
+
+  const handleAddUser = async () => {
+    try {
+      if (selectedOrgForManagement && newUserForm.email && newUserForm.firstName && newUserForm.lastName) {
+        const response = await fetch(`/api/organizations/${selectedOrgForManagement.id}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newUserForm)
+        });
+
+        if (response.ok) {
+          await loadOrgUsers(selectedOrgForManagement.id);
+          setShowAddUserModal(false);
+          setNewUserForm({
+            email: '',
+            firstName: '',
+            lastName: '',
+            role: 'member',
+            status: 'active'
+          });
+          toast({ title: "Success", description: "User has been added successfully." });
+        } else {
+          throw new Error('Failed to add user');
+        }
+      } else {
+        toast({ title: "Error", description: "Please fill in all required fields." });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to add user." });
+    }
+  };
+
+
+
 
   const handleShowAppManagement = (org: Organization) => {
     setSelectedApp(org);
@@ -1388,38 +1542,68 @@ export function SuperAdminDashboard() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <Avatar>
-                                <AvatarFallback>AD</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{selectedOrgForManagement.adminName}</div>
-                                <div className="text-sm text-gray-600">{selectedOrgForManagement.adminEmail}</div>
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Badge>Admin</Badge>
-                              <Badge variant="secondary">Active</Badge>
-                            </div>
-                          </div>
-                          {[...Array(Math.max(0, (selectedOrgForManagement.members || 1) - 1))].map((_, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                          {orgUsers.length > 0 ? orgUsers.map((user) => (
+                            <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                               <div className="flex items-center space-x-3">
                                 <Avatar>
-                                  <AvatarFallback>U{i + 1}</AvatarFallback>
+                                  <AvatarFallback className={`${user.role === 'admin' ? 'bg-blue-600' : 'bg-gray-500'} text-white`}>
+                                    {user.firstName[0]}{user.lastName[0]}
+                                  </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <div className="font-medium">User {i + 1}</div>
-                                  <div className="text-sm text-gray-600">user{i + 1}@{selectedOrgForManagement.domain}</div>
+                                  <div className="font-medium">{user.firstName} {user.lastName}</div>
+                                  <div className="text-sm text-gray-600">{user.email}</div>
                                 </div>
                               </div>
-                              <div className="flex space-x-2">
-                                <Badge variant="outline">Member</Badge>
-                                <Badge variant="secondary">Active</Badge>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={user.role === 'admin' ? 'bg-blue-600' : ''}>{user.role}</Badge>
+                                <Badge variant={user.status === 'active' ? 'secondary' : 'destructive'}>{user.status}</Badge>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit User
+                                    </DropdownMenuItem>
+                                    {user.role !== 'admin' && (
+                                      <DropdownMenuItem onClick={() => handlePromoteUser(user.id)}>
+                                        <Crown className="h-4 w-4 mr-2" />
+                                        Promote to Admin
+                                      </DropdownMenuItem>
+                                    )}
+                                    {user.role === 'admin' && (
+                                      <DropdownMenuItem onClick={() => handleDemoteUser(user.id)}>
+                                        <Minus className="h-4 w-4 mr-2" />
+                                        Demote from Admin
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem onClick={() => handleSuspendUser(user.id)}>
+                                      <Ban className="h-4 w-4 mr-2" />
+                                      Suspend User
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDeleteUser(user.id)} className="text-red-600">
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete User
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
-                          ))}
+                          )) : (
+                            <div className="text-center py-8">
+                              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">No Users</h3>
+                              <p className="text-gray-500 mb-6">No users found in this organization.</p>
+                              <Button onClick={() => setShowAddUserModal(true)}>
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Add First User
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -1521,28 +1705,70 @@ export function SuperAdminDashboard() {
                             <div className="font-medium">File Sharing</div>
                             <div className="text-sm text-gray-600">Allow members to upload files</div>
                           </div>
-                          <Switch defaultChecked />
+                          <Switch 
+                            checked={orgSettings?.fileSharing ?? true} 
+                            onCheckedChange={(checked) => {
+                              if (selectedOrgForManagement) {
+                                updateOrgSettings(selectedOrgForManagement.id, { fileSharing: checked });
+                              }
+                            }}
+                          />
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">External Integrations</div>
                             <div className="text-sm text-gray-600">Enable third-party app connections</div>
                           </div>
-                          <Switch defaultChecked />
+                          <Switch 
+                            checked={orgSettings?.externalIntegrations ?? false} 
+                            onCheckedChange={(checked) => {
+                              if (selectedOrgForManagement) {
+                                updateOrgSettings(selectedOrgForManagement.id, { externalIntegrations: checked });
+                              }
+                            }}
+                          />
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">Guest Access</div>
                             <div className="text-sm text-gray-600">Allow external users to join channels</div>
                           </div>
-                          <Switch />
+                          <Switch 
+                            checked={orgSettings?.guestAccess ?? false} 
+                            onCheckedChange={(checked) => {
+                              if (selectedOrgForManagement) {
+                                updateOrgSettings(selectedOrgForManagement.id, { guestAccess: checked });
+                              }
+                            }}
+                          />
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">Message History</div>
                             <div className="text-sm text-gray-600">Retain full message history</div>
                           </div>
-                          <Switch defaultChecked />
+                          <Switch 
+                            checked={orgSettings?.messageHistory ?? true} 
+                            onCheckedChange={(checked) => {
+                              if (selectedOrgForManagement) {
+                                updateOrgSettings(selectedOrgForManagement.id, { messageHistory: checked });
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Two-Factor Authentication</div>
+                            <div className="text-sm text-gray-600">Require 2FA for all users</div>
+                          </div>
+                          <Switch 
+                            checked={orgSettings?.twoFactorAuth ?? false} 
+                            onCheckedChange={(checked) => {
+                              if (selectedOrgForManagement) {
+                                updateOrgSettings(selectedOrgForManagement.id, { twoFactorAuth: checked });
+                              }
+                            }}
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -2066,17 +2292,36 @@ export function SuperAdminDashboard() {
                 </Button>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
-                  <Input placeholder="Enter user name" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">First Name</label>
+                    <Input 
+                      placeholder="Enter first name" 
+                      value={newUserForm.firstName}
+                      onChange={(e) => setNewUserForm({...newUserForm, firstName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Last Name</label>
+                    <Input 
+                      placeholder="Enter last name" 
+                      value={newUserForm.lastName}
+                      onChange={(e) => setNewUserForm({...newUserForm, lastName: e.target.value})}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Email</label>
-                  <Input type="email" placeholder="Enter email address" />
+                  <Input 
+                    type="email" 
+                    placeholder="Enter email address" 
+                    value={newUserForm.email}
+                    onChange={(e) => setNewUserForm({...newUserForm, email: e.target.value})}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Role</label>
-                  <Select>
+                  <Select value={newUserForm.role} onValueChange={(value: 'admin' | 'member' | 'guest') => setNewUserForm({...newUserForm, role: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -2088,11 +2333,11 @@ export function SuperAdminDashboard() {
                   </Select>
                 </div>
                 <div className="flex space-x-3 pt-4">
-                  <Button onClick={() => {
+                  <Button onClick={handleAddUser}>Add User</Button>
+                  <Button variant="outline" onClick={() => {
                     setShowAddUserModal(false);
-                    toast({ title: "User Added", description: "New user has been successfully added." });
-                  }}>Add User</Button>
-                  <Button variant="outline" onClick={() => setShowAddUserModal(false)}>Cancel</Button>
+                    setNewUserForm({ email: '', firstName: '', lastName: '', role: 'member', status: 'active' });
+                  }}>Cancel</Button>
                 </div>
               </div>
             </div>
