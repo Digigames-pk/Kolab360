@@ -71,15 +71,7 @@ export default function AuthPage() {
     }
   };
 
-  const demoCredentials = [
-    { role: "Super Admin", email: "superadmin@test.com", password: "superadmin123" },
-    { role: "Admin", email: "admin@test.com", password: "admin123" },
-    { role: "User", email: "user@test.com", password: "user123" },
-  ];
 
-  const fillDemoCredentials = (email: string, password: string) => {
-    setLoginData({ email, password });
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
@@ -92,7 +84,7 @@ export default function AuthPage() {
                 <div className="bg-primary rounded-lg p-2">
                   <MessageSquare className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <h1 className="text-3xl font-bold">CollabSpace</h1>
+                <h1 className="text-3xl font-bold">KOLAB360</h1>
               </div>
               <p className="text-xl text-muted-foreground">
                 The modern collaboration platform that brings teams together with AI-powered features
@@ -137,32 +129,7 @@ export default function AuthPage() {
               </div>
             </div>
 
-            {/* Demo Credentials */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Demo Accounts</CardTitle>
-                <CardDescription>
-                  Try different roles with these test accounts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {demoCredentials.map((cred) => (
-                  <div key={cred.role} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="font-medium">{cred.role}</p>
-                      <p className="text-sm text-muted-foreground">{cred.email}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fillDemoCredentials(cred.email, cred.password)}
-                    >
-                      Use
-                    </Button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+
           </div>
 
           {/* Right Column - Auth Forms */}
@@ -235,7 +202,7 @@ export default function AuthPage() {
                   <CardHeader>
                     <CardTitle>Create an account</CardTitle>
                     <CardDescription>
-                      Sign up to get started with CollabSpace
+                      Sign up to get started with KOLAB360
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
