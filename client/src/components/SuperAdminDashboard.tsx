@@ -497,6 +497,7 @@ export function SuperAdminDashboard() {
     try {
       if (selectedOrg || selectedOrgForManagement) {
         const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+        if (!orgId) return;
         const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -520,6 +521,7 @@ export function SuperAdminDashboard() {
       try {
         if (selectedOrg || selectedOrgForManagement) {
           const orgId = selectedOrg?.id || selectedOrgForManagement?.id;
+          if (!orgId) return;
           const response = await fetch(`/api/organizations/${orgId}/users/${userId}`, {
             method: 'DELETE'
           });
