@@ -33,7 +33,10 @@ import moodBoardRoutes from './routes/mood-boards';
 import integrationsRouter from './integrations';
 import { uploadFileToWasabi } from "./wasabi";
 import { nanoid } from 'nanoid';
-import { scrypt } from 'crypto';
+import { scrypt, randomBytes } from 'crypto';
+import { promisify } from 'util';
+
+const scryptAsync = promisify(scrypt);
 
 // Helper functions for password generation and hashing
 function generateRandomPassword(length: number = 12): string {
@@ -45,14 +48,11 @@ function generateRandomPassword(length: number = 12): string {
   return password;
 }
 
+// Use same hashing method as auth.ts for consistency
 async function hashPassword(password: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const salt = Buffer.from(nanoid(16), 'utf-8');
-    scrypt(password, salt, 64, (err, derivedKey) => {
-      if (err) reject(err);
-      resolve(`${derivedKey.toString('hex')}.${salt.toString('hex')}`);
-    });
-  });
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
 }
 
 // Configure multer for memory storage - files will be uploaded to Wasabi
@@ -1704,15 +1704,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = parseInt(req.params.userId);
       const passwordData = changePasswordSchema.parse(req.body);
       
-      // Hash the new password
-      const crypto = await import('node:crypto');
-      const { scrypt, randomBytes } = crypto;
-      const { promisify } = await import('node:util');
-      const scryptAsync = promisify(scrypt);
-      
-      const salt = randomBytes(16).toString("hex");
-      const buf = await scryptAsync(passwordData.newPassword, salt, 64);
-      const hashedPassword = `${buf.toString("hex")}.${salt}`;
+      // Hash the new password using the same method as user creation
+      const hashedPassword = await hashPassword(passwordData.newPassword);
       
       const updatedUser = await storage.updateOrganizationUserPassword(userId, hashedPassword);
       
@@ -1748,6 +1741,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting organization user:', error);
       res.status(500).json({ error: 'Failed to delete organization user' });
+    }
+  });
+
+  // =================== EMAIL TESTING API ===================
+  
+  // Direct email test (no auth required for testing)
+  app.post('/api/test-email-direct', async (req: any, res) => {
+    try {
+      // Test with simple template without domain references
+      const result = await emailService.sendEmail({
+        to: 'marty@24flix.com',
+        subject: 'KOLAB360 Test Email',
+        html: '<h1>Test Email</h1><p>This is a test email from KOLAB360.</p>',
+        text: 'Test Email - This is a test email from KOLAB360.'
+      });
+      
+      console.log('🧪 Direct email test result:', result);
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('❌ Direct email test failed:', error);
+      res.status(500).json({ error: 'Failed to send test email' });
+    }
+  });
+
+  // Test email endpoint
+  app.post('/api/test-email', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const { to, type } = req.body;
+      
+      let result;
+      switch (type) {
+        case 'welcome':
+          result = await emailService.sendWelcomeEmail(to, 'Test User', 'User', to, 'test123');
+          break;
+        case 'mention':
+          result = await emailService.sendMentionNotification(to, 'Test User', 'This is a test mention', '#general', 'Test Channel');
+          break;
+        default:
+          return res.status(400).json({ error: 'Invalid email type' });
+      }
+      
+      console.log('🧪 Test email result:', result);
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('❌ Test email failed:', error);
+      res.status(500).json({ error: 'Failed to send test email' });
     }
   });
 

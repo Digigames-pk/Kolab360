@@ -63,16 +63,47 @@ export function setupAuth(app: Express) {
       async (email, password, done) => {
         try {
           console.log(`🔍 Authentication attempt for: ${email}`);
-          const user = await storage.getUserByEmail(email);
-          console.log(`👤 User found:`, user ? `${user.email} (active: ${user.isActive})` : 'not found');
+          
+          // First check main users table
+          let user = await storage.getUserByEmail(email);
+          console.log(`👤 Main user found:`, user ? `${user.email} (active: ${user.isActive})` : 'not found');
+          
+          // If not found in main users, check organization users
+          if (!user) {
+            const orgUser = await storage.getOrganizationUserByEmail(email);
+            console.log(`👤 Organization user found:`, orgUser ? `${orgUser.email} (status: ${orgUser.status})` : 'not found');
+            console.log(`🔍 Organization user data:`, JSON.stringify(orgUser, null, 2));
+            
+            if (orgUser && orgUser.status === 'active') {
+              // Convert organization user to main user format for authentication
+              user = {
+                id: orgUser.id,
+                email: orgUser.email,
+                firstName: orgUser.firstName,
+                lastName: orgUser.lastName,
+                role: orgUser.role,
+                password: orgUser.password,
+                isActive: orgUser.status === 'active',
+                createdAt: orgUser.createdAt,
+                lastLoginAt: orgUser.lastLoginAt,
+                updatedAt: orgUser.updatedAt
+              } as User;
+            }
+          }
           
           if (!user || !user.isActive) {
-            console.log('❌ User not found or inactive');
+            console.log('❌ User not found or inactive in both tables');
             return done(null, false);
           }
           
           console.log(`🔑 Checking password for user ${user.email}`);
-          console.log(`🔑 Stored hash: ${user.password.substring(0, 20)}...`);
+          console.log(`🔑 Password field exists: ${!!user.password}`);
+          if (user.password) {
+            console.log(`🔑 Stored hash: ${user.password.substring(0, 20)}...`);
+          } else {
+            console.log(`❌ No password found for user`);
+            return done(null, false);
+          }
           const isValid = await comparePasswords(password, user.password);
           console.log(`🔐 Password valid: ${isValid}`);
           

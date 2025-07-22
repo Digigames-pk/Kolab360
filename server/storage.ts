@@ -126,6 +126,7 @@ export interface IStorage {
   
   // Organization User operations
   getOrganizationUsers(orgId: number): Promise<OrganizationUser[]>;
+  getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined>;
   createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser>;
   updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined>;
   deleteOrganizationUser(id: number): Promise<boolean>;
@@ -704,6 +705,15 @@ export class DatabaseStorage implements IStorage {
   // Organization User operations
   async getOrganizationUsers(orgId: number): Promise<OrganizationUser[]> {
     return await db.select().from(organizationUsers).where(eq(organizationUsers.organizationId, orgId));
+  }
+
+  async getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined> {
+    // Get all users with this email and prefer ones with passwords
+    const users = await db.select().from(organizationUsers).where(eq(organizationUsers.email, email));
+    
+    // Prefer users with non-null passwords
+    const userWithPassword = users.find(user => user.password !== null && user.password !== '');
+    return userWithPassword || users[0];
   }
 
   async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {
@@ -1464,6 +1474,10 @@ class MemoryStorage implements IStorage {
 
   async getOrganizationUsers(orgId: number): Promise<OrganizationUser[]> {
     return [];
+  }
+
+  async getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined> {
+    return undefined;
   }
 
   async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {

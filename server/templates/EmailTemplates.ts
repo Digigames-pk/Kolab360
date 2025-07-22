@@ -47,9 +47,9 @@ export class EmailTemplates {
                 <p>Get help with content creation and team insights</p>
               </div>
               
-              <a href="https://kolab360.com/dashboard" class="button">Start Collaborating</a>
+              <a href="https://team-sync-ai.replit.app/dashboard" class="button">Start Collaborating</a>
               
-              <p>If you have any questions, our support team is here to help at support@kolab360.com</p>
+              <p>If you have any questions, our support team is here to help at support@gmail.com</p>
             </div>
             <div class="footer">
               <p>© 2025 Kolab360. Building the future of team collaboration.</p>
@@ -70,9 +70,9 @@ Get Started with Your New Workspace:
 📅 Schedule Events - Coordinate meetings and deadlines with the integrated calendar
 🤖 AI Assistant - Get help with content creation and team insights
 
-Start Collaborating: https://kolab360.com/dashboard
+Start Collaborating: https://team-sync-ai.replit.app/dashboard
 
-If you have any questions, our support team is here to help at support@kolab360.com
+If you have any questions, our support team is here to help at support@gmail.com
 
 © 2025 Kolab360. Building the future of team collaboration.`;
 
@@ -110,9 +110,9 @@ If you have any questions, our support team is here to help at support@kolab360.
                 <p>"${messagePreview}"</p>
               </div>
               
-              <a href="https://kolab360.com/channels/${channel}" class="button">View Message</a>
+              <a href="https://team-sync-ai.replit.app/dashboard" class="button">View Message</a>
               
-              <p>Don't want these notifications? <a href="https://kolab360.com/settings/notifications">Update your preferences</a></p>
+              <p>Don't want these notifications? <a href="https://team-sync-ai.replit.app/dashboard">Update your preferences</a></p>
             </div>
           </div>
         </body>
@@ -128,9 +128,9 @@ ${mentioner} mentioned you in #${channel}
 Message Preview:
 "${messagePreview}"
 
-View Message: https://kolab360.com/channels/${channel}
+View Message: https://team-sync-ai.replit.app/dashboard
 
-Don't want these notifications? Update your preferences: https://kolab360.com/settings/notifications`;
+Don't want these notifications? Update your preferences: https://team-sync-ai.replit.app/dashboard`;
 
     return { subject, html, text };
   }
@@ -171,7 +171,7 @@ Don't want these notifications? Update your preferences: https://kolab360.com/se
                 <p><strong>Assigned by:</strong> ${assignerName}</p>
               </div>
               
-              <a href="https://kolab360.com/tasks" class="button">View Task Details</a>
+              <a href="https://team-sync-ai.replit.app/dashboard" class="button">View Task Details</a>
               
               <p>Stay organized and keep your team updated on your progress!</p>
             </div>
@@ -191,7 +191,7 @@ ${priority ? `Priority: ${priority}` : ''}
 ${dueDate ? `Due: ${new Date(dueDate).toLocaleDateString()}` : ''}
 Assigned by: ${assignerName}
 
-View Task Details: https://kolab360.com/tasks
+View Task Details: https://team-sync-ai.replit.app/dashboard
 
 Stay organized and keep your team updated on your progress!`;
 
@@ -240,8 +240,8 @@ Stay organized and keep your team updated on your progress!`;
               </div>
               
               <div style="text-align: center;">
-                <a href="https://kolab360.com/calendar/accept" class="button">✓ Accept</a>
-                <a href="https://kolab360.com/calendar/decline" class="button decline">✗ Decline</a>
+                <a href="https://team-sync-ai.replit.app/dashboard" class="button">✓ Accept</a>
+                <a href="https://team-sync-ai.replit.app/dashboard" class="button decline">✗ Decline</a>
               </div>
               
               <p>This event will be added to your Kolab360 calendar once you respond.</p>
@@ -265,8 +265,8 @@ When: ${new Date(startDate).toLocaleDateString()} at ${new Date(startDate).toLoc
 ${location ? `Where: ${location}` : ''}
 ${description ? `Description: ${description}` : ''}
 
-Accept: https://kolab360.com/calendar/accept
-Decline: https://kolab360.com/calendar/decline
+Accept: https://team-sync-ai.replit.app/dashboard
+Decline: https://team-sync-ai.replit.app/dashboard
 
 This event will be added to your Kolab360 calendar once you respond.`;
 
@@ -306,12 +306,12 @@ This event will be added to your Kolab360 calendar once you respond.`;
               
               <p>Click the button below to reset your password:</p>
               
-              <a href="https://kolab360.com/reset-password?token=${resetToken}" class="button">Reset Password</a>
+              <a href="https://team-sync-ai.replit.app/reset-password?token=${resetToken}" class="button">Reset Password</a>
               
               <p>Or copy and paste this link into your browser:</p>
-              <div class="token">https://kolab360.com/reset-password?token=${resetToken}</div>
+              <div class="token">https://team-sync-ai.replit.app/reset-password?token=${resetToken}</div>
               
-              <p>If you continue to have problems, please contact our support team at support@kolab360.com</p>
+              <p>If you continue to have problems, please contact our support team at support@gmail.com</p>
               
               <p>Best regards,<br>The Kolab360 Team</p>
             </div>
@@ -328,9 +328,9 @@ We received a request to reset your Kolab360 password. If you didn't make this r
 
 ⚠️ Security Notice: This reset link will expire in 1 hour for your security.
 
-Reset your password: https://kolab360.com/reset-password?token=${resetToken}
+Reset your password: https://team-sync-ai.replit.app/reset-password?token=${resetToken}
 
-If you continue to have problems, please contact our support team at support@kolab360.com
+If you continue to have problems, please contact our support team at support@gmail.com
 
 Best regards,
 The Kolab360 Team`;
@@ -371,9 +371,9 @@ The Kolab360 Team`;
                 <code style="font-size: 18px; font-weight: bold;">${inviteCode}</code>
               </div>
               
-              <a href="https://kolab360.com/join?code=${inviteCode}" class="button">Join Workspace</a>
+              <a href="https://team-sync-ai.replit.app/join?code=${inviteCode}" class="button">Join Workspace</a>
               
-              <p>Or visit kolab360.com and enter the invite code manually.</p>
+              <p>Or visit team-sync-ai.replit.app and enter the invite code manually.</p>
               
               <p>Welcome to the team!</p>
             </div>
@@ -392,9 +392,9 @@ Join your team to collaborate on projects, share files, manage tasks, and stay c
 
 Your Invite Code: ${inviteCode}
 
-Join Workspace: https://kolab360.com/join?code=${inviteCode}
+Join Workspace: https://team-sync-ai.replit.app/join?code=${inviteCode}
 
-Or visit kolab360.com and enter the invite code manually.
+Or visit team-sync-ai.replit.app and enter the invite code manually.
 
 Welcome to the team!`;
 
@@ -456,7 +456,7 @@ Welcome to the team!`;
                 <li>Files shared: ${stats.filesShared || 5}</li>
               </ul>
               
-              <a href="https://kolab360.com/dashboard" class="button">View Dashboard</a>
+              <a href="https://team-sync-ai.replit.app/dashboard" class="button">View Dashboard</a>
               
               <p>Stay productive and keep collaborating!</p>
             </div>
@@ -482,7 +482,7 @@ Here's what happened in your workspace today:
 - Top contributor: ${stats.topContributor || 'John Doe'}
 - Files shared: ${stats.filesShared || 5}
 
-View Dashboard: https://kolab360.com/dashboard
+View Dashboard: https://team-sync-ai.replit.app/dashboard
 
 Stay productive and keep collaborating!`;
 
@@ -530,7 +530,7 @@ Stay productive and keep collaborating!`;
                 <p>This is a temporary password. Please change it immediately after your first login for security purposes.</p>
               </div>
               
-              <a href="https://kolab360.com/auth" class="button">Login to Your Account</a>
+              <a href="https://team-sync-ai.replit.app/login" class="button">Login to Your Account</a>
               
               <h3>What you can do in Kolab360:</h3>
               <ul>
@@ -565,7 +565,7 @@ Role: ${role.charAt(0).toUpperCase() + role.slice(1)}
 🔒 Important Security Notice:
 This is a temporary password. Please change it immediately after your first login for security purposes.
 
-Login to Your Account: https://kolab360.com/auth
+Login to Your Account: https://team-sync-ai.replit.app/login
 
 What you can do in Kolab360:
 - 💬 Communicate with your team in channels
