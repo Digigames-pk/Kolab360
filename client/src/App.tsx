@@ -11,12 +11,14 @@ import AuthPage from "@/pages/auth-page";
 import Home from "@/pages/home";
 import Workspace from "@/pages/workspace";
 import EmailTest from "@/pages/email-test";
+import LandingPage from "@/pages/LandingPage";
 
 function Router() {
   const { user, isLoading } = useAuth();
 
   return (
     <Switch>
+      <Route path="/landing" component={LandingPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/workspace/:workspaceId" component={Workspace} />
