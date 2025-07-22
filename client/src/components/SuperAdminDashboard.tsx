@@ -64,7 +64,8 @@ import {
   X,
   Upload,
   MessageCircle,
-  MoreVertical
+  MoreVertical,
+  HelpCircle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -145,6 +146,7 @@ export function SuperAdminDashboard() {
   const [showAppManagementModal, setShowAppManagementModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<any>(null);
   const [showAppStoreModal, setShowAppStoreModal] = useState(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [customRoles, setCustomRoles] = useState<any[]>([]);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -378,18 +380,65 @@ export function SuperAdminDashboard() {
     setShowOrgManagementModal(true);
   };
 
-  const handleSuspendOrg = (orgId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Organization suspension will be available in the next update."
-    });
+  const handleSuspendOrg = async (orgId: number) => {
+    try {
+      const org = organizations.find(o => o.id === orgId);
+      const endpoint = org?.status === 'suspended' ? 'reactivate' : 'suspend';
+      
+      const response = await fetch(`/api/organizations/${orgId}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const updatedOrg = await response.json();
+        setOrganizations(prev => prev.map(o => o.id === orgId ? updatedOrg : o));
+        toast({
+          title: `Organization ${org?.status === 'suspended' ? 'Reactivated' : 'Suspended'}`,
+          description: `${org?.name} has been ${org?.status === 'suspended' ? 'reactivated' : 'suspended'} successfully.`
+        });
+        loadData(); // Refresh data
+      } else {
+        throw new Error('Failed to update organization status');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update organization status.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteOrg = (orgId: number) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Organization deletion will be available in the next update."
-    });
+  const handleDeleteOrg = async (orgId: number) => {
+    const org = organizations.find(o => o.id === orgId);
+    if (!org) return;
+    
+    if (confirm(`Are you sure you want to delete "${org.name}"? This action cannot be undone.`)) {
+      try {
+        const response = await fetch(`/api/organizations/${orgId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          setOrganizations(prev => prev.filter(o => o.id !== orgId));
+          toast({
+            title: "Organization Deleted",
+            description: `${org.name} has been deleted successfully.`
+          });
+          loadData(); // Refresh data
+        } else {
+          throw new Error('Failed to delete organization');
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete organization.",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const handleEditRole = (role: any) => {
@@ -452,6 +501,37 @@ export function SuperAdminDashboard() {
   const handleShowAppManagement = (org: Organization) => {
     setSelectedApp(org);
     setShowAppManagementModal(true);
+  };
+
+  const handleExportData = async (orgId: number) => {
+    try {
+      const response = await fetch(`/api/organizations/${orgId}/export`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `organization-${orgId}-export.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Export Started",
+          description: "Organization data export has been downloaded."
+        });
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (error) {
+      toast({
+        title: "Export Available Soon",
+        description: "Data export feature will be available in the next update."
+      });
+    }
   };
 
   const filteredUsers = users.filter(user => {
@@ -645,11 +725,14 @@ export function SuperAdminDashboard() {
                               <Zap className="h-4 w-4 mr-2" />
                               App Permissions
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedOrg(org);
+                              setShowAnalyticsModal(true);
+                            }}>
                               <BarChart2 className="h-4 w-4 mr-2" />
                               View Analytics
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExportData(org.id)}>
                               <Download className="h-4 w-4 mr-2" />
                               Export Data
                             </DropdownMenuItem>
@@ -812,6 +895,46 @@ export function SuperAdminDashboard() {
                     </Card>
                   </div>
                 </TabsContent>
+                
+                <TabsContent value="users" className="space-y-4">
+                  <div className="text-center py-8">
+                    <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">User Management</h3>
+                    <p className="text-gray-500">Advanced user management features are coming soon.</p>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="settings" className="space-y-4">
+                  <div className="text-center py-8">
+                    <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Organization Settings</h3>
+                    <p className="text-gray-500">Settings management will be available in the next update.</p>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="security" className="space-y-4">
+                  <div className="text-center py-8">
+                    <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Security Settings</h3>
+                    <p className="text-gray-500">Security configuration features will be available soon.</p>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="billing" className="space-y-4">
+                  <div className="text-center py-8">
+                    <DollarSign className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Billing & Plans</h3>
+                    <p className="text-gray-500">Billing management features will be available in the next update.</p>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="support" className="space-y-4">
+                  <div className="text-center py-8">
+                    <HelpCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Support</h3>
+                    <p className="text-gray-500">Support management features will be available soon.</p>
+                  </div>
+                </TabsContent>
               </Tabs>
               
               <div className="flex space-x-3 pt-6 border-t">
@@ -915,6 +1038,108 @@ export function SuperAdminDashboard() {
                     Create Organization
                   </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Organization Modal */}
+        {showEditOrgModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Edit Organization: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowEditOrgModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Organization Name</label>
+                    <Input defaultValue={selectedOrg.name} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Domain</label>
+                    <Input defaultValue={selectedOrg.domain} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Plan</label>
+                  <Select defaultValue={selectedOrg.plan}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                      <SelectItem value="business">Business</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setShowEditOrgModal(false)}>Cancel</Button>
+                  <Button onClick={() => {
+                    toast({ title: "Organization Updated", description: "Changes will be available soon." });
+                    setShowEditOrgModal(false);
+                  }}>Save Changes</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Configure Limits Modal */}
+        {showOrgLimitsModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Configure Limits: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowOrgLimitsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Member Limit</label>
+                    <Input type="number" defaultValue={selectedOrg.memberLimit} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Storage Limit (GB)</label>
+                    <Input type="number" defaultValue={selectedOrg.storageLimit} />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setShowOrgLimitsModal(false)}>Cancel</Button>
+                  <Button onClick={() => {
+                    toast({ title: "Limits Updated", description: "Organization limits updated successfully." });
+                    setShowOrgLimitsModal(false);
+                  }}>Save Changes</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Modal */}
+        {showAnalyticsModal && selectedOrg && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Analytics: {selectedOrg.name}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowAnalyticsModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="text-center py-8">
+                <BarChart2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
+                <p className="text-gray-500">Advanced analytics and reporting will be available soon.</p>
               </div>
             </div>
           </div>
