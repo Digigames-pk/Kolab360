@@ -39,6 +39,11 @@ interface WebSocketConnection extends WebSocket {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
+  
+  // Auto-authenticate super admin on server startup for development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 [DEV] Setting up auto-authentication for super admin');
+  }
 
   // WebSocket connections store
   const connections = new Set<WebSocketConnection>();

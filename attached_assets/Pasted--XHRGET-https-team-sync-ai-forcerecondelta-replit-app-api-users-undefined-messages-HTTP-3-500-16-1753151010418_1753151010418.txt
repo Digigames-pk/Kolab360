@@ -1,0 +1,63 @@
+
+XHRGET
+https://team-sync-ai-forcerecondelta.replit.app/api/users/undefined/messages
+[HTTP/3 500  163ms]
+
+SuperAdminDashboard mounted, current organizations: 0 index-DEB2EOht.js:870:40694
+XHRGET
+https://team-sync-ai-forcerecondelta.replit.app/api/organizations
+[HTTP/3 500  224ms]
+
+Organizations state changed: 0 
+Array []
+index-DEB2EOht.js:870:40796
+Failed to load organizations: 500 index-DEB2EOht.js:870:41072
+Organizations state changed: 0 
+Array []
+index-DEB2EOht.js:870:40796
+Creating organization with data: 
+Object { name: "asdfasdf", domain: "asdfsd", plan: "free", adminEmail: "asdfad", adminFirstName: "asdf", adminLastName: "asdf" }
+​
+adminEmail: "asdfad"
+​
+adminFirstName: "asdf"
+​
+adminLastName: "asdf"
+​
+domain: "asdfsd"
+​
+name: "asdfasdf"
+​
+plan: "free"
+​
+<prototype>: Object { … }
+index-DEB2EOht.js:870:41989
+XHRPOST
+https://team-sync-ai-forcerecondelta.replit.app/api/organizations
+[HTTP/3 500  206ms]
+
+Error creating organization: Error: Failed to create organization
+    te https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:870
+    pI https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    xI https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    vI https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    ab https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    N2 https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    Vh https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    Vv https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:40
+    KS https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    Vh https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    gv https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    II https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    S2 https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    zh https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    Dc https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    Dc https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:37
+    createRoot https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:40
+    LZ https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:890
+    OR https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:1
+    <anonymous> https://team-sync-ai-forcerecondelta.replit.app/assets/index-DEB2EOht.js:890
+index-DEB2EOht.js:870:42990
+
+​
+
