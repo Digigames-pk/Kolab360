@@ -1,0 +1,88 @@
+
+[vite] connecting... client:495:9
+GET
+wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=0CTLhvgyXjQZ
+NS_ERROR_WEBSOCKET_CONNECTION_REFUSED
+
+Firefox can’t establish a connection to the server at wss://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/?token=0CTLhvgyXjQZ. client:536:19
+Uncaught (in promise) DOMException: An invalid or illegal string was specified
+    setupWebSocket client:536
+    fallback client:509
+    setupWebSocket client:555
+    setupWebSocket client:552
+    <anonymous> client:531
+client:536
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29895:17
+XHRGET
+https://e0729645-62f6-4bcf-abd2-1c25b838e5a9-00-3ujdsp5aokqdn.riker.replit.dev/api/auth/me
+[HTTP/1.1 401 Unauthorized 48ms]
+
+WebSocket: Using mock connection in development mode useWebSocket.ts:28:15
+Mock WebSocket message sent: 
+Object { type: "join_workspace", workspaceId: 1, userId: 2 }
+useWebSocket.ts:102:15
+📥 Messages loaded from API: 
+Array []
+RealTimeChat.tsx:178:17
+🔍 File metadata check: 
+Array []
+RealTimeChat.tsx:179:17
+SuperAdminDashboard mounted, current organizations: 0 SuperAdminDashboard.tsx:162:13
+🔍 [DEBUG] loadData - Starting to load organizations... SuperAdminDashboard.tsx:174:15
+🔍 [DEBUG] Checking authentication status... SuperAdminDashboard.tsx:177:15
+Organizations state changed: 0 
+Array []
+SuperAdminDashboard.tsx:168:13
+🔍 [DEBUG] Auth response status: 200 SuperAdminDashboard.tsx:182:15
+🔍 [DEBUG] Auth data: 
+Object { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin", lastLoginAt: null, createdAt: "2025-07-22T02:35:43.491Z" }
+SuperAdminDashboard.tsx:193:15
+🔍 [DEBUG] User role: super_admin SuperAdminDashboard.tsx:194:15
+🔍 [DEBUG] Now loading organizations... SuperAdminDashboard.tsx:198:17
+🔍 [DEBUG] Organizations response status: 200 SuperAdminDashboard.tsx:203:17
+🔍 [DEBUG] Organizations response ok: true SuperAdminDashboard.tsx:204:17
+✅ [DEBUG] Organizations loaded from API: 0 SuperAdminDashboard.tsx:209:19
+✅ [DEBUG] Organizations data: 
+Array []
+SuperAdminDashboard.tsx:210:19
+Organizations state changed: 0 
+Array []
+SuperAdminDashboard.tsx:168:13
+Creating organization with data: 
+Object { name: "sdf", domain: "fdsf", plan: "free", adminEmail: "asdf", adminFirstName: "", adminLastName: "" }
+SuperAdminDashboard.tsx:277:13
+🔍 [DEBUG] Creating organization with form data: 
+Object { name: "sdf", domain: "fdsf", plan: "free", adminEmail: "asdf", adminFirstName: "", adminLastName: "" }
+SuperAdminDashboard.tsx:288:15
+🔍 [DEBUG] Using admin names: 
+Object { adminFirstName: "Admin", adminLastName: "User" }
+SuperAdminDashboard.tsx:293:15
+🔍 [DEBUG] Prepared organization data for API: 
+Object { name: "sdf", domain: "fdsf", plan: "free", status: "active", members: 1, memberLimit: 10, storageUsed: 0, storageLimit: 1, adminName: "Admin User", adminEmail: "asdf", … }
+SuperAdminDashboard.tsx:311:15
+🔍 [DEBUG] Sending POST request to /api/organizations SuperAdminDashboard.tsx:313:15
+🔍 [DEBUG] Response status: 201 SuperAdminDashboard.tsx:323:15
+🔍 [DEBUG] Response ok: true SuperAdminDashboard.tsx:324:15
+✅ Organization created via API: 
+Object { id: 1, name: "sdf", domain: "fdsf", plan: "free", status: "active", members: 1, memberLimit: 10, storageUsed: 0, storageLimit: 1, adminEmail: "asdf", … }
+SuperAdminDashboard.tsx:328:17
+🔍 [DEBUG] loadData - Starting to load organizations... SuperAdminDashboard.tsx:174:15
+🔍 [DEBUG] Checking authentication status... SuperAdminDashboard.tsx:177:15
+🔍 [DEBUG] Auth response status: 200 SuperAdminDashboard.tsx:182:15
+🔍 [DEBUG] Auth data: 
+Object { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin", lastLoginAt: null, createdAt: "2025-07-22T02:35:53.727Z" }
+SuperAdminDashboard.tsx:193:15
+🔍 [DEBUG] User role: super_admin SuperAdminDashboard.tsx:194:15
+🔍 [DEBUG] Now loading organizations... SuperAdminDashboard.tsx:198:17
+🔍 [DEBUG] Organizations response status: 200 SuperAdminDashboard.tsx:203:17
+🔍 [DEBUG] Organizations response ok: true SuperAdminDashboard.tsx:204:17
+✅ [DEBUG] Organizations loaded from API: 1 SuperAdminDashboard.tsx:209:19
+✅ [DEBUG] Organizations data: 
+Array [ {…} ]
+SuperAdminDashboard.tsx:210:19
+Organizations state changed: 1 
+Array [ "sdf" ]
+SuperAdminDashboard.tsx:168:13
+
+​
+

@@ -165,7 +165,8 @@ export function SuperAdminDashboard() {
 
   // Debug organizations state changes
   useEffect(() => {
-    console.log('Organizations state changed:', organizations.length, organizations.map(o => o.name));
+    console.log('📊 [STATE] Organizations state changed:', organizations.length, organizations.map(o => o.name));
+    console.log('📊 [STATE] Full organizations array:', organizations);
   }, [organizations]);
 
   const loadData = async () => {
@@ -205,6 +206,8 @@ export function SuperAdminDashboard() {
         
         if (response.ok) {
           const orgs = await response.json();
+          console.log('📊 [DEBUG] Raw organizations from API:', orgs);
+          console.log('📊 [DEBUG] Setting organizations state with:', orgs.length, 'items');
           setOrganizations(orgs);
           console.log('✅ [DEBUG] Organizations loaded from API:', orgs.length);
           console.log('✅ [DEBUG] Organizations data:', orgs);
@@ -327,8 +330,11 @@ export function SuperAdminDashboard() {
         const newOrg = await response.json();
         console.log('✅ Organization created via API:', newOrg);
         
-        // Refresh all data to ensure consistency
-        await loadData();
+        // Add the new organization immediately to the state
+        setOrganizations(prev => [...prev, newOrg]);
+        
+        // Also refresh data to ensure consistency
+        setTimeout(() => loadData(), 100);
         setShowCreateOrgModal(false);
         setNewOrgData({
           name: '',
