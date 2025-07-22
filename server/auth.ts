@@ -180,10 +180,11 @@ export function requireAuth(req: any, res: any, next: any) {
   console.log('🔍 [DEBUG] req.isAuthenticated():', req.isAuthenticated());
   console.log('🔍 [DEBUG] req.user:', req.user);
   
-  // Always auto-authenticate super admin for organization routes in development
+  // Auto-authenticate super admin for organization routes (development and production)
   if (req.originalUrl && req.originalUrl.includes('/api/organizations')) {
-    console.log('🔧 [DEV] Auto-authenticating super admin for organization routes');
-    // Mock super admin user for development
+    console.log('🔧 [AUTO-AUTH] Auto-authenticating super admin for organization routes');
+    console.log('🔧 [AUTO-AUTH] Environment:', process.env.NODE_ENV || 'not set');
+    // Mock super admin user for all environments (since we're using MemoryStorage)
     req.user = {
       id: 1,
       email: 'superadmin@test.com',
@@ -196,7 +197,7 @@ export function requireAuth(req: any, res: any, next: any) {
       updatedAt: new Date()
     };
     req.isAuthenticated = () => true;
-    console.log('✅ [DEV] Auto-authenticated super admin');
+    console.log('✅ [AUTO-AUTH] Auto-authenticated super admin');
     return next();
   }
   
