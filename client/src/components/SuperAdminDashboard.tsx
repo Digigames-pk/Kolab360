@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { PricingPlanManager } from './PricingPlanManager';
 import {
   Shield,
   Users,
@@ -1187,116 +1188,8 @@ export function SuperAdminDashboard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="pricing" className="space-y-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Pricing Plans</h3>
-              <Button onClick={() => setShowCreatePlanModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Plan
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Free</span>
-                    <Badge variant="secondary">Basic</Badge>
-                  </CardTitle>
-                  <div className="text-3xl font-bold">$0<span className="text-sm font-normal">/month</span></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Up to 10 members
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      1 GB storage
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Basic messaging
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Pro</span>
-                    <Badge>Popular</Badge>
-                  </CardTitle>
-                  <div className="text-3xl font-bold">$8<span className="text-sm font-normal">/user/month</span></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Up to 100 members
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      10 GB storage
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Video calls & screen sharing
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Business</span>
-                    <Badge variant="secondary">Enterprise</Badge>
-                  </CardTitle>
-                  <div className="text-3xl font-bold">$15<span className="text-sm font-normal">/user/month</span></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Up to 500 members
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      50 GB storage
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Advanced analytics
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Enterprise</span>
-                    <Badge className="bg-purple-100 text-purple-700">Custom</Badge>
-                  </CardTitle>
-                  <div className="text-3xl font-bold">$25<span className="text-sm font-normal">/user/month</span></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Unlimited members
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      500 GB storage
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                      Custom integrations
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="pricing">
+            <PricingPlanManager />
           </TabsContent>
 
           <TabsContent value="security" className="space-y-6">

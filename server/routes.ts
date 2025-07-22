@@ -18,7 +18,9 @@ import {
   insertOrganizationSettingsSchema,
   insertOrganizationUserSchema,
   updateUserRoleSchema,
-  changePasswordSchema
+  changePasswordSchema,
+  insertPricingPlanSchema,
+  updatePricingPlanSchema
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -49,6 +51,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auto-authenticate super admin on server startup for development
   if (process.env.NODE_ENV === 'development') {
     console.log('🔧 [DEV] Setting up auto-authentication for super admin');
+  }
+
+  // Initialize default pricing plans on startup
+  try {
+    await storage.initializeDefaultPricingPlans();
+  } catch (error) {
+    console.error('Error initializing default pricing plans:', error);
   }
 
   // WebSocket connections store
@@ -1117,10 +1126,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add auth check endpoint
-  app.get('/api/auth/me', (req: any, res) => {
+  app.get('/api/auth/me', async (req: any, res) => {
+    console.log('🔍 [DEBUG] GET /api/auth/me - Request received');
+    console.log('🔍 [DEBUG] req.isAuthenticated():', req.isAuthenticated());
+    console.log('🔍 [DEBUG] req.user:', req.user);
+    console.log('🔍 [DEBUG] req.session:', req.session);
+    
     if (req.isAuthenticated() && req.user) {
       res.json(req.user);
     } else {
+      console.log('❌ [DEBUG] User not authenticated');
+      
+      // Auto-authenticate super admin in development environment
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 [DEBUG] Development mode: Auto-authenticating super admin');
+        try {
+          const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+          if (superAdmin) {
+            req.login(superAdmin, (err: any) => {
+              if (err) {
+                console.error('❌ [DEBUG] Auto-login failed:', err);
+                return res.status(401).json({ error: 'Not authenticated' });
+              }
+              console.log('✅ [DEBUG] Auto-login successful for super admin');
+              res.json(superAdmin);
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('❌ [DEBUG] Error during auto-authentication:', error);
+        }
+      }
+      
       res.status(401).json({ error: 'Not authenticated' });
     }
   });
@@ -1656,6 +1693,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting organization user:', error);
       res.status(500).json({ error: 'Failed to delete organization user' });
+    }
+  });
+
+  // =================== PRICING PLAN MANAGEMENT API ===================
+
+  // Get all pricing plans
+  app.get('/api/pricing-plans', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const plans = await storage.getPricingPlans();
+      res.json(plans);
+    } catch (error) {
+      console.error('Error fetching pricing plans:', error);
+      res.status(500).json({ error: 'Failed to fetch pricing plans' });
+    }
+  });
+
+  // Get single pricing plan
+  app.get('/api/pricing-plans/:id', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const planId = parseInt(req.params.id);
+      const plan = await storage.getPricingPlan(planId);
+      
+      if (!plan) {
+        return res.status(404).json({ error: 'Pricing plan not found' });
+      }
+      
+      res.json(plan);
+    } catch (error) {
+      console.error('Error fetching pricing plan:', error);
+      res.status(500).json({ error: 'Failed to fetch pricing plan' });
+    }
+  });
+
+  // Create pricing plan
+  app.post('/api/pricing-plans', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const planData = insertPricingPlanSchema.parse(req.body);
+      const newPlan = await storage.createPricingPlan(planData);
+      
+      console.log('✅ Pricing plan created:', newPlan.name);
+      res.status(201).json(newPlan);
+    } catch (error) {
+      console.error('Error creating pricing plan:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          error: 'Invalid pricing plan data', 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: 'Failed to create pricing plan' });
+    }
+  });
+
+  // Update pricing plan
+  app.put('/api/pricing-plans/:id', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const planId = parseInt(req.params.id);
+      const updates = updatePricingPlanSchema.parse(req.body);
+      
+      const updatedPlan = await storage.updatePricingPlan(planId, updates);
+      
+      if (!updatedPlan) {
+        return res.status(404).json({ error: 'Pricing plan not found' });
+      }
+      
+      console.log('✅ Pricing plan updated:', updatedPlan.name);
+      res.json(updatedPlan);
+    } catch (error) {
+      console.error('Error updating pricing plan:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          error: 'Invalid pricing plan data', 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ error: 'Failed to update pricing plan' });
+    }
+  });
+
+  // Delete pricing plan
+  app.delete('/api/pricing-plans/:id', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const planId = parseInt(req.params.id);
+      const success = await storage.deletePricingPlan(planId);
+      
+      if (!success) {
+        return res.status(404).json({ error: 'Pricing plan not found' });
+      }
+      
+      console.log('✅ Pricing plan deleted:', planId);
+      res.json({ message: 'Pricing plan deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting pricing plan:', error);
+      res.status(500).json({ error: 'Failed to delete pricing plan' });
+    }
+  });
+
+  // Initialize default pricing plans
+  app.post('/api/pricing-plans/initialize', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      await storage.initializeDefaultPricingPlans();
+      res.json({ message: 'Default pricing plans initialized successfully' });
+    } catch (error) {
+      console.error('Error initializing pricing plans:', error);
+      res.status(500).json({ error: 'Failed to initialize pricing plans' });
+    }
+  });
+
+  // Get plan features and limits by plan name (for validation)
+  app.get('/api/pricing-plans/name/:planName/features', async (req: any, res) => {
+    try {
+      const planName = req.params.planName;
+      const plan = await storage.getPricingPlanByName(planName);
+      
+      if (!plan) {
+        return res.status(404).json({ error: 'Pricing plan not found' });
+      }
+      
+      res.json({
+        planName: plan.name,
+        displayName: plan.displayName,
+        features: plan.features,
+        limits: {
+          maxUsers: plan.maxUsers,
+          maxStorage: plan.maxStorage,
+          maxWorkspaces: plan.maxWorkspaces,
+          maxChannelsPerWorkspace: plan.maxChannelsPerWorkspace,
+          maxFileSize: plan.maxFileSize,
+          maxAPICallsPerMonth: plan.maxAPICallsPerMonth,
+          messageHistoryDays: plan.messageHistoryDays,
+          maxVideoCallDuration: plan.maxVideoCallDuration
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching plan features:', error);
+      res.status(500).json({ error: 'Failed to fetch plan features' });
     }
   });
 

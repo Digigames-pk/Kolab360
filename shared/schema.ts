@@ -239,6 +239,37 @@ export const organizationSettings = pgTable("organization_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Pricing Plans table for dynamic plan management
+export const pricingPlans = pgTable("pricing_plans", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: varchar("name", { length: 100 }).notNull().unique(), // free, starter, pro, business, enterprise
+  displayName: varchar("display_name", { length: 100 }).notNull(), // Free Plan, Starter, Pro, Business, Enterprise
+  description: text("description"),
+  price: integer("price").notNull().default(0), // Price in cents per user per month
+  billingPeriod: varchar("billing_period", { length: 20 }).default("monthly"), // monthly, yearly
+  
+  // User and Storage Limits
+  maxUsers: integer("max_users").default(-1), // -1 = unlimited
+  maxStorage: integer("max_storage").default(1024), // in MB
+  maxWorkspaces: integer("max_workspaces").default(1),
+  maxChannelsPerWorkspace: integer("max_channels_per_workspace").default(10),
+  maxFileSize: integer("max_file_size").default(10), // in MB
+  maxAPICallsPerMonth: integer("max_api_calls_per_month").default(1000),
+  messageHistoryDays: integer("message_history_days").default(30), // -1 = unlimited
+  maxVideoCallDuration: integer("max_video_call_duration").default(60), // in minutes
+  
+  // Core Features
+  features: jsonb("features").notNull().default('{}'), // Dynamic feature permissions object
+  
+  // Plan Settings
+  isActive: boolean("is_active").default(true).notNull(),
+  isCustom: boolean("is_custom").default(false).notNull(),
+  sortOrder: integer("sort_order").default(0),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // User Roles table for organization members
 export const organizationUsers = pgTable("organization_users", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
@@ -271,6 +302,14 @@ export const organizationsRelations = relations(organizations, ({ many, one }) =
     references: [organizationSettings.organizationId] 
   }),
   users: many(organizationUsers),
+  pricingPlan: one(pricingPlans, {
+    fields: [organizations.plan],
+    references: [pricingPlans.name]
+  }),
+}));
+
+export const pricingPlansRelations = relations(pricingPlans, ({ many }) => ({
+  organizations: many(organizations),
 }));
 
 export const organizationSettingsRelations = relations(organizationSettings, ({ one }) => ({
@@ -442,3 +481,86 @@ export const updateUserRoleSchema = z.object({
 export const changePasswordSchema = z.object({
   newPassword: z.string().min(6),
 });
+
+// Pricing Plan Schemas
+export const insertPricingPlanSchema = createInsertSchema(pricingPlans).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updatePricingPlanSchema = insertPricingPlanSchema.partial();
+
+// Feature Permissions Schema for dynamic validation
+export const featurePermissionsSchema = z.object({
+  // Core Communication Features
+  messaging: z.boolean().default(true),
+  directMessages: z.boolean().default(true),
+  fileSharing: z.boolean().default(true),
+  voiceCalls: z.boolean().default(false),
+  videoCalls: z.boolean().default(false),
+  screenSharing: z.boolean().default(false),
+  
+  // Collaboration Features
+  channels: z.object({
+    enabled: z.boolean().default(true),
+    maxChannels: z.number().default(5),
+    privateChannels: z.boolean().default(false),
+  }),
+  workspaces: z.object({
+    enabled: z.boolean().default(true),
+    maxWorkspaces: z.number().default(1),
+    customBranding: z.boolean().default(false),
+  }),
+  tasks: z.object({
+    enabled: z.boolean().default(true),
+    kanbanView: z.boolean().default(true),
+    calendar: z.boolean().default(false),
+    timeTracking: z.boolean().default(false),
+    customFields: z.boolean().default(false),
+  }),
+  
+  // Advanced Features
+  integrations: z.object({
+    enabled: z.boolean().default(false),
+    maxIntegrations: z.number().default(0),
+    customIntegrations: z.boolean().default(false),
+  }),
+  analytics: z.object({
+    enabled: z.boolean().default(false),
+    basicReports: z.boolean().default(false),
+    advancedReports: z.boolean().default(false),
+    exportData: z.boolean().default(false),
+    realTimeAnalytics: z.boolean().default(false),
+  }),
+  security: z.object({
+    twoFactorAuth: z.boolean().default(false),
+    singleSignOn: z.boolean().default(false),
+    auditLogs: z.boolean().default(false),
+    dataRetentionControls: z.boolean().default(false),
+    complianceReporting: z.boolean().default(false),
+  }),
+  support: z.object({
+    emailSupport: z.boolean().default(true),
+    chatSupport: z.boolean().default(false),
+    phoneSupport: z.boolean().default(false),
+    prioritySupport: z.boolean().default(false),
+    dedicatedAccountManager: z.boolean().default(false),
+  }),
+  
+  // AI Features
+  ai: z.object({
+    enabled: z.boolean().default(false),
+    smartSuggestions: z.boolean().default(false),
+    sentimentAnalysis: z.boolean().default(false),
+    autoSummarization: z.boolean().default(false),
+    languageTranslation: z.boolean().default(false),
+    customAIModels: z.boolean().default(false),
+  }),
+});
+
+// Types
+export type PricingPlan = typeof pricingPlans.$inferSelect;
+export type InsertPricingPlan = z.infer<typeof insertPricingPlanSchema>;
+export type UpdatePricingPlan = z.infer<typeof updatePricingPlanSchema>;
+export type FeaturePermissions = z.infer<typeof featurePermissionsSchema>;

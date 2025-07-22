@@ -13,6 +13,7 @@ import {
   organizations,
   organizationSettings,
   organizationUsers,
+  pricingPlans,
   type User,
   type InsertUser,
   type Workspace,
@@ -36,6 +37,9 @@ import {
   type InsertOrganizationSettings,
   type OrganizationUser,
   type InsertOrganizationUser,
+  type PricingPlan,
+  type InsertPricingPlan,
+  type UpdatePricingPlan,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
@@ -120,6 +124,15 @@ export interface IStorage {
   updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined>;
   deleteOrganizationUser(id: number): Promise<boolean>;
   updateOrganizationUserPassword(id: number, hashedPassword: string): Promise<OrganizationUser | undefined>;
+  
+  // Pricing Plan operations
+  getPricingPlans(): Promise<PricingPlan[]>;
+  getPricingPlan(id: number): Promise<PricingPlan | undefined>;
+  getPricingPlanByName(name: string): Promise<PricingPlan | undefined>;
+  createPricingPlan(planData: InsertPricingPlan): Promise<PricingPlan>;
+  updatePricingPlan(id: number, updates: UpdatePricingPlan): Promise<PricingPlan | undefined>;
+  deletePricingPlan(id: number): Promise<boolean>;
+  initializeDefaultPricingPlans(): Promise<void>;
   
   // Session store
   sessionStore: any;
@@ -709,6 +722,245 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  // Pricing Plan operations
+  async getPricingPlans(): Promise<PricingPlan[]> {
+    return await db
+      .select()
+      .from(pricingPlans)
+      .where(eq(pricingPlans.isActive, true))
+      .orderBy(asc(pricingPlans.sortOrder), asc(pricingPlans.price));
+  }
+
+  async getPricingPlan(id: number): Promise<PricingPlan | undefined> {
+    const [plan] = await db
+      .select()
+      .from(pricingPlans)
+      .where(eq(pricingPlans.id, id));
+    return plan;
+  }
+
+  async getPricingPlanByName(name: string): Promise<PricingPlan | undefined> {
+    const [plan] = await db
+      .select()
+      .from(pricingPlans)
+      .where(eq(pricingPlans.name, name));
+    return plan;
+  }
+
+  async createPricingPlan(planData: InsertPricingPlan): Promise<PricingPlan> {
+    const [plan] = await db
+      .insert(pricingPlans)
+      .values({
+        ...planData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return plan;
+  }
+
+  async updatePricingPlan(id: number, updates: UpdatePricingPlan): Promise<PricingPlan | undefined> {
+    const [plan] = await db
+      .update(pricingPlans)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(pricingPlans.id, id))
+      .returning();
+    return plan;
+  }
+
+  async deletePricingPlan(id: number): Promise<boolean> {
+    const [plan] = await db
+      .update(pricingPlans)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(pricingPlans.id, id))
+      .returning();
+    return !!plan;
+  }
+
+  async initializeDefaultPricingPlans(): Promise<void> {
+    // Check if plans already exist
+    const existingPlans = await db.select().from(pricingPlans).limit(1);
+    if (existingPlans.length > 0) {
+      console.log('📦 [PLANS] Default pricing plans already exist');
+      return;
+    }
+
+    console.log('📦 [PLANS] Initializing default pricing plans...');
+
+    const defaultPlans = [
+      {
+        name: 'free',
+        displayName: 'Free',
+        description: 'Perfect for small teams getting started',
+        price: 0,
+        billingPeriod: 'monthly',
+        maxUsers: 5,
+        maxStorage: 1024, // 1GB
+        maxWorkspaces: 1,
+        maxChannelsPerWorkspace: 5,
+        maxFileSize: 10,
+        maxAPICallsPerMonth: 1000,
+        messageHistoryDays: 30,
+        maxVideoCallDuration: 45,
+        sortOrder: 1,
+        features: {
+          messaging: true,
+          directMessages: true,
+          fileSharing: true,
+          voiceCalls: false,
+          videoCalls: false,
+          screenSharing: false,
+          channels: { enabled: true, maxChannels: 5, privateChannels: false },
+          workspaces: { enabled: true, maxWorkspaces: 1, customBranding: false },
+          tasks: { enabled: true, kanbanView: true, calendar: false, timeTracking: false, customFields: false },
+          integrations: { enabled: false, maxIntegrations: 0, customIntegrations: false },
+          analytics: { enabled: false, basicReports: false, advancedReports: false, exportData: false, realTimeAnalytics: false },
+          security: { twoFactorAuth: false, singleSignOn: false, auditLogs: false, dataRetentionControls: false, complianceReporting: false },
+          support: { emailSupport: true, chatSupport: false, phoneSupport: false, prioritySupport: false, dedicatedAccountManager: false },
+          ai: { enabled: false, smartSuggestions: false, sentimentAnalysis: false, autoSummarization: false, languageTranslation: false, customAIModels: false }
+        }
+      },
+      {
+        name: 'starter',
+        displayName: 'Starter',
+        description: 'Great for growing teams with basic needs',
+        price: 800, // $8/month
+        billingPeriod: 'monthly',
+        maxUsers: 25,
+        maxStorage: 5120, // 5GB
+        maxWorkspaces: 3,
+        maxChannelsPerWorkspace: 20,
+        maxFileSize: 50,
+        maxAPICallsPerMonth: 5000,
+        messageHistoryDays: 90,
+        maxVideoCallDuration: 60,
+        sortOrder: 2,
+        features: {
+          messaging: true,
+          directMessages: true,
+          fileSharing: true,
+          voiceCalls: true,
+          videoCalls: true,
+          screenSharing: true,
+          channels: { enabled: true, maxChannels: 20, privateChannels: true },
+          workspaces: { enabled: true, maxWorkspaces: 3, customBranding: false },
+          tasks: { enabled: true, kanbanView: true, calendar: true, timeTracking: false, customFields: false },
+          integrations: { enabled: true, maxIntegrations: 5, customIntegrations: false },
+          analytics: { enabled: true, basicReports: true, advancedReports: false, exportData: true, realTimeAnalytics: false },
+          security: { twoFactorAuth: true, singleSignOn: false, auditLogs: false, dataRetentionControls: false, complianceReporting: false },
+          support: { emailSupport: true, chatSupport: true, phoneSupport: false, prioritySupport: false, dedicatedAccountManager: false },
+          ai: { enabled: true, smartSuggestions: true, sentimentAnalysis: false, autoSummarization: false, languageTranslation: false, customAIModels: false }
+        }
+      },
+      {
+        name: 'pro',
+        displayName: 'Professional',
+        description: 'Advanced features for productive teams',
+        price: 1500, // $15/month
+        billingPeriod: 'monthly',
+        maxUsers: 100,
+        maxStorage: 20480, // 20GB
+        maxWorkspaces: 10,
+        maxChannelsPerWorkspace: 100,
+        maxFileSize: 100,
+        maxAPICallsPerMonth: 25000,
+        messageHistoryDays: 180,
+        maxVideoCallDuration: 120,
+        sortOrder: 3,
+        features: {
+          messaging: true,
+          directMessages: true,
+          fileSharing: true,
+          voiceCalls: true,
+          videoCalls: true,
+          screenSharing: true,
+          channels: { enabled: true, maxChannels: 100, privateChannels: true },
+          workspaces: { enabled: true, maxWorkspaces: 10, customBranding: true },
+          tasks: { enabled: true, kanbanView: true, calendar: true, timeTracking: true, customFields: true },
+          integrations: { enabled: true, maxIntegrations: 25, customIntegrations: true },
+          analytics: { enabled: true, basicReports: true, advancedReports: true, exportData: true, realTimeAnalytics: true },
+          security: { twoFactorAuth: true, singleSignOn: true, auditLogs: true, dataRetentionControls: true, complianceReporting: false },
+          support: { emailSupport: true, chatSupport: true, phoneSupport: true, prioritySupport: true, dedicatedAccountManager: false },
+          ai: { enabled: true, smartSuggestions: true, sentimentAnalysis: true, autoSummarization: true, languageTranslation: false, customAIModels: false }
+        }
+      },
+      {
+        name: 'business',
+        displayName: 'Business',
+        description: 'Comprehensive solution for large teams',
+        price: 2500, // $25/month
+        billingPeriod: 'monthly',
+        maxUsers: 500,
+        maxStorage: 102400, // 100GB
+        maxWorkspaces: 50,
+        maxChannelsPerWorkspace: 500,
+        maxFileSize: 500,
+        maxAPICallsPerMonth: 100000,
+        messageHistoryDays: 365,
+        maxVideoCallDuration: 240,
+        sortOrder: 4,
+        features: {
+          messaging: true,
+          directMessages: true,
+          fileSharing: true,
+          voiceCalls: true,
+          videoCalls: true,
+          screenSharing: true,
+          channels: { enabled: true, maxChannels: 500, privateChannels: true },
+          workspaces: { enabled: true, maxWorkspaces: 50, customBranding: true },
+          tasks: { enabled: true, kanbanView: true, calendar: true, timeTracking: true, customFields: true },
+          integrations: { enabled: true, maxIntegrations: 100, customIntegrations: true },
+          analytics: { enabled: true, basicReports: true, advancedReports: true, exportData: true, realTimeAnalytics: true },
+          security: { twoFactorAuth: true, singleSignOn: true, auditLogs: true, dataRetentionControls: true, complianceReporting: true },
+          support: { emailSupport: true, chatSupport: true, phoneSupport: true, prioritySupport: true, dedicatedAccountManager: true },
+          ai: { enabled: true, smartSuggestions: true, sentimentAnalysis: true, autoSummarization: true, languageTranslation: true, customAIModels: false }
+        }
+      },
+      {
+        name: 'enterprise',
+        displayName: 'Enterprise',
+        description: 'Ultimate solution with unlimited features',
+        price: 5000, // $50/month
+        billingPeriod: 'monthly',
+        maxUsers: -1, // Unlimited
+        maxStorage: -1, // Unlimited
+        maxWorkspaces: -1, // Unlimited
+        maxChannelsPerWorkspace: -1, // Unlimited
+        maxFileSize: 1000,
+        maxAPICallsPerMonth: -1, // Unlimited
+        messageHistoryDays: -1, // Unlimited
+        maxVideoCallDuration: -1, // Unlimited
+        sortOrder: 5,
+        features: {
+          messaging: true,
+          directMessages: true,
+          fileSharing: true,
+          voiceCalls: true,
+          videoCalls: true,
+          screenSharing: true,
+          channels: { enabled: true, maxChannels: -1, privateChannels: true },
+          workspaces: { enabled: true, maxWorkspaces: -1, customBranding: true },
+          tasks: { enabled: true, kanbanView: true, calendar: true, timeTracking: true, customFields: true },
+          integrations: { enabled: true, maxIntegrations: -1, customIntegrations: true },
+          analytics: { enabled: true, basicReports: true, advancedReports: true, exportData: true, realTimeAnalytics: true },
+          security: { twoFactorAuth: true, singleSignOn: true, auditLogs: true, dataRetentionControls: true, complianceReporting: true },
+          support: { emailSupport: true, chatSupport: true, phoneSupport: true, prioritySupport: true, dedicatedAccountManager: true },
+          ai: { enabled: true, smartSuggestions: true, sentimentAnalysis: true, autoSummarization: true, languageTranslation: true, customAIModels: true }
+        }
+      }
+    ];
+
+    for (const planData of defaultPlans) {
+      await db.insert(pricingPlans).values({
+        ...planData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    console.log('✅ [PLANS] Default pricing plans initialized successfully');
+  }
+
   async getIntegrationStats(): Promise<any> {
     const result = await db.select().from(integrations);
     return {
@@ -963,6 +1215,35 @@ class MemoryStorage implements IStorage {
 
   async updateOrganizationUserPassword(id: number, hashedPassword: string): Promise<OrganizationUser | undefined> {
     throw new Error("Method not implemented for memory storage");
+  }
+
+  // Pricing Plan operations (Memory Storage)
+  async getPricingPlans(): Promise<PricingPlan[]> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getPricingPlan(id: number): Promise<PricingPlan | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async getPricingPlanByName(name: string): Promise<PricingPlan | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async createPricingPlan(planData: InsertPricingPlan): Promise<PricingPlan> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async updatePricingPlan(id: number, updates: UpdatePricingPlan): Promise<PricingPlan | undefined> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async deletePricingPlan(id: number): Promise<boolean> {
+    throw new Error("Method not implemented for memory storage");
+  }
+
+  async initializeDefaultPricingPlans(): Promise<void> {
+    // No-op for memory storage
   }
 
   async getIntegrationStats(): Promise<any> {
