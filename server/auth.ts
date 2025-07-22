@@ -147,11 +147,19 @@ export function setupAuth(app: Express) {
 
   // Get current user
   app.get("/api/auth/me", (req, res) => {
+    console.log('🔍 [DEBUG] GET /api/auth/me - Request received');
+    console.log('🔍 [DEBUG] req.isAuthenticated():', req.isAuthenticated());
+    console.log('🔍 [DEBUG] req.user:', req.user);
+    console.log('🔍 [DEBUG] req.session:', req.session);
+    
     if (!req.isAuthenticated() || !req.user) {
+      console.log('❌ [DEBUG] User not authenticated');
       return res.status(401).json({ error: "Not authenticated" });
     }
     
     const user = req.user;
+    console.log('✅ [DEBUG] User authenticated successfully:', user.email, 'Role:', user.role);
+    
     res.json({
       id: user.id,
       email: user.email,
@@ -166,9 +174,18 @@ export function setupAuth(app: Express) {
 
 // Middleware for protecting routes
 export function requireAuth(req: any, res: any, next: any) {
+  console.log('🔍 [DEBUG] requireAuth middleware called');
+  console.log('🔍 [DEBUG] req.isAuthenticated():', req.isAuthenticated());
+  console.log('🔍 [DEBUG] req.user:', req.user);
+  console.log('🔍 [DEBUG] req.session:', req.session);
+  console.log('🔍 [DEBUG] req.sessionID:', req.sessionID);
+  
   if (!req.isAuthenticated() || !req.user) {
+    console.log('❌ [DEBUG] User is not authenticated');
     return res.status(401).json({ error: "Authentication required" });
   }
+  
+  console.log('✅ [DEBUG] User is authenticated, proceeding');
   next();
 }
 

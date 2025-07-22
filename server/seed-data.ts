@@ -15,11 +15,12 @@ export async function seedTestData() {
   try {
     console.log('🌱 Seeding test data...');
 
-    // Create super admin user if it doesn't exist
+    // Create super admin users if they don't exist
     try {
+      // Create marty@onlinechannel.tv
       const existingAdmin = await storage.getUserByEmail('marty@onlinechannel.tv');
       if (!existingAdmin) {
-        console.log('Creating super admin user...');
+        console.log('Creating super admin user: marty@onlinechannel.tv...');
         const hashedPassword = await hashPassword('123456');
         
         await storage.createUser({
@@ -33,10 +34,30 @@ export async function seedTestData() {
         
         console.log('✅ Super admin user created: marty@onlinechannel.tv / 123456');
       } else {
-        console.log('✅ Super admin user already exists');
+        console.log('✅ Super admin user already exists: marty@onlinechannel.tv');
+      }
+
+      // Create superadmin@test.com  
+      const existingSuperAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (!existingSuperAdmin) {
+        console.log('Creating super admin user: superadmin@test.com...');
+        const hashedPassword = await hashPassword('superadmin123');
+        
+        await storage.createUser({
+          email: 'superadmin@test.com',
+          password: hashedPassword,
+          firstName: 'Super',
+          lastName: 'Admin',
+          role: 'super_admin',
+          isActive: true
+        });
+        
+        console.log('✅ Super admin user created: superadmin@test.com / superadmin123');
+      } else {
+        console.log('✅ Super admin user already exists: superadmin@test.com');
       }
     } catch (error) {
-      console.error('Error creating super admin user:', error);
+      console.error('Error creating super admin users:', error);
     }
 
     // Create test notifications for user 3 (the authenticated test user)

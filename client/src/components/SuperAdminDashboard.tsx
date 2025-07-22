@@ -171,22 +171,50 @@ export function SuperAdminDashboard() {
   const loadData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 [DEBUG] loadData - Starting to load organizations...');
+      
+      // First check authentication
+      console.log('🔍 [DEBUG] Checking authentication status...');
+      const authResponse = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
+      
+      console.log('🔍 [DEBUG] Auth response status:', authResponse.status);
+      
+      if (!authResponse.ok) {
+        console.log('❌ [DEBUG] Not authenticated, auth response:', authResponse.status);
+        const errorText = await authResponse.text();
+        console.log('❌ [DEBUG] Auth error text:', errorText);
+        setOrganizations([]);
+        return;
+      }
+      
+      const authData = await authResponse.json();
+      console.log('🔍 [DEBUG] Auth data:', authData);
+      console.log('🔍 [DEBUG] User role:', authData.role);
       
       // Load organizations from API
       try {
+        console.log('🔍 [DEBUG] Now loading organizations...');
         const response = await fetch('/api/organizations', {
           credentials: 'include'
         });
+        
+        console.log('🔍 [DEBUG] Organizations response status:', response.status);
+        console.log('🔍 [DEBUG] Organizations response ok:', response.ok);
+        
         if (response.ok) {
           const orgs = await response.json();
           setOrganizations(orgs);
-          console.log('✅ Organizations loaded from API:', orgs.length);
+          console.log('✅ [DEBUG] Organizations loaded from API:', orgs.length);
+          console.log('✅ [DEBUG] Organizations data:', orgs);
         } else {
-          console.warn('Failed to load organizations:', response.status);
+          const errorText = await response.text();
+          console.log('❌ [DEBUG] Organizations request failed:', response.status, errorText);
           setOrganizations([]);
         }
       } catch (error) {
-        console.error('Error loading organizations:', error);
+        console.error('❌ [DEBUG] Error loading organizations:', error);
         setOrganizations([]);
       }
       
@@ -257,6 +285,19 @@ export function SuperAdminDashboard() {
     }
 
     try {
+      console.log('🔍 [DEBUG] Creating organization with form data:', newOrgData);
+      
+      // Validate required fields
+      if (!newOrgData.adminFirstName?.trim() || !newOrgData.adminLastName?.trim()) {
+        console.log('❌ [DEBUG] Missing admin first/last name');
+        toast({
+          title: "Validation Error",
+          description: "Admin first name and last name are required.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const planLimits = getPlanLimits(newOrgData.plan);
       const orgData = {
         name: newOrgData.name,
@@ -267,12 +308,15 @@ export function SuperAdminDashboard() {
         memberLimit: planLimits.members,
         storageUsed: 0,
         storageLimit: planLimits.storage,
-        adminName: `${newOrgData.adminFirstName} ${newOrgData.adminLastName}`,
+        adminName: `${newOrgData.adminFirstName.trim()} ${newOrgData.adminLastName.trim()}`,
         adminEmail: newOrgData.adminEmail,
-        adminFirstName: newOrgData.adminFirstName,
-        adminLastName: newOrgData.adminLastName,
+        adminFirstName: newOrgData.adminFirstName.trim(),
+        adminLastName: newOrgData.adminLastName.trim(),
       };
+      
+      console.log('🔍 [DEBUG] Prepared organization data for API:', orgData);
 
+      console.log('🔍 [DEBUG] Sending POST request to /api/organizations');
       const response = await fetch('/api/organizations', {
         method: 'POST',
         headers: {
@@ -281,6 +325,9 @@ export function SuperAdminDashboard() {
         credentials: 'include',
         body: JSON.stringify(orgData),
       });
+      
+      console.log('🔍 [DEBUG] Response status:', response.status);
+      console.log('🔍 [DEBUG] Response ok:', response.ok);
 
       if (response.ok) {
         const newOrg = await response.json();

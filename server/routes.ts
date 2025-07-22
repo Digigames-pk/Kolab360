@@ -1218,15 +1218,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all organizations (Super Admin only)
   app.get('/api/organizations', requireAuth, async (req: any, res) => {
     try {
+      console.log('🔍 [DEBUG] GET /api/organizations - Request received');
+      console.log('🔍 [DEBUG] User from req.user:', req.user);
+      console.log('🔍 [DEBUG] User role:', req.user?.role);
+      console.log('🔍 [DEBUG] Is authenticated:', req.isAuthenticated());
+      
       const user = req.user;
+      if (!user) {
+        console.log('❌ [DEBUG] No user found in request');
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
       if (user.role !== 'super_admin') {
+        console.log('❌ [DEBUG] User role not super_admin:', user.role);
         return res.status(403).json({ error: 'Super admin access required' });
       }
       
+      console.log('✅ [DEBUG] User is super admin, fetching organizations');
       const organizations = await storage.getAllOrganizations();
+      console.log('✅ [DEBUG] Organizations fetched:', organizations.length);
       res.json(organizations);
     } catch (error) {
-      console.error('Error fetching organizations:', error);
+      console.error('❌ [DEBUG] Error fetching organizations:', error);
       res.status(500).json({ error: 'Failed to fetch organizations' });
     }
   });
@@ -1234,18 +1247,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new organization
   app.post('/api/organizations', requireAuth, async (req: any, res) => {
     try {
+      console.log('🔍 [DEBUG] POST /api/organizations - Request received');
+      console.log('🔍 [DEBUG] Request body:', JSON.stringify(req.body, null, 2));
+      console.log('🔍 [DEBUG] User from req.user:', req.user);
+      console.log('🔍 [DEBUG] User role:', req.user?.role);
+      console.log('🔍 [DEBUG] Is authenticated:', req.isAuthenticated());
+      
       const user = req.user;
+      if (!user) {
+        console.log('❌ [DEBUG] No user found in request');
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
       if (user.role !== 'super_admin') {
+        console.log('❌ [DEBUG] User role not super_admin:', user.role);
         return res.status(403).json({ error: 'Super admin access required' });
       }
 
+      console.log('🔍 [DEBUG] Validating organization data with schema');
       const orgData = insertOrganizationSchema.parse(req.body);
-      const organization = await storage.createOrganization(orgData);
+      console.log('✅ [DEBUG] Schema validation passed, creating organization');
       
-      console.log('✅ Organization created:', organization.name, 'ID:', organization.id);
+      const organization = await storage.createOrganization(orgData);
+      console.log('✅ [DEBUG] Organization created successfully:', organization.name, 'ID:', organization.id);
+      
       res.status(201).json(organization);
     } catch (error) {
-      console.error('Error creating organization:', error);
+      console.error('❌ [DEBUG] Error creating organization:', error);
+      console.error('❌ [DEBUG] Error stack:', error.stack);
+      if (error.name === 'ZodError') {
+        console.error('❌ [DEBUG] Zod validation errors:', error.errors);
+        return res.status(400).json({ 
+          error: 'Invalid organization data', 
+          details: error.errors 
+        });
+      }
       res.status(500).json({ error: 'Failed to create organization' });
     }
   });

@@ -618,6 +618,7 @@ class MemoryStorage implements IStorage {
   // Stub implementations for required interface methods
   async getUser(id: number): Promise<User | undefined> {
     const mockUsers = [
+      { id: 1, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "e25d883467ba11901ebf37792170a5087dbb721547f4a52c825f91731a84f30f7b42970105905ed9d4e7001425b00a48aabdc3a55f7cb4e03fcb21f8d7785dd8.0676a4c0e76c62b064d9164aef1ec932", isActive: true, profileImageUrl: null, updatedAt: new Date() },
       { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "868c3aab6b6da8a7ffeabea8dccdcb979ac02140202c61baf74adf354950709cb39b78e2537833e2805226bb024c2990dce597ea5498d6e3fea161d48783390f.de40c536d496db6e61469290bfbc6984", isActive: true, profileImageUrl: null, updatedAt: new Date() }
     ];
     return mockUsers.find(u => u.id === id);
@@ -625,6 +626,7 @@ class MemoryStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const mockUsers = [
+      { id: 1, email: "superadmin@test.com", firstName: "Super", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "e25d883467ba11901ebf37792170a5087dbb721547f4a52c825f91731a84f30f7b42970105905ed9d4e7001425b00a48aabdc3a55f7cb4e03fcb21f8d7785dd8.0676a4c0e76c62b064d9164aef1ec932", isActive: true, profileImageUrl: null, updatedAt: new Date() },
       { id: 2, email: "marty@onlinechannel.tv", firstName: "Marty", lastName: "Admin", role: "super_admin" as const, createdAt: new Date(), lastLoginAt: null, password: "868c3aab6b6da8a7ffeabea8dccdcb979ac02140202c61baf74adf354950709cb39b78e2537833e2805226bb024c2990dce597ea5498d6e3fea161d48783390f.de40c536d496db6e61469290bfbc6984", isActive: true, profileImageUrl: null, updatedAt: new Date() }
     ];
     return mockUsers.find(u => u.email === email);
