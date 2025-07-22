@@ -307,6 +307,7 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  adminName: true, // Remove adminName requirement since we have adminFirstName/adminLastName
 });
 
 export const insertFileSchema = createInsertSchema(files).omit({
