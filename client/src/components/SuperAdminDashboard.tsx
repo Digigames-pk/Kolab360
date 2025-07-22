@@ -1614,6 +1614,13 @@ export function SuperAdminDashboard() {
                                         Demote from Admin
                                       </DropdownMenuItem>
                                     )}
+                                    <DropdownMenuItem onClick={() => {
+                                      setSelectedUserForPassword(user);
+                                      setShowPasswordModal(true);
+                                    }}>
+                                      <Key className="h-4 w-4 mr-2" />
+                                      Change Password
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleSuspendUser(user.id)}>
                                       <Ban className="h-4 w-4 mr-2" />
                                       Suspend User
