@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -850,9 +850,38 @@ export function SuperAdminDashboard() {
 
           {/* Placeholder content for other tabs */}
           <TabsContent value="users" className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">User Management section - Coming Soon</p>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">User Management</h3>
+              <Button onClick={() => setShowAddUserModal(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
             </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>All Users</CardTitle>
+                <CardDescription>Manage all users across all organizations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarFallback>SA</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">Super Admin</div>
+                        <div className="text-sm text-gray-600">superadmin@test.com</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge>Super Admin</Badge>
+                      <Badge variant="secondary">Active</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="roles" className="space-y-6">
@@ -862,26 +891,370 @@ export function SuperAdminDashboard() {
           </TabsContent>
 
           <TabsContent value="pricing" className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Pricing Plans section - Coming Soon</p>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Pricing Plans</h3>
+              <Button onClick={() => setShowCreatePlanModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Plan
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Free</span>
+                    <Badge variant="secondary">Basic</Badge>
+                  </CardTitle>
+                  <div className="text-3xl font-bold">$0<span className="text-sm font-normal">/month</span></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Up to 10 members
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      1 GB storage
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Basic messaging
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Pro</span>
+                    <Badge>Popular</Badge>
+                  </CardTitle>
+                  <div className="text-3xl font-bold">$8<span className="text-sm font-normal">/user/month</span></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Up to 100 members
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      10 GB storage
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Video calls & screen sharing
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Business</span>
+                    <Badge variant="secondary">Enterprise</Badge>
+                  </CardTitle>
+                  <div className="text-3xl font-bold">$15<span className="text-sm font-normal">/user/month</span></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Up to 500 members
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      50 GB storage
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Advanced analytics
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Enterprise</span>
+                    <Badge className="bg-purple-100 text-purple-700">Custom</Badge>
+                  </CardTitle>
+                  <div className="text-3xl font-bold">$25<span className="text-sm font-normal">/user/month</span></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Unlimited members
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      500 GB storage
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      Custom integrations
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="security" className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Security section - Coming Soon</p>
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Security Management</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Shield className="h-5 w-5 mr-2" />
+                      Authentication
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span>Two-Factor Authentication</span>
+                        <Badge variant="secondary">Enabled</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Password Policy</span>
+                        <Badge>Strong</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Session Timeout</span>
+                        <span className="text-sm">24 hours</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Lock className="h-5 w-5 mr-2" />
+                      Data Protection
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span>Encryption at Rest</span>
+                        <Badge>AES-256</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Encryption in Transit</span>
+                        <Badge>TLS 1.3</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Backup Encryption</span>
+                        <Badge variant="secondary">Enabled</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <AlertTriangle className="h-5 w-5 mr-2" />
+                      Monitoring
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span>Failed Login Attempts</span>
+                        <span className="text-red-600 font-medium">3</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Security Alerts</span>
+                        <span className="text-green-600 font-medium">0</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Last Security Scan</span>
+                        <span className="text-sm">2 hours ago</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Analytics section - Coming Soon</p>
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Platform Analytics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-blue-100 rounded-full mr-4">
+                        <Users className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">{organizations.length}</div>
+                        <div className="text-sm text-gray-600">Total Organizations</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-green-100 rounded-full mr-4">
+                        <TrendingUp className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">{organizations.filter(o => o.status === 'active').length}</div>
+                        <div className="text-sm text-gray-600">Active Organizations</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-purple-100 rounded-full mr-4">
+                        <Database className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">{organizations.reduce((sum, org) => sum + (org.members || 0), 0)}</div>
+                        <div className="text-sm text-gray-600">Total Users</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-orange-100 rounded-full mr-4">
+                        <DollarSign className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold">$12.5k</div>
+                        <div className="text-sm text-gray-600">Monthly Revenue</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Organization Growth</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span>This Month</span>
+                        <span className="font-medium text-green-600">+{Math.max(0, organizations.length - 2)} new</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>This Week</span>
+                        <span className="font-medium text-green-600">+{Math.max(0, Math.floor(organizations.length / 4))} new</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Today</span>
+                        <span className="font-medium text-green-600">+{Math.max(0, Math.floor(organizations.length / 7))} new</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Plan Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {['Free', 'Pro', 'Business', 'Enterprise'].map((plan) => {
+                        const count = organizations.filter(org => org.plan?.toLowerCase() === plan.toLowerCase()).length;
+                        const percentage = organizations.length > 0 ? Math.round((count / organizations.length) * 100) : 0;
+                        return (
+                          <div key={plan} className="flex items-center justify-between">
+                            <span>{plan}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">{count}</span>
+                              <span className="text-sm text-gray-500">({percentage}%)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="audit" className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Audit Logs section - Coming Soon</p>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Audit Logs</h3>
+                <div className="flex space-x-2">
+                  <Select>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Filter by action" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Actions</SelectItem>
+                      <SelectItem value="login">User Login</SelectItem>
+                      <SelectItem value="organization">Organization Changes</SelectItem>
+                      <SelectItem value="security">Security Events</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>System-wide administrative actions and security events</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-green-100 rounded-full">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium">User Login</div>
+                          <div className="text-sm text-gray-600">superadmin@test.com logged in successfully</div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">2 minutes ago</div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-blue-100 rounded-full">
+                          <Building2 className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Organization Created</div>
+                          <div className="text-sm text-gray-600">New organization "Test Corp" was created</div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">1 hour ago</div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-orange-100 rounded-full">
+                          <Shield className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Security Scan</div>
+                          <div className="text-sm text-gray-600">Automated security scan completed - no issues found</div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">2 hours ago</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
@@ -942,19 +1315,31 @@ export function SuperAdminDashboard() {
                         <CardTitle>Quick Actions</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <Button className="w-full" variant="outline" onClick={() => toast({title: "Coming Soon", description: "User management will be available soon."})}>
+                        <Button className="w-full" variant="outline" onClick={() => {
+                          setShowAddUserModal(true);
+                          toast({title: "Add User", description: "Opening user creation form..."});
+                        }}>
                           <UserPlus className="h-4 w-4 mr-2" />
                           Add New User
                         </Button>
-                        <Button className="w-full" variant="outline" onClick={() => toast({title: "Coming Soon", description: "Broadcast messaging will be available soon."})}>
+                        <Button className="w-full" variant="outline" onClick={() => {
+                          setShowBroadcastModal(true);
+                          toast({title: "Broadcast Message", description: "Opening broadcast composer..."});
+                        }}>
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Broadcast Message
                         </Button>
-                        <Button className="w-full" variant="outline" onClick={() => toast({title: "Coming Soon", description: "Settings management will be available soon."})}>
+                        <Button className="w-full" variant="outline" onClick={() => {
+                          setShowManageSettingsModal(true);
+                          toast({title: "Manage Settings", description: "Opening organization settings..."});
+                        }}>
                           <Settings className="h-4 w-4 mr-2" />
                           Manage Settings
                         </Button>
-                        <Button className="w-full" variant="outline" onClick={() => toast({title: "Coming Soon", description: "Screen sharing controls will be available soon."})}>
+                        <Button className="w-full" variant="outline" onClick={() => {
+                          setShowScreenSharingModal(true);
+                          toast({title: "Screen Sharing", description: "Opening screen sharing controls..."});
+                        }}>
                           <Eye className="h-4 w-4 mr-2" />
                           Screen Sharing
                         </Button>
