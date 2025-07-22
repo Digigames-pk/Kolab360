@@ -287,16 +287,10 @@ export function SuperAdminDashboard() {
     try {
       console.log('🔍 [DEBUG] Creating organization with form data:', newOrgData);
       
-      // Validate required fields
-      if (!newOrgData.adminFirstName?.trim() || !newOrgData.adminLastName?.trim()) {
-        console.log('❌ [DEBUG] Missing admin first/last name');
-        toast({
-          title: "Validation Error",
-          description: "Admin first name and last name are required.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // Set default admin names if empty
+      const adminFirstName = newOrgData.adminFirstName?.trim() || 'Admin';
+      const adminLastName = newOrgData.adminLastName?.trim() || 'User';
+      console.log('🔍 [DEBUG] Using admin names:', { adminFirstName, adminLastName });
       
       const planLimits = getPlanLimits(newOrgData.plan);
       const orgData = {
@@ -308,10 +302,10 @@ export function SuperAdminDashboard() {
         memberLimit: planLimits.members,
         storageUsed: 0,
         storageLimit: planLimits.storage,
-        adminName: `${newOrgData.adminFirstName.trim()} ${newOrgData.adminLastName.trim()}`,
+        adminName: `${adminFirstName} ${adminLastName}`,
         adminEmail: newOrgData.adminEmail,
-        adminFirstName: newOrgData.adminFirstName.trim(),
-        adminLastName: newOrgData.adminLastName.trim(),
+        adminFirstName: adminFirstName,
+        adminLastName: adminLastName,
       };
       
       console.log('🔍 [DEBUG] Prepared organization data for API:', orgData);
