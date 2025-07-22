@@ -584,7 +584,7 @@ export function SuperAdminDashboard() {
                 {organizations.map((org) => {
                   console.log('🔍 [RENDER] Rendering organization:', org.name, 'ID:', org.id);
                   return (
-                  <Card key={org.id} className={`border-4 border-blue-500 bg-blue-50 min-h-[300px] shadow-lg`}>
+                  <Card key={org.id} className={`border-2 ${org.status === 'suspended' ? 'border-red-200 bg-red-50' : 'border-blue-500 bg-blue-50'} min-h-[200px] shadow-lg hover:shadow-xl transition-shadow`}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
@@ -594,7 +594,7 @@ export function SuperAdminDashboard() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="font-bold text-lg text-red-600">🔥 ORGANIZATION: {org.name}</h3>
+                            <h3 className="font-bold text-lg text-gray-900">{org.name}</h3>
                             <p className="text-sm text-gray-600">{org.domain}</p>
                           </div>
                         </div>
@@ -605,11 +605,15 @@ export function SuperAdminDashboard() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuItem onClick={() => handleShowOrgManagement(org)}>
+                            <DropdownMenuItem onClick={() => {
+                              console.log('🔧 [DROPDOWN] Manage Admins clicked for org:', org.name);
+                              handleShowOrgManagement(org);
+                            }}>
                               <Crown className="h-4 w-4 mr-2" />
                               Manage Admins & Users
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
+                              console.log('🔧 [DROPDOWN] Edit Organization clicked for org:', org.name);
                               setSelectedOrg(org);
                               setShowEditOrgModal(true);
                             }}>
