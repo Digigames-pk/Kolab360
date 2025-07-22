@@ -92,7 +92,7 @@ export default function HomePage() {
             <Link href="/pricing" className="text-gray-600 hover:text-purple-600 transition-colors">
               Pricing
             </Link>
-            <Link href="/landing" className="text-gray-600 hover:text-purple-600 transition-colors">
+            <Link href="/features" className="text-gray-600 hover:text-purple-600 transition-colors">
               Features
             </Link>
           </nav>
