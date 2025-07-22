@@ -488,4 +488,96 @@ Stay productive and keep collaborating!`;
 
     return { subject, html, text };
   }
+
+  static getWelcomeEmailWithCredentials(userFullName: string, email: string, temporaryPassword: string, role: string): { subject: string; html: string; text: string } {
+    const subject = `Welcome to Kolab360 - Your Account Credentials`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #e0e0e0; }
+            .footer { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; text-align: center; font-size: 14px; color: #666; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .credentials { background: #f8f9fa; padding: 20px; border-radius: 6px; border-left: 4px solid #667eea; margin: 20px 0; }
+            .warning { background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Welcome to Kolab360!</h1>
+              <p>Your account has been created successfully</p>
+            </div>
+            <div class="content">
+              <h2>Hello ${userFullName}</h2>
+              <p>Your administrator has created an account for you on Kolab360. You can now access our collaborative workspace platform.</p>
+              
+              <div class="credentials">
+                <h3>🔐 Your Login Credentials</h3>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Temporary Password:</strong> <code>${temporaryPassword}</code></p>
+                <p><strong>Role:</strong> ${role.charAt(0).toUpperCase() + role.slice(1)}</p>
+              </div>
+              
+              <div class="warning">
+                <h3>🔒 Important Security Notice</h3>
+                <p>This is a temporary password. Please change it immediately after your first login for security purposes.</p>
+              </div>
+              
+              <a href="https://kolab360.com/auth" class="button">Login to Your Account</a>
+              
+              <h3>What you can do in Kolab360:</h3>
+              <ul>
+                <li>💬 Communicate with your team in channels</li>
+                <li>📋 Manage and track tasks</li>
+                <li>📅 Schedule meetings and events</li>
+                <li>📁 Share and organize files</li>
+                <li>🤖 Use AI-powered features</li>
+              </ul>
+              
+              <p>If you have any questions or need help getting started, contact your administrator or our support team.</p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Kolab360. Building the future of team collaboration.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const text = `Welcome to Kolab360!
+
+Hello ${userFullName},
+
+Your administrator has created an account for you on Kolab360. You can now access our collaborative workspace platform.
+
+🔐 Your Login Credentials:
+Email: ${email}
+Temporary Password: ${temporaryPassword}
+Role: ${role.charAt(0).toUpperCase() + role.slice(1)}
+
+🔒 Important Security Notice:
+This is a temporary password. Please change it immediately after your first login for security purposes.
+
+Login to Your Account: https://kolab360.com/auth
+
+What you can do in Kolab360:
+- 💬 Communicate with your team in channels
+- 📋 Manage and track tasks  
+- 📅 Schedule meetings and events
+- 📁 Share and organize files
+- 🤖 Use AI-powered features
+
+If you have any questions or need help getting started, contact your administrator or our support team.
+
+© 2025 Kolab360. Building the future of team collaboration.`;
+
+    return { subject, html, text };
+  }
 }

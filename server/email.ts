@@ -368,6 +368,72 @@ export class EmailService {
     };
   }
 
+  // Welcome email with credentials for admin-created users
+  welcomeEmailWithCredentials(name: string, username: string, temporaryPassword: string, role: string): EmailTemplate {
+    const content = `
+      <div style="${emailStyles.header}">
+        <h1 style="${emailStyles.logo}">
+          🚀 Kolab360
+        </h1>
+        <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Welcome to your organization</p>
+      </div>
+      
+      <div style="${emailStyles.content}">
+        <h2 style="${emailStyles.title}">Welcome to KOLAB360! 🎉</h2>
+        
+        <p style="${emailStyles.text}">
+          Hi ${name}, an administrator has created an account for you on KOLAB360.
+        </p>
+        
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0ea5e9;">
+          <h3 style="margin: 0 0 15px 0; color: #0369a1;">Your Login Credentials</h3>
+          <p style="margin: 0; color: #0c4a6e;">
+            <strong>Email:</strong> ${username}<br>
+            <strong>Temporary Password:</strong> <code style="background: #e0e7ff; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-weight: bold;">${temporaryPassword}</code><br>
+            <strong>Role:</strong> ${role}
+          </p>
+        </div>
+        
+        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 25px 0;">
+          <p style="margin: 0; color: #92400e; font-size: 14px;">
+            <strong>⚠️ Security Notice:</strong> Please change your password after your first login. This temporary password should only be used once.
+          </p>
+        </div>
+        
+        <p style="${emailStyles.text}">
+          Your KOLAB360 workspace includes:
+        </p>
+        
+        <ul style="color: #555; margin-bottom: 30px;">
+          <li style="margin-bottom: 8px;">🔥 Real-time messaging and collaboration</li>
+          <li style="margin-bottom: 8px;">🤖 AI-powered assistance and automation</li>
+          <li style="margin-bottom: 8px;">📊 Advanced task and project management</li>
+          <li style="margin-bottom: 8px;">📁 Secure cloud file storage</li>
+          <li style="margin-bottom: 8px;">📅 Integrated calendar and scheduling</li>
+        </ul>
+        
+        <div style="text-align: center;">
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/auth" style="${emailStyles.button}">
+            Login to KOLAB360
+          </a>
+        </div>
+        
+        <p style="font-size: 14px; color: #888; text-align: center; margin-top: 20px;">
+          Need help getting started? Contact your system administrator or our support team.
+        </p>
+      </div>
+      
+      <div style="${emailStyles.footer}">
+        <p>Keep your login credentials secure and change your password after first login.</p>
+      </div>
+    `;
+
+    return {
+      subject: `Welcome to KOLAB360 - Your account is ready!`,
+      html: this.createTemplate(content)
+    };
+  }
+
   // Send email function
   async sendEmail(to: string, template: EmailTemplate, from: string = 'Kolab360 <noreply@kolab360.com>') {
     try {
@@ -409,6 +475,11 @@ export class EmailService {
 
   async sendMentionNotification(to: string, userName: string, mentionedBy: string, channelName: string, messagePreview: string, workspaceName: string) {
     const template = this.mentionNotificationEmail(userName, mentionedBy, channelName, messagePreview, workspaceName);
+    return this.sendEmail(to, template);
+  }
+
+  async sendWelcomeEmailWithCredentials(to: string, name: string, username: string, temporaryPassword: string, role: string) {
+    const template = this.welcomeEmailWithCredentials(name, username, temporaryPassword, role);
     return this.sendEmail(to, template);
   }
 }

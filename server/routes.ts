@@ -32,6 +32,28 @@ import workspaceUsersRoutes from './routes/workspace-users';
 import moodBoardRoutes from './routes/mood-boards';
 import integrationsRouter from './integrations';
 import { uploadFileToWasabi } from "./wasabi";
+import { nanoid } from 'nanoid';
+import { scrypt } from 'crypto';
+
+// Helper functions for password generation and hashing
+function generateRandomPassword(length: number = 12): string {
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return password;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const salt = Buffer.from(nanoid(16), 'utf-8');
+    scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(`${derivedKey.toString('hex')}.${salt.toString('hex')}`);
+    });
+  });
+}
 
 // Configure multer for memory storage - files will be uploaded to Wasabi
 const upload = multer({
@@ -1579,13 +1601,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const organizationId = parseInt(req.params.id);
       const userData = insertOrganizationUserSchema.parse(req.body);
       
+      // Generate a temporary password for the user
+      const temporaryPassword = generateRandomPassword();
+      
+      // Hash the password using the same method as auth
+      const hashedPassword = await hashPassword(temporaryPassword);
+      
       const newUser = await storage.createOrganizationUser({
         organizationId,
         ...userData,
+        password: hashedPassword, // Include the hashed password
       });
       
+      // Send welcome email with login credentials
+      try {
+        await emailService.sendWelcomeEmailWithCredentials(
+          newUser.email,
+          `${newUser.firstName} ${newUser.lastName}`,
+          newUser.email,
+          temporaryPassword,
+          newUser.role
+        );
+        console.log('✅ Welcome email sent to:', newUser.email);
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError);
+        // Continue with user creation even if email fails
+      }
+      
       console.log('✅ Organization user created:', newUser.email);
-      res.status(201).json(newUser);
+      
+      // Don't send the password in the response
+      const { password, ...userResponse } = newUser;
+      res.status(201).json({
+        ...userResponse,
+        temporaryPasswordSent: true,
+        message: 'User created successfully. Welcome email sent with login credentials.'
+      });
     } catch (error) {
       console.error('Error creating organization user:', error);
       res.status(500).json({ error: 'Failed to create organization user' });

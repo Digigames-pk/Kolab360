@@ -168,6 +168,16 @@ export class EmailService {
       text: template.text
     });
   }
+
+  async sendWelcomeEmailWithCredentials(to: string, userFullName: string, email: string, temporaryPassword: string, role: string) {
+    const template = EmailTemplates.getWelcomeEmailWithCredentials(userFullName, email, temporaryPassword, role);
+    return this.sendEmail({
+      to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text
+    });
+  }
 }
 
 export const emailService = new EmailService();
