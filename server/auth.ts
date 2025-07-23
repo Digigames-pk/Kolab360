@@ -211,31 +211,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  // Get current user
-  app.get("/api/auth/me", (req, res) => {
-    console.log('🔍 [DEBUG] GET /api/auth/me - Request received');
-    console.log('🔍 [DEBUG] req.isAuthenticated():', req.isAuthenticated());
-    console.log('🔍 [DEBUG] req.user:', req.user);
-    console.log('🔍 [DEBUG] req.session:', req.session);
-    
-    if (!req.isAuthenticated() || !req.user) {
-      console.log('❌ [DEBUG] User not authenticated');
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-    
-    const user = req.user;
-    console.log('✅ [DEBUG] User authenticated successfully:', user.email, 'Role:', user.role);
-    
-    res.json({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      lastLoginAt: user.lastLoginAt,
-      createdAt: user.createdAt,
-    });
-  });
+  // Note: /api/auth/me endpoint is handled in routes.ts with organization data
 }
 
 // Middleware for protecting routes

@@ -1,6 +1,13 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+interface Organization {
+  id: number;
+  name: string;
+  domain: string;
+  status: string;
+}
+
 interface User {
   id: number;
   email: string;
@@ -8,6 +15,7 @@ interface User {
   lastName: string;
   role: string;
   isActive: boolean;
+  organization?: Organization;
 }
 
 interface AuthContextType {

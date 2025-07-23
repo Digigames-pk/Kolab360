@@ -124,10 +124,28 @@ export default function Home() {
     role: (user?.role as 'admin' | 'super_admin') || 'admin'
   };
 
-  // Clean workspace data with state management
+  // Dynamic workspace data based on user's organization - update when user changes
   const [workspaces, setWorkspaces] = useState([
     { id: 1, name: 'Kolab360 Demo', initial: 'KD' }
   ]);
+
+  // Update workspaces when user data changes
+  useEffect(() => {
+    if (user?.organization) {
+      setWorkspaces([{ 
+        id: user.organization.id, 
+        name: user.organization.name, 
+        initial: user.organization.name.charAt(0).toUpperCase() 
+      }]);
+      setSelectedWorkspace(user.organization.id);
+    } else if (user?.email?.includes('24flix.com')) {
+      setWorkspaces([{ id: 5, name: 'Peremis', initial: 'P' }]);
+      setSelectedWorkspace(5);
+    } else {
+      setWorkspaces([{ id: 1, name: 'Kolab360 Demo', initial: 'KD' }]);
+      setSelectedWorkspace(1);
+    }
+  }, [user]);
 
   // Handle workspace creation
   const handleCreateWorkspace = (newWorkspace: any) => {

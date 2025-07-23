@@ -1156,7 +1156,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('🔍 [DEBUG] req.session:', req.session);
     
     if (req.isAuthenticated() && req.user) {
-      res.json(req.user);
+      try {
+        // Get organization information for the user
+        const user = req.user;
+        let organization = null;
+        
+        // Try to find organization user record to get organization details
+        console.log('🔍 [DEBUG] Looking up organization user for:', user.email);
+        const orgUser = await storage.getOrganizationUserByEmail(user.email);
+        console.log('🔍 [DEBUG] Organization user result:', orgUser);
+        
+        if (orgUser && orgUser.organizationId) {
+          console.log('🔍 [DEBUG] Looking up organization with ID:', orgUser.organizationId);
+          organization = await storage.getOrganization(orgUser.organizationId);
+          console.log('🔍 [DEBUG] Organization lookup result:', organization);
+        }
+        
+        const userWithOrg = {
+          ...user,
+          organization
+        };
+        
+        console.log('✅ [DEBUG] User with organization data:', userWithOrg.email, 'Org:', organization?.name);
+        res.json(userWithOrg);
+      } catch (error) {
+        console.error('❌ [DEBUG] Error fetching user organization:', error);
+        res.json(req.user);
+      }
     } else {
       console.log('❌ [DEBUG] User not authenticated');
       
