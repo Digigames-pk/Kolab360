@@ -2409,17 +2409,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   wss.on('connection', (ws: WebSocketConnection, req) => {
+    const connectionId = Math.random().toString(36).substr(2, 9);
     connections.add(ws);
-    console.log('WebSocket connection established');
+    console.log(`🔗 WebSocket connection established (ID: ${connectionId}). Total connections: ${connections.size}`);
+
+    // Send connection confirmation immediately
+    ws.send(JSON.stringify({
+      type: 'connection_established',
+      connectionId: connectionId,
+      timestamp: new Date().toISOString()
+    }));
 
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
+        console.log(`📨 WebSocket message received (${connectionId}):`, message.type);
         
         switch (message.type) {
           case 'join_workspace':
             ws.workspaceId = message.workspaceId;
             ws.userId = message.userId;
+            console.log(`👤 User ${message.userId} joined workspace ${message.workspaceId} (${connectionId})`);
             break;
             
           case 'join_channel':
@@ -2429,6 +2439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               channelId = '550e8400-e29b-41d4-a716-446655440000';
             }
             ws.channelId = channelId;
+            console.log(`📺 Connection ${connectionId} joined channel ${channelId}`);
             break;
             
           case 'typing':
@@ -2468,13 +2479,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     ws.on('close', () => {
       connections.delete(ws);
-      console.log('WebSocket connection closed');
+      console.log(`❌ WebSocket connection closed (${connectionId}). Remaining connections: ${connections.size}`);
     });
 
     ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
+      console.error(`⚠️ WebSocket error (${connectionId}):`, error);
       connections.delete(ws);
     });
+
+    // Send periodic heartbeat to keep connection alive
+    const heartbeat = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'heartbeat',
+          timestamp: new Date().toISOString()
+        }));
+      } else {
+        clearInterval(heartbeat);
+      }
+    }, 30000); // Every 30 seconds
   });
 
   return httpServer;

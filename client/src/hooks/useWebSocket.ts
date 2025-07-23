@@ -44,6 +44,23 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       wsRef.current.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
+          
+          // Handle special system messages
+          if (message.type === 'connection_established') {
+            console.log('✅ WebSocket connection confirmed:', message.connectionId);
+            setIsConnected(true);
+            setError(null);
+            reconnectAttemptsRef.current = 0;
+            return;
+          }
+          
+          if (message.type === 'heartbeat') {
+            // Respond to heartbeat to maintain connection
+            console.log('💓 WebSocket heartbeat received');
+            return;
+          }
+          
+          // Pass other messages to the handler
           options.onMessage?.(message);
         } catch (err) {
           console.error("Failed to parse WebSocket message:", err);
@@ -54,15 +71,13 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         setIsConnected(false);
         options.onDisconnect?.();
         
-        // Only attempt to reconnect if not in development mode
-        if (process.env.NODE_ENV !== 'development' && reconnectAttemptsRef.current < maxReconnectAttempts) {
+        // Always attempt to reconnect for both development and production
+        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
+          console.log(`WebSocket: Reconnection attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`);
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, reconnectDelay);
-        } else if (process.env.NODE_ENV === 'development') {
-          // In development, simulate connection
-          setIsConnected(true);
         } else {
           setError("Failed to connect after multiple attempts");
         }
@@ -93,16 +108,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   };
 
   const sendMessage = (message: WebSocketMessage) => {
-    if (process.env.NODE_ENV === 'development') {
-      // In development, just log the message
-      console.log("Mock WebSocket message sent:", message);
-      return;
-    }
-
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
     } else {
       console.warn("WebSocket is not connected. Message not sent:", message);
+      // Attempt to reconnect if connection is lost
+      if (!isConnected && reconnectAttemptsRef.current < maxReconnectAttempts) {
+        connect();
+      }
     }
   };
 
