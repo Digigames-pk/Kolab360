@@ -207,9 +207,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Channel routes
-  app.post('/api/channels', async (req: any, res) => {
+  app.post('/api/channels', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user?.id || 3; // Default to user ID 3 for development
+      const userId = req.user.id;
       const { name, workspaceId = 1 } = req.body;
       
       if (!name) {
@@ -315,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.get('/api/channels/:id/messages', async (req: any, res) => {
+  app.get('/api/channels/:id/messages', requireAuth, async (req: any, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       
@@ -350,9 +350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/channels/:id/messages', async (req: any, res) => {
+  app.post('/api/channels/:id/messages', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user?.id || 3; // Default to user ID 3 for development
+      const userId = req.user.id;
       
       // Handle "general" channel as UUID
       let channelId = req.params.id;
@@ -444,10 +444,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Direct message routes
-  app.get('/api/users/:userId/messages', async (req: any, res) => {
+  // General messages endpoint  
+  app.get('/api/messages', async (req: any, res) => {
+    // Auto-authenticate in development
+    if (process.env.NODE_ENV === 'development' && !req.user) {
+      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (superAdmin) {
+        req.user = superAdmin;
+      }
+    }
     try {
-      const currentUserId = req.user?.id || 3; // Default to user ID 3 for development
+      // Return empty array for now - this endpoint is used by the frontend
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Channels list endpoint
+  app.get('/api/channels', async (req: any, res) => {
+    // Auto-authenticate in development
+    if (process.env.NODE_ENV === 'development' && !req.user) {
+      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (superAdmin) {
+        req.user = superAdmin;
+      }
+    }
+    try {
+      // Get user's workspaces and their channels
+      const userId = req.user.id;
+      const userWorkspaces = await storage.getUserWorkspaces(userId);
+      
+      if (userWorkspaces.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get channels for the first workspace
+      const channels = await storage.getWorkspaceChannels(userWorkspaces[0].id);
+      res.json(channels);
+    } catch (error) {
+      console.error("Error fetching channels:", error);
+      res.status(500).json({ message: "Failed to fetch channels" });
+    }
+  });
+
+  // User search endpoint
+  app.get('/api/users/search', async (req: any, res) => {
+    // Auto-authenticate in development
+    if (process.env.NODE_ENV === 'development' && !req.user) {
+      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (superAdmin) {
+        req.user = superAdmin;
+      }
+    }
+    try {
+      // Return empty array for now - to be implemented with actual user search
+      res.json([]);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  // Direct message routes
+  app.get('/api/users/:userId/messages', requireAuth, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
       const otherUserId = parseInt(req.params.userId);
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       
@@ -459,9 +522,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users/:userId/messages', async (req: any, res) => {
+  app.post('/api/users/:userId/messages', requireAuth, async (req: any, res) => {
     try {
-      const currentUserId = req.user?.id || 3; // Default to user ID 3 for development
+      const currentUserId = req.user.id;
       const recipientId = parseInt(req.params.userId);
       const messageData = insertMessageSchema.parse({
         ...req.body,
