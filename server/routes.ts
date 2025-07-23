@@ -2798,7 +2798,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Handle new messages
     socket.on('new_message', (message) => {
       console.log(`🔔 Broadcasting message via Socket.IO to channel ${message.channelId}`);
-      socket.to(`channel-${message.channelId}`).emit('new_message', message);
+      console.log(`🔔 Socket.IO room members for channel-${message.channelId}:`, io.sockets.adapter.rooms.get(`channel-${message.channelId}`)?.size || 0);
+      socket.to(`channel-${message.channelId}`).emit('new_message', message.data || message);
+      // Also broadcast to all connections as fallback
+      socket.broadcast.emit('new_message', message.data || message);
     });
 
     // Handle direct messages

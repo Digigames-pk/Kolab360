@@ -275,7 +275,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         const data = await response.json();
         const messagesData = data.messages || data || [];
         console.log('📥 Messages loaded from API:', messagesData);
-        console.log('🔍 File metadata check:', messagesData.map(m => ({
+        console.log('🔍 File metadata check:', messagesData.map((m: any) => ({
           id: m.id,
           hasFileUrl: !!m.fileUrl,
           fileType: m.fileType,
@@ -329,14 +329,20 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     const currentMessage = messageText;
     setMessageText('');
 
-    // Send to WebSocket for real-time updates
+    // Send to Socket.IO for real-time updates
     if (isConnected) {
       sendMessage({
-        type: channelId ? 'send_message' : 'send_direct_message',
+        type: channelId ? 'new_message' : 'new_direct_message',
         channelId,
         recipientId,
         content: currentMessage,
-        authorId: user.id
+        authorId: user.id,
+        data: {
+          content: currentMessage,
+          authorId: user.id,
+          channelId,
+          recipientId
+        }
       });
     }
 
@@ -373,7 +379,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       
       // Stop typing indicator
       if (isConnected) {
-        sendMessage({ type: 'user_stop_typing', channelId, userId: user.id });
+        sendMessage({ type: 'stop_typing', channelId, userId: user.id });
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -385,14 +391,14 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
 
   const handleTyping = () => {
     if (channelId && isConnected && user) {
-      sendMessage({ type: 'user_typing', channelId, userId: user.id });
+      sendMessage({ type: 'typing', channelId, userId: user.id });
       
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
       
       typingTimeoutRef.current = setTimeout(() => {
-        sendMessage({ type: 'user_stop_typing', channelId, userId: user.id });
+        sendMessage({ type: 'stop_typing', channelId, userId: user.id });
       }, 2000);
     }
   };

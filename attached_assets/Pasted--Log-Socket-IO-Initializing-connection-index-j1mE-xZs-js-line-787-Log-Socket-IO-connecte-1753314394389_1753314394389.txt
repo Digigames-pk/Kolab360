@@ -1,0 +1,61 @@
+[Log] Socket.IO: Initializing connection... (index-j1mE_xZs.js, line 787)
+[Log] ✅ Socket.IO connected: – "_1OmFzGch1MKF6TiAAAJ" (index-j1mE_xZs.js, line 787)
+[Log] ✅ WebSocket connected, joining workspace and channel (index-j1mE_xZs.js, line 787)
+[Log] 📤 Socket.IO sending: – "join_workspace" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "join_channel" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📨 Socket.IO message received: – "connection_established" – Array (1) (index-j1mE_xZs.js, line 787)
+Array (1)
+[Log] 📨 WebSocket message received in RealTimeChat: – Object (index-j1mE_xZs.js, line 787)
+Object
+[Error] WebSocket connection to 'wss://kolab360.com/ws/?EIO=4&transport=websocket&sid=KFC-oq2c4z86aKP-AAAI' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – Array (25) (index-j1mE_xZs.js, line 787)
+Array (25)
+[Log] 🔍 File metadata check: – Array (25) (index-j1mE_xZs.js, line 787)
+Array (25)
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "send_message" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] 📤 Socket.IO sending: – "user_stop_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "user_stop_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "send_message" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] 📤 Socket.IO sending: – "user_stop_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Log] 📤 Socket.IO sending: – "send_message" – Object (index-j1mE_xZs.js, line 787)
+Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] 📤 Socket.IO sending: – "user_stop_typing" – Object (index-j1mE_xZs.js, line 787)
+Object
+> Selected Element
+< <div class="group flex items-start space-x-3 hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors mt-1">…</div>
