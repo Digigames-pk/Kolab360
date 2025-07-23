@@ -128,10 +128,44 @@ export function setupAuth(app: Express) {
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await storage.getUser(id);
+      console.log('🔍 Deserializing user with ID:', id);
+      
+      // First try to get user from main users table
+      let user = await storage.getUser(id);
+      console.log('👤 Main user lookup result:', user ? 'found' : 'not found');
+      
+      // If not found, try to get from organization users table
+      if (!user) {
+        const orgUser = await storage.getOrganizationUserById(id);
+        console.log('👤 Organization user lookup result:', orgUser ? 'found' : 'not found');
+        
+        if (orgUser && orgUser.status === 'active') {
+          // Convert organization user to main user format for session
+          user = {
+            id: orgUser.id,
+            email: orgUser.email,
+            firstName: orgUser.firstName,
+            lastName: orgUser.lastName,
+            role: orgUser.role,
+            isActive: orgUser.status === 'active',
+            createdAt: orgUser.createdAt,
+            lastLoginAt: orgUser.lastLoginAt,
+            updatedAt: orgUser.updatedAt
+          } as User;
+          console.log('✅ Converted organization user to session user format');
+        }
+      }
+      
+      if (!user) {
+        console.log('❌ User not found during deserialization for ID:', id);
+        return done(null, null);
+      }
+      
+      console.log('✅ User deserialized successfully:', user.email);
       done(null, user);
     } catch (error) {
-      done(error);
+      console.error('🚫 Deserialization error:', error);
+      done(error, null);
     }
   });
 

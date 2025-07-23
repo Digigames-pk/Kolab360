@@ -127,6 +127,7 @@ export interface IStorage {
   // Organization User operations
   getOrganizationUsers(orgId: number): Promise<OrganizationUser[]>;
   getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined>;
+  getOrganizationUserById(id: number): Promise<OrganizationUser | undefined>;
   createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser>;
   updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined>;
   deleteOrganizationUser(id: number): Promise<boolean>;
@@ -716,6 +717,12 @@ export class DatabaseStorage implements IStorage {
     // Prefer users with non-null passwords, and among those, take the most recent
     const usersWithPassword = users.filter(user => user.password !== null && user.password !== '');
     return usersWithPassword[0] || users[0];
+  }
+
+  async getOrganizationUserById(id: number): Promise<OrganizationUser | undefined> {
+    return await db.select().from(organizationUsers)
+      .where(eq(organizationUsers.id, id))
+      .then(users => users[0]);
   }
 
   async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {
@@ -1479,6 +1486,10 @@ class MemoryStorage implements IStorage {
   }
 
   async getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined> {
+    return undefined;
+  }
+
+  async getOrganizationUserById(id: number): Promise<OrganizationUser | undefined> {
     return undefined;
   }
 
