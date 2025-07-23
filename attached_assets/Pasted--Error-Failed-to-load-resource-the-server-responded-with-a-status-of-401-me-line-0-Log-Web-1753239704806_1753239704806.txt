@@ -1,0 +1,27 @@
+[Error] Failed to load resource: the server responded with a status of 401 () (me, line 0)
+[Log] WebSocket: Connecting to server... (index-cYigPVak.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – [Object] (1) (index-cYigPVak.js, line 787)
+[Object]Array (1)
+[Log] 🔍 File metadata check: – [Object] (1) (index-cYigPVak.js, line 787)
+[Object]Array (1)
+[Log] WebSocket: Connecting to server... (index-cYigPVak.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-cYigPVak.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-cYigPVak.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-cYigPVak.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-cYigPVak.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] 📤 Upload response status: – 201 (index-cYigPVak.js, line 787)
+[Log] 📤 File data received: – {success: true, id: "1", originalName: "KOLAB360 purple version Ai-.png", …} (index-cYigPVak.js, line 787)
+{success: true, id: "1", originalName: "KOLAB360 purple version Ai-.png", filename: "aed75ce04cb0b3bef788e34e9eeeb6e1", size: 41756, …}Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to create message for file
+	(anonymous function) (index-cYigPVak.js:787:62295)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-cYigPVak.js, line 787)
+[Error] Failed to load resource: the server responded with a status of 500 () (channels, line 0)
