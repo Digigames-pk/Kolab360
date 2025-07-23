@@ -87,8 +87,8 @@ interface ModernSlackSidebarProps {
   channelStats?: ChannelStat[];
   dmStats?: DMStat[];
   onCreateWorkspace?: () => void;
-  onCreateChannel?: (channelName: string) => void;
-  onCreateDM?: (userName: string) => void;
+  onCreateChannel?: () => void;
+  onCreateDM?: () => void;
 }
 
 export function ModernSlackSidebar({
@@ -332,15 +332,8 @@ export function ModernSlackSidebar({
                   size="sm" 
                   className="h-6 w-6 p-0"
                   onClick={() => {
-                    const channelName = prompt('Enter channel name:');
-                    if (channelName && channelName.trim()) {
-                      if (onCreateChannel) {
-                        onCreateChannel(channelName.trim());
-                      } else {
-                        // Fallback to local action
-                        onChannelSelect(channelName.toLowerCase().replace(/\s+/g, '-'));
-                        onViewChange('chat');
-                      }
+                    if (onCreateChannel) {
+                      onCreateChannel();
                     }
                   }}
                 >
@@ -425,14 +418,8 @@ export function ModernSlackSidebar({
                 size="sm" 
                 className="h-6 w-6 p-0"
                 onClick={() => {
-                  const userName = prompt('Enter username to message:');
-                  if (userName && userName.trim()) {
-                    if (onCreateDM) {
-                      onCreateDM(userName.trim());
-                    } else {
-                      // Fallback to switch to chat view
-                      onViewChange('chat');
-                    }
+                  if (onCreateDM) {
+                    onCreateDM();
                   }
                 }}
               >

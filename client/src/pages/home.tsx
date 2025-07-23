@@ -35,6 +35,8 @@ import { Badge } from '@/components/ui/badge';
 
 import { useNotifications } from '@/hooks/useNotifications';
 import { CreateWorkspaceModal } from '@/components/CreateWorkspaceModal';
+import { CreateChannelModal } from '@/components/CreateChannelModal';
+import { StartDMModal } from '@/components/StartDMModal';
 
 export default function Home() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -110,6 +112,8 @@ export default function Home() {
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [showPinningSystem, setShowPinningSystem] = useState(false);
+  const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [showStartDM, setShowStartDM] = useState(false);
   
   // Selected items for modals
   const [selectedTask, setSelectedTask] = useState(null);
@@ -222,48 +226,8 @@ export default function Home() {
           channelStats={channelStats}
           dmStats={dmStats}
           onCreateWorkspace={() => setShowCreateWorkspace(true)}
-          onCreateChannel={(channelName) => {
-            // Create channel via API call to backend
-            fetch('/api/channels', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: channelName, type: 'public' })
-            }).then(response => {
-              if (response.ok) {
-                setSelectedChannel(channelName.toLowerCase().replace(/\s+/g, '-'));
-                setActiveView('chat');
-                setSelectedDM(null);
-                console.log('Channel created:', channelName);
-              } else {
-                alert('Failed to create channel. Please try again.');
-              }
-            }).catch(error => {
-              console.error('Error creating channel:', error);
-              alert('Failed to create channel. Please try again.');
-            });
-          }}
-          onCreateDM={(userName) => {
-            // Start DM via API call or direct selection
-            fetch(`/api/users/search?name=${encodeURIComponent(userName)}`)
-              .then(response => response.json())
-              .then(users => {
-                if (users.length > 0) {
-                  setSelectedDM(userName);
-                  setActiveView('chat');
-                  setSelectedChannel('');
-                  console.log('DM started with:', userName);
-                } else {
-                  alert('User not found. Please check the username.');
-                }
-              })
-              .catch(error => {
-                console.error('Error starting DM:', error);
-                // Fallback to allow DM creation anyway
-                setSelectedDM(userName);
-                setActiveView('chat');
-                setSelectedChannel('');
-              });
-          }}
+          onCreateChannel={() => setShowCreateChannel(true)}
+          onCreateDM={() => setShowStartDM(true)}
         />
       </div>
 
@@ -598,6 +562,24 @@ export default function Home() {
         isOpen={showCreateWorkspace}
         onClose={() => setShowCreateWorkspace(false)}
         onCreateWorkspace={handleCreateWorkspace}
+      />
+
+      {/* Create Channel Modal */}
+      <CreateChannelModal
+        isOpen={showCreateChannel}
+        onClose={() => setShowCreateChannel(false)}
+        workspaceId={selectedWorkspace.toString()}
+      />
+
+      {/* Start DM Modal */}
+      <StartDMModal
+        isOpen={showStartDM}
+        onClose={() => setShowStartDM(false)}
+        onStartDM={(user) => {
+          setSelectedDM(`${user.firstName} ${user.lastName}`);
+          setActiveView('chat');
+          setSelectedChannel('');
+        }}
       />
 
       {/* Pinning System Modal */}

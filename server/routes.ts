@@ -33,7 +33,7 @@ import moodBoardRoutes from './routes/mood-boards';
 import integrationsRouter from './integrations';
 import { uploadFileToWasabi } from "./wasabi";
 import { nanoid } from 'nanoid';
-import { scrypt, randomBytes } from 'crypto';
+import { scrypt, randomBytes, randomUUID } from 'crypto';
 import { promisify } from 'util';
 
 const scryptAsync = promisify(scrypt);
@@ -216,10 +216,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Channel name is required" });
       }
       
+      // Get or create a default workspace for this user
+      let userWorkspaces = await storage.getUserWorkspaces(userId);
+      let defaultWorkspace = userWorkspaces[0];
+      
+      if (!defaultWorkspace) {
+        // Create a default workspace for the user
+        defaultWorkspace = await storage.createWorkspace({
+          name: "Default Workspace",
+          description: "Your main workspace",
+          ownerId: userId,
+          inviteCode: nanoid(8),
+        });
+        
+        // Add user as workspace member
+        await storage.joinWorkspace(defaultWorkspace.id, userId);
+      }
+      
       const channelData = {
-        id: nanoid(),
+        id: randomUUID(),
         name,
-        workspaceId: workspaceId.toString(),
+        workspaceId: defaultWorkspace.id,
         isPrivate: false,
         description: `Channel for ${name}`,
         createdBy: userId,
