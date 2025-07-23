@@ -730,7 +730,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             <div className="flex-1 flex items-center justify-center py-12">
               <div className="text-center space-y-2">
                 <p className="text-lg font-medium">
-                  {channelId ? `Welcome to #${channelId}` : `Welcome to your chat with ${recipientName || 'User'}`}
+                  {channelId ? `Welcome to #${channelId}` : recipientName ? `Welcome to your chat with ${recipientName}` : 'Select a channel or start a conversation'}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Start the conversation by sending a message below.
@@ -1064,7 +1064,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           <div className="flex-1 relative">
             <Input
               ref={inputRef}
-              placeholder={channelId ? `Message #${channelId}` : `Message ${recipientName}`}
+              placeholder={channelId ? `Message #${channelId}` : recipientName ? `Message ${recipientName}` : 'Type a message...'}
               value={messageText}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}

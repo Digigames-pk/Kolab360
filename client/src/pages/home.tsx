@@ -39,7 +39,7 @@ import { CreateWorkspaceModal } from '@/components/CreateWorkspaceModal';
 export default function Home() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
-  const [selectedChannel, setSelectedChannel] = useState('');
+  const [selectedChannel, setSelectedChannel] = useState('general');
 
   // Show loading while checking authentication
   if (isLoading) {
