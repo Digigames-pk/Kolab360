@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,7 @@ import {
   Settings,
   Camera
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth.tsx';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -42,20 +43,39 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+  const { user, loading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@company.com',
-    phone: '+1 (555) 123-4567',
-    title: 'Senior Software Engineer',
-    department: 'Engineering',
-    location: 'San Francisco, CA',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    title: '',
+    department: '',
+    location: '',
     timezone: 'Pacific Standard Time',
-    bio: 'Passionate about building great software and leading high-performing teams.',
+    bio: '',
     status: 'online',
-    statusMessage: 'Building amazing things',
+    statusMessage: '',
   });
+
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        title: user.role === 'super_admin' ? 'Super Administrator' : 
+               user.role === 'admin' ? 'Administrator' : 
+               user.role === 'member' ? 'Team Member' : 
+               'User',
+        department: user.role === 'super_admin' ? 'System Administration' : 'General',
+        bio: `${user.firstName} ${user.lastName} - ${user.role === 'super_admin' ? 'System Administrator with full access to manage the KOLAB360 platform' : 'Team member of KOLAB360 collaboration platform'}`,
+      }));
+    }
+  }, [user]);
 
   const [notifications, setNotifications] = useState({
     directMessages: true,
@@ -125,7 +145,11 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               <div className="relative">
                 <Avatar className="h-24 w-24">
                   <AvatarFallback className="bg-blue-600 text-white text-2xl">
-                    {profile.firstName[0]}{profile.lastName[0]}
+                    {profile.firstName && profile.lastName ? 
+                      `${profile.firstName[0]}${profile.lastName[0]}` : 
+                      user?.firstName && user?.lastName ? 
+                        `${user.firstName[0]}${user.lastName[0]}` : 
+                        'U'}
                   </AvatarFallback>
                 </Avatar>
                 {isEditing && (
