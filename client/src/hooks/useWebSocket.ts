@@ -67,25 +67,34 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         }
       };
 
-      wsRef.current.onclose = () => {
+      wsRef.current.onclose = (event) => {
+        console.log(`WebSocket: Connection closed. Code: ${event.code}, Reason: ${event.reason}`);
         setIsConnected(false);
         options.onDisconnect?.();
         
         // Always attempt to reconnect for both development and production
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
-          console.log(`WebSocket: Reconnection attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`);
+          console.log(`WebSocket: Reconnection attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts} in ${reconnectDelay/1000}s`);
           reconnectTimeoutRef.current = setTimeout(() => {
+            console.log(`WebSocket: Attempting reconnection ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`);
             connect();
           }, reconnectDelay);
         } else {
-          setError("Failed to connect after multiple attempts");
+          setError("Failed to connect after multiple attempts. Please refresh the page.");
+          console.error("WebSocket: Max reconnection attempts reached");
         }
       };
 
       wsRef.current.onerror = (event) => {
+        console.error("WebSocket: Connection error occurred", event);
         setError("WebSocket connection error");
         options.onError?.(event);
+        
+        // If connection fails immediately, try reconnecting
+        if (!isConnected && reconnectAttemptsRef.current < maxReconnectAttempts) {
+          console.log("WebSocket: Error occurred, will attempt reconnection");
+        }
       };
     } catch (err) {
       setError("Failed to establish WebSocket connection");

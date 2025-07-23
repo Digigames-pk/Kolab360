@@ -284,6 +284,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const channel = await storage.createChannel(channelData);
       console.log('✅ Channel created:', channel.name);
+      
+      // Broadcast channel creation to all connected clients in the workspace
+      console.log(`🔔 Broadcasting channel creation to ${connections.size} connections`);
+      connections.forEach((conn) => {
+        if (conn.readyState === WebSocket.OPEN && conn.workspaceId) {
+          conn.send(JSON.stringify({
+            type: 'channel_created',
+            data: channel
+          }));
+        }
+      });
+      
       res.json(channel);
     } catch (error) {
       console.error("Error creating channel:", error);
@@ -303,6 +315,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...channelData,
         createdBy: userId,
       });
+      
+      // Broadcast channel creation to all connected clients in the workspace
+      console.log(`🔔 Broadcasting workspace channel creation to ${connections.size} connections`);
+      connections.forEach((conn) => {
+        if (conn.readyState === WebSocket.OPEN && conn.workspaceId === req.params.workspaceId) {
+          conn.send(JSON.stringify({
+            type: 'channel_created',
+            data: channel
+          }));
+        }
+      });
+      
       res.json(channel);
     } catch (error) {
       console.error("Error creating channel:", error);
@@ -2759,6 +2783,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             ws.channelId = channelId;
             console.log(`📺 Connection ${connectionId} joined channel ${channelId}`);
+            break;
+            
+          case 'new_message':
+            console.log(`🔔 Broadcasting message to ${connections.size} connections in channel ${message.channelId}`);
+            let broadcastCount = 0;
+            // Broadcast message to all connected clients in the same channel
+            connections.forEach((conn) => {
+              if (conn.readyState === WebSocket.OPEN && 
+                  conn.channelId === message.channelId) {
+                conn.send(JSON.stringify({
+                  type: 'new_message',
+                  data: message.data
+                }));
+                broadcastCount++;
+              }
+            });
+            console.log(`✅ Message broadcasted to ${broadcastCount} connections`);
+            break;
+            
+          case 'new_direct_message':
+            console.log(`📧 Broadcasting DM between users ${message.authorId} and ${message.recipientId}`);
+            let dmBroadcastCount = 0;
+            connections.forEach((conn) => {
+              if (conn.readyState === WebSocket.OPEN && 
+                  (conn.userId === parseInt(message.authorId) || conn.userId === parseInt(message.recipientId))) {
+                conn.send(JSON.stringify({
+                  type: 'new_direct_message',
+                  data: message.data
+                }));
+                dmBroadcastCount++;
+              }
+            });
+            console.log(`✅ DM broadcasted to ${dmBroadcastCount} connections`);
             break;
             
           case 'typing':

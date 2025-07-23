@@ -106,17 +106,24 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // WebSocket connection
-  const { isConnected, sendMessage } = useWebSocket({
+  // WebSocket connection with enhanced reconnection handling
+  const { isConnected, sendMessage, error: wsError } = useWebSocket({
     onMessage: handleWebSocketMessage,
     onConnect: () => {
-      if (channelId) {
-        sendMessage({ type: 'join_channel', channelId });
-      }
+      console.log('✅ WebSocket connected, joining workspace and channel');
       if (user) {
         sendMessage({ type: 'join_workspace', workspaceId: 1, userId: user.id });
       }
+      if (channelId) {
+        sendMessage({ type: 'join_channel', channelId });
+      }
     },
+    onDisconnect: () => {
+      console.log('❌ WebSocket disconnected');
+    },
+    onError: (error) => {
+      console.error('WebSocket error:', error);
+    }
   });
 
   function handleWebSocketMessage(message: any) {
@@ -1218,19 +1225,16 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
           <div className="flex items-center space-x-2">
             <span>Press Enter to send</span>
-            {isConnected && (
-              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                Connected
-              </Badge>
-            )}
           </div>
-          <div className="flex items-center space-x-1">
-            {isConnected ? (
-              <Check className="h-3 w-3 text-green-500" />
-            ) : (
-              <Clock className="h-3 w-3 text-orange-500" />
+          <div className="flex items-center space-x-2">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <span>{isConnected ? 'Real-time' : (wsError ? 'Reconnecting...' : 'Disconnected')}</span>
+            {channelId && (
+              <span className="text-xs">• #{channelId}</span>
             )}
-            <span>{isConnected ? 'Real-time' : 'Reconnecting...'}</span>
+            {recipientName && (
+              <span className="text-xs">• DM with {recipientName}</span>
+            )}
           </div>
         </div>
       </div>

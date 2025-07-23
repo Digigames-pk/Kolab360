@@ -33,9 +33,10 @@ export default function Workspace() {
     enabled: isAuthenticated && !!workspaceId,
   });
 
-  const { data: channels, isLoading: channelsLoading } = useQuery({
+  const { data: channels, isLoading: channelsLoading, refetch: refetchChannels } = useQuery({
     queryKey: ["/api/workspaces", workspaceId, "channels"],
     enabled: isAuthenticated && !!workspaceId,
+    refetchInterval: 5000, // Auto-refresh every 5 seconds to catch new channels
   });
 
   const { data: members, isLoading: membersLoading } = useQuery({
@@ -58,7 +59,14 @@ export default function Workspace() {
     },
     onMessage: (message) => {
       console.log("WebSocket message received:", message);
-      // Handle incoming messages, typing indicators, etc.
+      
+      // Handle channel updates
+      if (message.type === 'channel_created' || message.type === 'new_channel') {
+        console.log("🆕 New channel detected, refreshing channel list");
+        refetchChannels();
+      }
+      
+      // Handle other messages, typing indicators, etc.
     },
     onError: (error) => {
       console.error("WebSocket error:", error);
