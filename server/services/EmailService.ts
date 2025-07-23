@@ -20,7 +20,7 @@ export class EmailService {
     }
     
     this.resend = new Resend(process.env.RESEND_API_KEY);
-    this.defaultFrom = 'KOLAB360 <onboarding@resend.dev>'; // Using verified Resend domain
+    this.defaultFrom = 'Kolab360 <onboarding@resend.dev>'; // Using verified Resend domain
     
     console.log('✅ Email service initialized with Resend API');
   }

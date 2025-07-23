@@ -435,7 +435,7 @@ export class EmailService {
   }
 
   // Send email function
-  async sendEmail(to: string, template: EmailTemplate, from: string = 'Kolab360 <noreply@kolab360.com>') {
+  async sendEmail(to: string, template: EmailTemplate, from: string = 'Kolab360 <onboarding@resend.dev>') {
     try {
       const result = await resend.emails.send({
         from,

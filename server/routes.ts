@@ -1749,12 +1749,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Direct email test (no auth required for testing)
   app.post('/api/test-email-direct', async (req: any, res) => {
     try {
-      // Test with simple template without domain references
+      // Test with simple template without any domain references
       const result = await emailService.sendEmail({
         to: 'marty@24flix.com',
-        subject: 'KOLAB360 Test Email',
-        html: '<h1>Test Email</h1><p>This is a test email from KOLAB360.</p>',
-        text: 'Test Email - This is a test email from KOLAB360.'
+        subject: 'Test Email from Team Platform',
+        html: '<h1>Hello!</h1><p>This is a test email from your team collaboration platform.</p>',
+        text: 'Hello! This is a test email from your team collaboration platform.'
       });
       
       console.log('🧪 Direct email test result:', result);
