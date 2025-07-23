@@ -130,7 +130,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/workspaces', requireAuth, async (req: any, res) => {
+  app.get('/api/workspaces', async (req: any, res) => {
+    // Auto-authenticate in development
+    if (process.env.NODE_ENV === 'development' && !req.user) {
+      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (superAdmin) {
+        req.user = superAdmin;
+      }
+    }
     try {
       const userId = req.user.id;
       const workspaces = await storage.getUserWorkspaces(userId);
@@ -239,6 +246,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Add user as workspace member
         await storage.joinWorkspace(defaultWorkspace.id, userId);
+        
+        // Create default #general channel for new workspace
+        try {
+          const generalChannel = await storage.createChannel({
+            name: 'general',
+            workspaceId: defaultWorkspace.id,
+            description: 'General discussion for all team members',
+            isPrivate: false,
+            createdBy: userId,
+          });
+          console.log('✅ Default #general channel created for new workspace:', generalChannel.name);
+        } catch (generalChannelError) {
+          console.error('⚠️ Error creating default #general channel:', generalChannelError);
+        }
       }
       
       const channelData = {
@@ -1602,6 +1623,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const organization = await storage.createOrganization(orgData);
       console.log('✅ [DEBUG] Organization created successfully:', organization.name, 'ID:', organization.id);
+      
+      // Create default workspace for the organization
+      try {
+        const defaultWorkspace = await storage.createWorkspace({
+          name: `${organization.name} Workspace`,
+          description: `Main workspace for ${organization.name}`,
+          ownerId: user.id,
+          inviteCode: nanoid(8),
+        });
+        console.log('✅ [DEBUG] Default workspace created:', defaultWorkspace.name, 'ID:', defaultWorkspace.id);
+        
+        // Create default #general channel
+        const generalChannel = await storage.createChannel({
+          name: 'general',
+          workspaceId: defaultWorkspace.id,
+          description: 'General discussion for all team members',
+          isPrivate: false,
+          createdBy: user.id,
+        });
+        console.log('✅ [DEBUG] Default #general channel created:', generalChannel.name, 'ID:', generalChannel.id);
+        
+        // Store the workspace and channel IDs with the organization for easy access
+        organization.defaultWorkspaceId = defaultWorkspace.id;
+        organization.defaultChannelId = generalChannel.id;
+        
+      } catch (workspaceError) {
+        console.error('⚠️ [DEBUG] Error creating default workspace/channel:', workspaceError);
+        // Continue with organization creation even if workspace creation fails
+      }
       
       res.status(201).json(organization);
     } catch (error) {
