@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import { Server as SocketIOServer } from "socket.io";
 import { storage } from "./storage";
 import passport from 'passport';
 import { setupAuth, requireAuth } from "./auth";
@@ -2740,15 +2741,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
 
-  // WebSocket server setup - PRODUCTION FIX
+  // Socket.IO server setup - PRODUCTION READY WITH AUTO-RECONNECTION
+  const io = new SocketIOServer(httpServer, {
+    path: '/ws',
+    cors: {
+      origin: true,
+      credentials: true
+    },
+    transports: ['websocket', 'polling'], // Fallback to polling if WebSocket fails
+    pingTimeout: 60000,
+    pingInterval: 25000
+  });
+
+  // WebSocket server setup - PRODUCTION FIX (Keep for backward compatibility)
   const wss = new WebSocketServer({ 
     server: httpServer, 
-    path: '/ws',
+    path: '/ws-legacy',
     verifyClient: (info) => {
       console.log('🔍 WebSocket connection attempt from:', info.origin || 'direct');
       // Allow all connections for production debugging
       return true;
     }
+  });
+
+  // Socket.IO connection handling - RELIABLE WITH AUTO-RECONNECTION
+  io.on('connection', (socket) => {
+    const connectionId = socket.id;
+    console.log(`🔗 Socket.IO connection established (ID: ${connectionId}). Total connections: ${io.engine.clientsCount}`);
+
+    // Send connection confirmation immediately
+    socket.emit('connection_established', {
+      connectionId: connectionId,
+      timestamp: new Date().toISOString()
+    });
+
+    // Handle workspace joining
+    socket.on('join_workspace', (data) => {
+      socket.data.workspaceId = data.workspaceId;
+      socket.data.userId = data.userId;
+      socket.join(`workspace-${data.workspaceId}`);
+      console.log(`👤 User ${data.userId} joined workspace ${data.workspaceId} (${connectionId})`);
+    });
+
+    // Handle channel joining
+    socket.on('join_channel', (data) => {
+      // Handle "general" channel as UUID
+      let channelId = data.channelId;
+      if (channelId === 'general') {
+        channelId = '550e8400-e29b-41d4-a716-446655440000';
+      }
+      socket.data.channelId = channelId;
+      socket.join(`channel-${channelId}`);
+      console.log(`📺 Connection ${connectionId} joined channel ${channelId}`);
+    });
+
+    // Handle new messages
+    socket.on('new_message', (message) => {
+      console.log(`🔔 Broadcasting message via Socket.IO to channel ${message.channelId}`);
+      socket.to(`channel-${message.channelId}`).emit('new_message', message);
+    });
+
+    // Handle direct messages
+    socket.on('new_direct_message', (message) => {
+      console.log(`📧 Broadcasting DM via Socket.IO between users ${message.authorId} and ${message.recipientId}`);
+      // Emit to specific users
+      io.sockets.sockets.forEach((clientSocket) => {
+        if (clientSocket.data.userId === message.authorId || clientSocket.data.userId === message.recipientId) {
+          clientSocket.emit('new_direct_message', message);
+        }
+      });
+    });
+
+    // Handle channel creation broadcasts
+    socket.on('channel_created', (channel) => {
+      console.log(`🆕 Broadcasting channel creation via Socket.IO`);
+      if (socket.data.workspaceId) {
+        socket.to(`workspace-${socket.data.workspaceId}`).emit('channel_created', channel);
+      }
+    });
+
+    // Handle typing indicators
+    socket.on('typing', (data) => {
+      socket.to(`channel-${data.channelId}`).emit('user_typing', {
+        userId: socket.data.userId,
+        channelId: data.channelId
+      });
+    });
+
+    socket.on('stop_typing', (data) => {
+      socket.to(`channel-${data.channelId}`).emit('user_stop_typing', {
+        userId: socket.data.userId,
+        channelId: data.channelId
+      });
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log(`❌ Socket.IO connection closed (${connectionId}). Reason: ${reason}`);
+    });
   });
 
   wss.on('connection', (ws: WebSocketConnection, req) => {

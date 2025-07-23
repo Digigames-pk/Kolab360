@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import { useSocketIO } from '../hooks/useSocketIO';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -107,7 +107,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // WebSocket connection with enhanced reconnection handling
-  const { isConnected, sendMessage, error: wsError } = useWebSocket({
+  const { isConnected, sendMessage, error: wsError } = useSocketIO({
     onMessage: handleWebSocketMessage,
     onConnect: () => {
       console.log('✅ WebSocket connected, joining workspace and channel');

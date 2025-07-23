@@ -8,7 +8,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import Sidebar from "@/components/chat/Sidebar";
 import ChatArea from "@/components/chat/ChatArea";
 import RightPanel from "@/components/chat/RightPanel";
-import { useWebSocket } from "@/hooks/useWebSocket";
+import { useSocketIO } from "../hooks/useSocketIO";
 
 interface Channel {
   id: string;
@@ -45,7 +45,7 @@ export default function Workspace() {
   });
 
   // WebSocket connection
-  const { sendMessage, isConnected } = useWebSocket({
+  const { sendMessage, isConnected } = useSocketIO({
     onConnect: () => {
       console.log("Connected to WebSocket");
       if (user?.id && workspaceId) {
