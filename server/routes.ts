@@ -1673,6 +1673,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add existing user to organization endpoint
+  app.post('/api/organizations/:id/add-existing-user', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const organizationId = parseInt(req.params.id);
+      const { email, role = 'member' } = req.body;
+      
+      // Check if user exists in any organization
+      const existingUser = await storage.getOrganizationUserByEmail(email);
+      if (!existingUser) {
+        return res.status(404).json({ error: 'User not found in any organization' });
+      }
+      
+      // Check if user is already in this organization
+      const existingMembership = await storage.getOrganizationUsers(organizationId);
+      const alreadyMember = existingMembership.find(member => member.email === email);
+      if (alreadyMember) {
+        return res.status(400).json({ error: 'User is already a member of this organization' });
+      }
+      
+      // Add user to new organization using existing user data
+      const newMembership = await storage.createOrganizationUser({
+        organizationId,
+        email: existingUser.email,
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
+        role,
+        status: 'active',
+        password: existingUser.password, // Copy existing password hash
+      });
+      
+      console.log('✅ Existing user added to organization:', email, 'Organization ID:', organizationId);
+      res.json({
+        ...newMembership,
+        message: 'User successfully added to organization'
+      });
+    } catch (error) {
+      console.error('Error adding existing user to organization:', error);
+      res.status(500).json({ error: 'Failed to add user to organization' });
+    }
+  });
+
+  // Get all users across all organizations (for super admin)
+  app.get('/api/admin/all-users', requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      if (user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Super admin access required' });
+      }
+
+      const allOrganizations = await storage.getAllOrganizations();
+      const allUsers = new Map();
+      
+      // Collect all unique users across organizations
+      for (const org of allOrganizations) {
+        const orgUsers = await storage.getOrganizationUsers(org.id);
+        for (const orgUser of orgUsers) {
+          if (!allUsers.has(orgUser.email)) {
+            allUsers.set(orgUser.email, {
+              email: orgUser.email,
+              firstName: orgUser.firstName,
+              lastName: orgUser.lastName,
+              organizations: []
+            });
+          }
+          allUsers.get(orgUser.email).organizations.push({
+            id: org.id,
+            name: org.name,
+            role: orgUser.role,
+            status: orgUser.status
+          });
+        }
+      }
+      
+      res.json(Array.from(allUsers.values()));
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
   // Update organization user role
   app.put('/api/organizations/:id/users/:userId/role', requireAuth, async (req: any, res) => {
     try {

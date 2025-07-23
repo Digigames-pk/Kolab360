@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { PricingPlanManager } from './PricingPlanManager';
+import { AddExistingUserModal } from './AddExistingUserModal';
 import {
   Shield,
   Users,
@@ -163,6 +164,7 @@ export function SuperAdminDashboard() {
   const [showAppStoreModal, setShowAppStoreModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showAddExistingUserModal, setShowAddExistingUserModal] = useState(false);
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
   const [showManageSettingsModal, setShowManageSettingsModal] = useState(false);
   const [showScreenSharingModal, setShowScreenSharingModal] = useState(false);
@@ -1514,6 +1516,13 @@ export function SuperAdminDashboard() {
                         }}>
                           <UserPlus className="h-4 w-4 mr-2" />
                           Add New User
+                        </Button>
+                        <Button className="w-full" variant="outline" onClick={() => {
+                          setShowAddExistingUserModal(true);
+                          toast({title: "Add Existing User", description: "Opening existing user selector..."});
+                        }}>
+                          <Users className="h-4 w-4 mr-2" />
+                          Add Existing User
                         </Button>
                         <Button className="w-full" variant="outline" onClick={() => {
                           setShowBroadcastModal(true);
@@ -3071,6 +3080,20 @@ export function SuperAdminDashboard() {
             </div>
           </div>
         )}
+        {/* Add Existing User Modal */}
+        {showAddExistingUserModal && selectedOrgForManagement && (
+          <AddExistingUserModal
+            isOpen={showAddExistingUserModal}
+            onClose={() => setShowAddExistingUserModal(false)}
+            organizationId={selectedOrgForManagement.id}
+            organizationName={selectedOrgForManagement.name}
+            onUserAdded={() => {
+              loadOrgUsers(selectedOrgForManagement.id);
+              setShowAddExistingUserModal(false);
+            }}
+          />
+        )}
+
       </div>
     </div>
   );
