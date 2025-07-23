@@ -222,6 +222,48 @@ export default function Home() {
           channelStats={channelStats}
           dmStats={dmStats}
           onCreateWorkspace={() => setShowCreateWorkspace(true)}
+          onCreateChannel={(channelName) => {
+            // Create channel via API call to backend
+            fetch('/api/channels', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: channelName, type: 'public' })
+            }).then(response => {
+              if (response.ok) {
+                setSelectedChannel(channelName.toLowerCase().replace(/\s+/g, '-'));
+                setActiveView('chat');
+                setSelectedDM(null);
+                console.log('Channel created:', channelName);
+              } else {
+                alert('Failed to create channel. Please try again.');
+              }
+            }).catch(error => {
+              console.error('Error creating channel:', error);
+              alert('Failed to create channel. Please try again.');
+            });
+          }}
+          onCreateDM={(userName) => {
+            // Start DM via API call or direct selection
+            fetch(`/api/users/search?name=${encodeURIComponent(userName)}`)
+              .then(response => response.json())
+              .then(users => {
+                if (users.length > 0) {
+                  setSelectedDM(userName);
+                  setActiveView('chat');
+                  setSelectedChannel('');
+                  console.log('DM started with:', userName);
+                } else {
+                  alert('User not found. Please check the username.');
+                }
+              })
+              .catch(error => {
+                console.error('Error starting DM:', error);
+                // Fallback to allow DM creation anyway
+                setSelectedDM(userName);
+                setActiveView('chat');
+                setSelectedChannel('');
+              });
+          }}
         />
       </div>
 
@@ -395,43 +437,17 @@ export default function Home() {
                 <p className="text-gray-600">Browse and connect with workspace members</p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Sample workspace members */}
-                {[
-                  { name: "Alex Johnson", role: "Product Manager", status: "online", avatar: "AJ" },
-                  { name: "Sarah Chen", role: "Designer", status: "away", avatar: "SC" },
-                  { name: "Mike Rodriguez", role: "Developer", status: "offline", avatar: "MR" },
-                  { name: "Emma Thompson", role: "Marketing", status: "online", avatar: "ET" },
-                  { name: "David Kim", role: "Engineer", status: "online", avatar: "DK" },
-                  { name: "Lisa Wang", role: "Data Scientist", status: "away", avatar: "LW" }
-                ].map((person, index) => (
-                  <div key={index} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="relative">
-                        <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                          {person.avatar}
-                        </div>
-                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                          person.status === 'online' ? 'bg-green-500' : 
-                          person.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'
-                        }`}></div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
-                        <p className="text-sm text-gray-600">{person.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Message
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Users className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              <div className="bg-white border rounded-lg p-8 text-center">
+                <div className="p-4 bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No workspace members found</h3>
+                <p className="text-gray-500 mb-4">
+                  Invite team members to see them here. Real users will appear once they join your workspace.
+                </p>
+                <Button onClick={() => alert('Invite functionality would connect to real user management system')}>
+                  Invite Team Members
+                </Button>
               </div>
             </div>
           )}

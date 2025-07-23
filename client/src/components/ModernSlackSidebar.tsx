@@ -87,6 +87,8 @@ interface ModernSlackSidebarProps {
   channelStats?: ChannelStat[];
   dmStats?: DMStat[];
   onCreateWorkspace?: () => void;
+  onCreateChannel?: (channelName: string) => void;
+  onCreateDM?: (userName: string) => void;
 }
 
 export function ModernSlackSidebar({
@@ -105,7 +107,9 @@ export function ModernSlackSidebar({
   onShowSettings,
   channelStats = [],
   dmStats = [],
-  onCreateWorkspace
+  onCreateWorkspace,
+  onCreateChannel,
+  onCreateDM
 }: ModernSlackSidebarProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
@@ -329,20 +333,14 @@ export function ModernSlackSidebar({
                   className="h-6 w-6 p-0"
                   onClick={() => {
                     const channelName = prompt('Enter channel name:');
-                    if (channelName) {
-                      console.log('Creating channel:', channelName);
-                      // Add to channels list
-                      const newChannel = {
-                        id: channelName.toLowerCase().replace(/\s+/g, '-'),
-                        name: channelName,
-                        type: 'public' as const,
-                        unread: 0,
-                        memberCount: 1,
-                        activeMembers: 1
-                      };
-                      // This would normally call a parent callback
-                      onChannelSelect(newChannel.id);
-                      onViewChange('chat');
+                    if (channelName && channelName.trim()) {
+                      if (onCreateChannel) {
+                        onCreateChannel(channelName.trim());
+                      } else {
+                        // Fallback to local action
+                        onChannelSelect(channelName.toLowerCase().replace(/\s+/g, '-'));
+                        onViewChange('chat');
+                      }
                     }
                   }}
                 >
@@ -428,18 +426,13 @@ export function ModernSlackSidebar({
                 className="h-6 w-6 p-0"
                 onClick={() => {
                   const userName = prompt('Enter username to message:');
-                  if (userName) {
-                    console.log('Starting DM with:', userName);
-                    // Add to DM list and switch view
-                    const newDM = {
-                      id: userName.toLowerCase().replace(/\s+/g, '-'),
-                      name: userName,
-                      status: 'online' as const,
-                      unread: 0
-                    };
-                    // This would normally call a parent callback to update DM list
-                    onViewChange('chat');
-                    console.log('DM created with:', userName);
+                  if (userName && userName.trim()) {
+                    if (onCreateDM) {
+                      onCreateDM(userName.trim());
+                    } else {
+                      // Fallback to switch to chat view
+                      onViewChange('chat');
+                    }
                   }
                 }}
               >
