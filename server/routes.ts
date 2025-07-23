@@ -130,14 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/workspaces', async (req: any, res) => {
-    // Auto-authenticate in development
-    if (process.env.NODE_ENV === 'development' && !req.user) {
-      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-      if (superAdmin) {
-        req.user = superAdmin;
-      }
-    }
+  app.get('/api/workspaces', requireAuth, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const workspaces = await storage.getUserWorkspaces(userId);
@@ -451,10 +444,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('💬 Creating text message');
       }
       
+      console.log('🔄 Creating message with data:', messageToCreate);
       const message = await storage.createMessage(messageToCreate);
+      console.log('✅ Message created successfully:', message);
 
       // Broadcast to WebSocket connections
-      const author = req.user || { id: 3, firstName: "Regular", lastName: "User", email: "user@test.com", role: "user" };
+      const author = req.user;
       const messageWithAuthor = {
         ...message,
         author,
@@ -471,8 +466,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(messageWithAuthor);
     } catch (error) {
-      console.error("Error creating message:", error);
-      res.status(500).json({ message: "Failed to create message" });
+      console.error("❌ Error creating message:", error);
+      console.error("Error details:", error.message);
+      console.error("Stack trace:", error.stack);
+      res.status(500).json({ message: "Failed to create message", error: error.message });
     }
   });
 
@@ -504,20 +501,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // General messages endpoint with proper authentication
-  app.get('/api/messages', async (req: any, res) => {
+  app.get('/api/messages', requireAuth, async (req: any, res) => {
     try {
-      // Auto-authenticate in development
-      if (process.env.NODE_ENV === 'development' && !req.user) {
-        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-        if (superAdmin) {
-          req.user = superAdmin;
-        }
-      }
-      
-      if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-      
       // Return empty array for now - this endpoint is used by the frontend
       res.json([]);
     } catch (error) {
@@ -527,20 +512,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Channels list endpoint with proper authentication
-  app.get('/api/channels', async (req: any, res) => {
+  app.get('/api/channels', requireAuth, async (req: any, res) => {
     try {
-      // Auto-authenticate in development
-      if (process.env.NODE_ENV === 'development' && !req.user) {
-        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-        if (superAdmin) {
-          req.user = superAdmin;
-        }
-      }
-      
-      if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-      
       // Get user's workspaces and their channels
       const userId = req.user.id;
       const userWorkspaces = await storage.getUserWorkspaces(userId);

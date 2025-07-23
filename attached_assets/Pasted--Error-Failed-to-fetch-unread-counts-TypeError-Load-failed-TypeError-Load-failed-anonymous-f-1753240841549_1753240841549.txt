@@ -1,0 +1,39 @@
+[Error] Failed to fetch unread counts: – TypeError: Load failed
+TypeError: Load failed
+	(anonymous function) (index-D3RTRyDd.js:787:22839)
+[Error] Failed to load resource: the server responded with a status of 401 () (me, line 0)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – [Object] (1) (index-BdhSvGqf.js, line 787)
+[Object]Array (1)
+[Log] 🔍 File metadata check: – [Object] (1) (index-BdhSvGqf.js, line 787)
+[Object]Array (1)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] 📤 Upload response status: – 201 (index-BdhSvGqf.js, line 787)
+[Log] 📤 File data received: – {success: true, id: "1", originalName: "KOLAB360 purple version Ai-.png", …} (index-BdhSvGqf.js, line 787)
+{success: true, id: "1", originalName: "KOLAB360 purple version Ai-.png", filename: "b229a43acf5bdf9261b0e568cde9ddf2", size: 41756, …}Object
+[Log] 🔄 Creating file message with payload: – {content: "📎 Shared file: KOLAB360 purple version Ai-.png", fileUrl: "/uploads/b229a43acf5bdf9261b0e568cde9ddf2", fileName: "KOLAB360 purple version Ai-.png", …} (index-BdhSvGqf.js, line 787)
+{content: "📎 Shared file: KOLAB360 purple version Ai-.png", fileUrl: "/uploads/b229a43acf5bdf9261b0e568cde9ddf2", fileName: "KOLAB360 purple version Ai-.png", fileType: "image/png", fileSize: 41756}Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] 📬 Message response status: – 500 (index-BdhSvGqf.js, line 787)
+[Error] ❌ Failed to create message for file. Status: – 500 – "Error:" – "{\"message\":\"Failed to create message\"}"
+	(anonymous function) (index-BdhSvGqf.js:787:62463)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-BdhSvGqf.js, line 787)
+[Error] Failed to load resource: the server responded with a status of 500 () (channels, line 0)

@@ -42,13 +42,14 @@ async function comparePasswords(supplied: string, stored: string) {
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
+    secret: process.env.SESSION_SECRET || "kolab360-secret-key-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false, // Set to false for now to ensure cookies work on both HTTP/HTTPS
+      sameSite: 'lax', // Allow cross-site requests
     },
   };
 
