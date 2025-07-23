@@ -409,19 +409,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/channels/:id/messages', async (req: any, res) => {
+  app.post('/api/channels/:id/messages', requireAuth, async (req: any, res) => {
     try {
-      // Auto-authenticate in development
-      if (process.env.NODE_ENV === 'development' && !req.user) {
-        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-        if (superAdmin) {
-          req.user = superAdmin;
-        }
-      }
-      
-      if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
       const userId = req.user.id;
       
       // Handle "general" channel as UUID
@@ -618,6 +607,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Broadcast to WebSocket connections
       const author = req.user || { id: 3, firstName: "Regular", lastName: "User", email: "user@test.com", role: "user" };
+      const messageWithAuthor = {
+        ...message,
+        author,
+      };
+
+      connections.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN && 
+            (ws.userId === currentUserId || ws.userId === recipientId)) {
+          ws.send(JSON.stringify({
+            type: 'new_direct_message',
+            data: messageWithAuthor,
+          }));
+        }
+      });
+
+      res.json(messageWithAuthor);
+    } catch (error) {
+      console.error("Error creating direct message:", error);
+      res.status(500).json({ message: "Failed to create direct message" });
+    }
+  });
+
+  // Direct message endpoint (alternative format used by frontend)
+  app.post('/api/messages/direct/:recipientId', requireAuth, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const recipientId = parseInt(req.params.recipientId);
+      
+      // Extract file metadata if present
+      const { fileUrl, fileName, fileType, fileSize, ...bodyData } = req.body;
+      
+      console.log('📨 Direct message creation request:', {
+        recipientId, fileUrl, fileName, fileType, fileSize,
+        hasFileData: !!(fileUrl || fileName || fileType)
+      });
+      
+      const messageData = insertMessageSchema.parse({
+        ...bodyData,
+        recipientId,
+      });
+      
+      // Add file metadata if present
+      const messageToCreate = {
+        ...messageData,
+        authorId: currentUserId,
+      };
+      
+      if (fileUrl || fileName || fileType) {
+        messageToCreate.messageType = 'file';
+        messageToCreate.metadata = {
+          fileUrl,
+          fileName,
+          fileType,
+          fileSize
+        };
+        console.log('📎 Creating direct file message with metadata:', messageToCreate.metadata);
+      } else {
+        console.log('💬 Creating direct text message');
+      }
+      
+      const message = await storage.createMessage(messageToCreate);
+
+      // Broadcast to WebSocket connections
+      const author = req.user;
       const messageWithAuthor = {
         ...message,
         author,
