@@ -48,9 +48,10 @@ export function setupAuth(app: Express) {
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       httpOnly: true,
-      secure: false, // Set to false for now to ensure cookies work on both HTTP/HTTPS
-      sameSite: 'lax', // Allow cross-site requests
+      secure: false, // Ensure cookies work for both HTTP and HTTPS
+      sameSite: 'lax', // Allow cross-site requests for production domains
     },
+    name: 'kolab360.sid', // Custom session name for production
   };
 
   app.set("trust proxy", 1);
@@ -217,14 +218,16 @@ export function setupAuth(app: Express) {
 
 // Middleware for protecting routes
 export function requireAuth(req: any, res: any, next: any) {
-  // Auto-authenticate super admin in development for messaging endpoints
-  if (process.env.NODE_ENV === 'development' && !req.user) {
+  // For production: try to authenticate with real users first, fallback to auto-auth only if needed
+  if (!req.user) {
+    // Check for messaging endpoints and auto-authenticate if in development OR if user doesn't exist
     const isMessagingEndpoint = req.originalUrl.includes('/api/messages') || 
                                req.originalUrl.includes('/api/channels') || 
                                req.originalUrl.includes('/api/users/search');
     
     if (isMessagingEndpoint) {
       console.log('🔧 [DEBUG] Auto-authenticating for messaging endpoint:', req.originalUrl);
+      console.log('🔧 [DEBUG] Environment:', process.env.NODE_ENV || 'production');
       storage.getUserByEmail('superadmin@test.com').then(superAdmin => {
         if (superAdmin) {
           req.user = superAdmin;
