@@ -85,6 +85,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // WebSocket connections store
   const connections = new Set<WebSocketConnection>();
+  
+  // Unread counts storage (in production, this would be in database)
+  const unreadCounts = new Map<string, Map<string, number>>(); // userId -> channelId -> count
+  const dmUnreadCounts = new Map<string, Map<string, number>>(); // userId -> otherUserId -> count
+  
+  // Pinned items storage (in production, this would be in database)
+  const pinnedMessages = new Map<string, Set<string>>(); // userId -> Set of messageIds
+  const pinnedChannels = new Map<string, Set<string>>(); // userId -> Set of channelIds
 
   // Workspace routes
   app.post('/api/workspaces', requireAuth, async (req: any, res) => {
@@ -465,14 +473,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         author,
       };
 
+      console.log(`📡 Broadcasting message to ${connections.size} WebSocket connections`);
+      let broadcastCount = 0;
       connections.forEach((ws) => {
-        if (ws.readyState === WebSocket.OPEN && ws.channelId === channelId) {
-          ws.send(JSON.stringify({
-            type: 'new_message',
-            data: messageWithAuthor,
-          }));
+        if (ws.readyState === WebSocket.OPEN) {
+          // Send to users in the same channel
+          if (ws.channelId === channelId) {
+            ws.send(JSON.stringify({
+              type: 'new_message',
+              data: messageWithAuthor,
+            }));
+            broadcastCount++;
+          } else if (ws.userId && ws.userId !== userId) {
+            // Update unread counts for users not in this channel
+            const userIdStr = ws.userId.toString();
+            if (!unreadCounts.has(userIdStr)) {
+              unreadCounts.set(userIdStr, new Map());
+            }
+            const userUnreads = unreadCounts.get(userIdStr)!;
+            const currentCount = userUnreads.get(channelId) || 0;
+            userUnreads.set(channelId, currentCount + 1);
+            
+            // Send unread count update
+            ws.send(JSON.stringify({
+              type: 'unread_count_update',
+              data: {
+                channelId,
+                count: currentCount + 1,
+                lastMessage: messageWithAuthor.content
+              }
+            }));
+          }
         }
       });
+      console.log(`📊 Message broadcasted to ${broadcastCount} active connections`);
 
       res.json(messageWithAuthor);
     } catch (error) {
@@ -652,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = await storage.createMessage(messageToCreate);
 
-      // Broadcast to WebSocket connections
+      // Broadcast to WebSocket connections with unread count updates
       const author = req.user;
       const messageWithAuthor = {
         ...message,
@@ -660,12 +694,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       connections.forEach((ws) => {
-        if (ws.readyState === WebSocket.OPEN && 
-            (ws.userId === currentUserId || ws.userId === recipientId)) {
-          ws.send(JSON.stringify({
-            type: 'new_direct_message',
-            data: messageWithAuthor,
-          }));
+        if (ws.readyState === WebSocket.OPEN) {
+          if (ws.userId === currentUserId || ws.userId === recipientId) {
+            ws.send(JSON.stringify({
+              type: 'new_direct_message',
+              data: messageWithAuthor,
+            }));
+          } else if (ws.userId === recipientId) {
+            // Update DM unread counts for recipient
+            const recipientIdStr = recipientId.toString();
+            const currentUserIdStr = currentUserId.toString();
+            if (!dmUnreadCounts.has(recipientIdStr)) {
+              dmUnreadCounts.set(recipientIdStr, new Map());
+            }
+            const recipientUnreads = dmUnreadCounts.get(recipientIdStr)!;
+            const currentCount = recipientUnreads.get(currentUserIdStr) || 0;
+            recipientUnreads.set(currentUserIdStr, currentCount + 1);
+            
+            ws.send(JSON.stringify({
+              type: 'dm_unread_count_update',
+              data: {
+                userId: currentUserId,
+                count: currentCount + 1,
+                lastMessage: messageWithAuthor.content
+              }
+            }));
+          }
         }
       });
 
@@ -673,6 +727,216 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating direct message:", error);
       res.status(500).json({ message: "Failed to create direct message" });
+    }
+  });
+
+  // Unread counts API endpoints
+  app.get('/api/unread-counts/channels', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const userUnreads = unreadCounts.get(userId) || new Map();
+      
+      const channelUnreads = Array.from(userUnreads.entries()).map(([channelId, count]) => ({
+        channelId,
+        channelName: channelId === '550e8400-e29b-41d4-a716-446655440000' ? 'general' : `channel-${channelId}`,
+        unreadCount: count,
+        lastMessageAt: new Date().toISOString()
+      }));
+      
+      res.json(channelUnreads);
+    } catch (error) {
+      console.error("Error fetching channel unread counts:", error);
+      res.status(500).json({ message: "Failed to fetch unread counts" });
+    }
+  });
+
+  app.get('/api/unread-counts/direct-messages', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const userDMUnreads = dmUnreadCounts.get(userId) || new Map();
+      
+      const dmUnreads = Array.from(userDMUnreads.entries()).map(([otherUserId, count]) => ({
+        userId: parseInt(otherUserId),
+        userName: `User ${otherUserId}`,
+        unreadCount: count,
+        lastMessageAt: new Date().toISOString()
+      }));
+      
+      res.json(dmUnreads);
+    } catch (error) {
+      console.error("Error fetching DM unread counts:", error);
+      res.status(500).json({ message: "Failed to fetch DM unread counts" });
+    }
+  });
+
+  app.post('/api/unread-counts/channels/:channelId/mark-read', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const channelId = req.params.channelId;
+      
+      // Clear unread count for this channel
+      if (unreadCounts.has(userId)) {
+        const userUnreads = unreadCounts.get(userId)!;
+        userUnreads.delete(channelId);
+      }
+      
+      // Broadcast unread count update to user
+      connections.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN && ws.userId === req.user.id) {
+          ws.send(JSON.stringify({
+            type: 'unread_count_update',
+            data: {
+              channelId,
+              count: 0
+            }
+          }));
+        }
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking channel as read:", error);
+      res.status(500).json({ message: "Failed to mark as read" });
+    }
+  });
+
+  app.post('/api/unread-counts/direct-messages/:userId/mark-read', requireAuth, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id.toString();
+      const otherUserId = req.params.userId;
+      
+      // Clear DM unread count
+      if (dmUnreadCounts.has(currentUserId)) {
+        const userDMUnreads = dmUnreadCounts.get(currentUserId)!;
+        userDMUnreads.delete(otherUserId);
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking DM as read:", error);
+      res.status(500).json({ message: "Failed to mark DM as read" });
+    }
+  });
+
+  // Pinning API endpoints
+  app.post('/api/pins/messages/:messageId', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const messageId = req.params.messageId;
+      
+      if (!pinnedMessages.has(userId)) {
+        pinnedMessages.set(userId, new Set());
+      }
+      
+      const userPins = pinnedMessages.get(userId)!;
+      userPins.add(messageId);
+      
+      res.json({ success: true, messageId, pinnedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error("Error pinning message:", error);
+      res.status(500).json({ message: "Failed to pin message" });
+    }
+  });
+
+  app.delete('/api/pins/messages/:messageId', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const messageId = req.params.messageId;
+      
+      if (pinnedMessages.has(userId)) {
+        const userPins = pinnedMessages.get(userId)!;
+        userPins.delete(messageId);
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error unpinning message:", error);
+      res.status(500).json({ message: "Failed to unpin message" });
+    }
+  });
+
+  app.post('/api/pins/channels/:channelId', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const channelId = req.params.channelId;
+      
+      if (!pinnedChannels.has(userId)) {
+        pinnedChannels.set(userId, new Set());
+      }
+      
+      const userChannelPins = pinnedChannels.get(userId)!;
+      userChannelPins.add(channelId);
+      
+      res.json({ success: true, channelId, pinnedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error("Error pinning channel:", error);
+      res.status(500).json({ message: "Failed to pin channel" });
+    }
+  });
+
+  app.delete('/api/pins/channels/:channelId', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      const channelId = req.params.channelId;
+      
+      if (pinnedChannels.has(userId)) {
+        const userChannelPins = pinnedChannels.get(userId)!;
+        userChannelPins.delete(channelId);
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error unpinning channel:", error);
+      res.status(500).json({ message: "Failed to unpin channel" });
+    }
+  });
+
+  app.get('/api/pins', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      
+      const userPinnedMessages = pinnedMessages.get(userId) || new Set();
+      const userPinnedChannels = pinnedChannels.get(userId) || new Set();
+      
+      res.json({
+        messages: Array.from(userPinnedMessages),
+        channels: Array.from(userPinnedChannels)
+      });
+    } catch (error) {
+      console.error("Error fetching pinned items:", error);
+      res.status(500).json({ message: "Failed to fetch pinned items" });
+    }
+  });
+
+  // Notification badge endpoint for comprehensive unread system
+  app.get('/api/notifications/unread-count', requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id.toString();
+      
+      // Calculate total unread count from channels and DMs
+      const userChannelUnreads = unreadCounts.get(userId) || new Map();
+      const userDMUnreads = dmUnreadCounts.get(userId) || new Map();
+      
+      const channelCount = Array.from(userChannelUnreads.values()).reduce((sum, count) => sum + count, 0);
+      const dmCount = Array.from(userDMUnreads.values()).reduce((sum, count) => sum + count, 0);
+      const totalCount = channelCount + dmCount;
+      
+      res.json({ 
+        totalCount,
+        channelCount,
+        dmCount,
+        channels: Array.from(userChannelUnreads.entries()).map(([channelId, count]) => ({
+          channelId,
+          count
+        })),
+        directMessages: Array.from(userDMUnreads.entries()).map(([userId, count]) => ({
+          userId: parseInt(userId),
+          count
+        }))
+      });
+    } catch (error) {
+      console.error("Error fetching notification unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
     }
   });
 
@@ -1543,7 +1807,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Dynamic unread counts with persistent state management
   const channelUnreadCounts = new Map<string, number>();
-  const dmUnreadCounts = new Map<string, number>();
 
   // Get channel unread counts
   app.get('/api/unread-counts/channels', async (req: any, res) => {

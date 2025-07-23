@@ -120,18 +120,52 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   });
 
   function handleWebSocketMessage(message: any) {
+    console.log('📨 WebSocket message received in RealTimeChat:', message);
+    
     switch (message.type) {
       case 'new_message':
         if (message.data.channelId === channelId) {
-          setMessages(prev => [...prev, message.data]);
+          console.log('✅ Adding new message to current channel:', message.data);
+          setMessages(prev => {
+            // Avoid duplicates
+            const exists = prev.some(m => m.id === message.data.id);
+            return exists ? prev : [...prev, message.data];
+          });
+          
+          // Mark channel as read if user is actively viewing it
+          if (channelId) {
+            markChannelAsRead(channelId);
+          }
         }
         break;
+        
       case 'new_direct_message':
         if ((message.data.authorId === user?.id && message.data.recipientId === recipientId) ||
             (message.data.authorId === recipientId && message.data.recipientId === user?.id)) {
-          setMessages(prev => [...prev, message.data]);
+          console.log('✅ Adding new direct message:', message.data);
+          setMessages(prev => {
+            // Avoid duplicates
+            const exists = prev.some(m => m.id === message.data.id);
+            return exists ? prev : [...prev, message.data];
+          });
+          
+          // Mark DM as read if user is actively viewing it
+          if (recipientId) {
+            markDMAsRead(recipientId);
+          }
         }
         break;
+        
+      case 'unread_count_update':
+        console.log('📊 Unread count update:', message.data);
+        // This will be handled by the sidebar component
+        break;
+        
+      case 'dm_unread_count_update':
+        console.log('📧 DM unread count update:', message.data);
+        // This will be handled by the sidebar component
+        break;
+        
       case 'user_typing':
         if (message.channelId === channelId && message.userId !== user?.id) {
           setTypingUsers(prev => {
@@ -144,11 +178,69 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           });
         }
         break;
+        
       case 'user_stop_typing':
         setTypingUsers(prev => prev.filter(t => t.userId !== message.userId));
         break;
     }
   }
+  
+  // Mark channel as read
+  const markChannelAsRead = async (channelId: string) => {
+    try {
+      await fetch(`/api/unread-counts/channels/${channelId}/mark-read`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Error marking channel as read:', error);
+    }
+  };
+  
+  // Mark DM as read
+  const markDMAsRead = async (userId: number) => {
+    try {
+      await fetch(`/api/unread-counts/direct-messages/${userId}/mark-read`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Error marking DM as read:', error);
+    }
+  };
+  
+  // Pin message functionality 
+  const pinMessage = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/pins/messages/${messageId}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        console.log('✅ Message pinned successfully:', messageId);
+        // Show success toast or update UI
+      }
+    } catch (error) {
+      console.error('Error pinning message:', error);
+    }
+  };
+  
+  // Unpin message functionality
+  const unpinMessage = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/pins/messages/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        console.log('✅ Message unpinned successfully:', messageId);
+      }
+    } catch (error) {
+      console.error('Error unpinning message:', error);
+    }
+  };
 
   // Load messages
   useEffect(() => {
@@ -394,34 +486,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
     }
   }
 
-  const pinMessage = async (message: Message) => {
-    try {
-      const response = await fetch('/api/pins', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'message',
-          title: `Message from ${message.author.firstName} ${message.author.lastName}`,
-          content: message.content,
-          metadata: {
-            messageId: message.id,
-            channelId: message.channelId,
-            authorName: `${message.author.firstName} ${message.author.lastName}`,
-            timestamp: message.createdAt
-          }
-        })
-      });
 
-      if (response.ok) {
-        console.log('✅ Message pinned successfully');
-        alert(`Message "${message.content.substring(0, 50)}..." has been pinned!`);
-      } else {
-        console.error('❌ Failed to pin message');
-      }
-    } catch (error) {
-      console.error('Error pinning message:', error);
-    }
-  };
 
   // Emoji functions
   const addEmoji = (emoji: string) => {
@@ -920,7 +985,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                                   <Reply className="h-4 w-4 mr-2" />
                                   Reply
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => pinMessage(message)}>
+                                <DropdownMenuItem onClick={() => pinMessage(message.id)}>
                                   <Pin className="h-4 w-4 mr-2" />
                                   Pin Message
                                 </DropdownMenuItem>
