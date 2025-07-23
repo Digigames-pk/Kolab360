@@ -468,22 +468,26 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
       // Create message with file attachment using the actual file data
       const endpoint = channelId 
         ? `/api/channels/${channelId}/messages`
-        : `/api/messages/direct`;
+        : `/api/messages/direct/${recipientId}`;
+      
+      const messagePayload = {
+        content: `📎 Shared file: ${fileData.originalName}`,
+        fileUrl: fileData.url,
+        fileName: fileData.originalName,
+        fileType: fileData.mimetype,
+        fileSize: fileData.size
+      };
+      
+      console.log('🔄 Creating file message with payload:', messagePayload);
         
       const messageResponse = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: `📎 Shared file: ${fileData.originalName}`,
-          authorId: user?.id || 3,
-          channelId: channelId,
-          recipientId: recipientId,
-          fileUrl: fileData.url,
-          fileName: fileData.originalName,
-          fileType: fileData.mimetype,
-          fileSize: fileData.size
-        })
+        credentials: 'include',
+        body: JSON.stringify(messagePayload)
       });
+      
+      console.log('📬 Message response status:', messageResponse.status);
       
       if (messageResponse.ok) {
         const newMessage = await messageResponse.json();
@@ -505,7 +509,8 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         // Refetch messages immediately to show the new message
         await loadMessages();
       } else {
-        console.error('Failed to create message for file');
+        const errorText = await messageResponse.text();
+        console.error('❌ Failed to create message for file. Status:', messageResponse.status, 'Error:', errorText);
       }
     } catch (error) {
       console.error('Failed to upload file:', error);

@@ -1,0 +1,37 @@
+[Error] Failed to load resource: the server responded with a status of 401 () (me, line 0)
+[Log] WebSocket: Connecting to server... (index-D3RTRyDd.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-D3RTRyDd.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – [Object] (1) (index-D3RTRyDd.js, line 787)
+[Object]Array (1)
+[Log] 🔍 File metadata check: – [Object] (1) (index-D3RTRyDd.js, line 787)
+[Object]Array (1)
+[Log] WebSocket: Connecting to server... (index-D3RTRyDd.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-D3RTRyDd.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] WebSocket: Connecting to server... (index-D3RTRyDd.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-D3RTRyDd.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-D3RTRyDd.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-D3RTRyDd.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-D3RTRyDd.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-D3RTRyDd.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] WebSocket: Connecting to server... (index-D3RTRyDd.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-D3RTRyDd.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-D3RTRyDd.js, line 787)
+[Error] Failed to load resource: the server responded with a status of 500 () (channels, line 0)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-D3RTRyDd.js, line 787)
+[Log] 📤 Upload response status: – 201 (index-D3RTRyDd.js, line 787)
+[Log] 📤 File data received: – {success: true, id: "1", originalName: "KOLAB360 white version Ai.png", …} (index-D3RTRyDd.js, line 787)
+{success: true, id: "1", originalName: "KOLAB360 white version Ai.png", filename: "f879ac4e67f3c4a4a57665aa52c39cba", size: 25700, …}Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to create message for file
+	(anonymous function) (index-D3RTRyDd.js:787:62470)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)

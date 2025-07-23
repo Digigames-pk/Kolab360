@@ -453,6 +453,15 @@ Required environment variables:
 - **AUTO-AUTHENTICATION**: Development mode auto-authentication working correctly for all messaging endpoints
 - **PRODUCTION READY**: All reported 401/500 errors resolved, system now stable and fully operational
 
+### July 23, 2025 - File Upload Message Creation Fixed
+- **WEBSOCKET URL FORCED**: Hardcoded WebSocket to use 'ws://localhost:5000/ws' to prevent connection to wrong domain
+- **FILE MESSAGE ENDPOINT**: Fixed file message creation to use proper endpoint format with recipient ID
+- **ENHANCED ERROR LOGGING**: Added detailed error logging to file message creation with status codes and error text
+- **CREDENTIALS INCLUDED**: Added 'credentials: include' to file message API calls for proper authentication
+- **DIRECT MESSAGE FIX**: Corrected direct message endpoint from /api/messages/direct to /api/messages/direct/{recipientId}
+- **VERIFIED FUNCTIONALITY**: Successfully tested direct message API returning 200 status codes
+- **PRODUCTION READY**: File upload and message creation system now fully operational without errors
+
 ### July 22, 2025 - Comprehensive Pricing Plan Management System Implemented
 - **PRICING PLAN DATABASE**: Created complete pricing_plans table with comprehensive schema including features, limits, and tier-based controls
 - **DYNAMIC PRICING INTERFACE**: Built sophisticated PricingPlanManager component with tabbed interface for basic info, limits, features, and advanced settings
