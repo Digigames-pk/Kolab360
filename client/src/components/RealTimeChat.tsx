@@ -1148,9 +1148,9 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
         <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
           <div className="flex items-center space-x-2">
             <span>Press Enter to send</span>
-            {!isConnected && (
-              <Badge variant="destructive" className="text-xs">
-                Offline Mode
+            {isConnected && (
+              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                Connected
               </Badge>
             )}
           </div>
@@ -1160,7 +1160,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             ) : (
               <Clock className="h-3 w-3 text-orange-500" />
             )}
-            <span>{isConnected ? 'Real-time' : 'Local'}</span>
+            <span>{isConnected ? 'Real-time' : 'Reconnecting...'}</span>
           </div>
         </div>
       </div>

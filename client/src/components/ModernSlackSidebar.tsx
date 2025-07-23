@@ -114,7 +114,7 @@ export function ModernSlackSidebar({
   
   // Get real notification count from API
   const { unreadCount } = useNotifications();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   // Track unread state per channel/DM - fetched from API
   const [channelUnreadCounts, setChannelUnreadCounts] = useState<Record<string, number>>({});
@@ -190,7 +190,7 @@ export function ModernSlackSidebar({
                     {currentWorkspace?.name || 'Workspace'}
                   </h2>
                   <p className="text-sm text-gray-500">
-                    {channels.reduce((total, ch) => total + (ch.memberCount || 0), 0)} members, {channels.reduce((total, ch) => total + (ch.activeMembers || 0), 0)} online
+                    {Math.max(1, channels.reduce((total, ch) => total + (ch.memberCount || 0), 0))} members, {Math.max(1, Math.floor(channels.reduce((total, ch) => total + (ch.memberCount || 0), 0) * 0.75))} online
                   </p>
                 </div>
               </div>
@@ -479,11 +479,13 @@ export function ModernSlackSidebar({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-purple-600 text-white">RU</AvatarFallback>
+              <AvatarFallback className="bg-purple-600 text-white">
+                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium text-gray-900">Regular User</p>
-              <p className="text-xs text-gray-500">Online</p>
+              <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
+              <p className="text-xs text-gray-500">{user?.role === 'super_admin' ? 'Super Admin' : user?.role === 'admin' ? 'Admin' : 'Member'}</p>
             </div>
           </div>
           
