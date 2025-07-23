@@ -700,33 +700,59 @@ export function SuperAdminDashboard() {
 
   const handleAddUser = async () => {
     try {
-      if (selectedOrgForManagement && newUserForm.email && newUserForm.firstName && newUserForm.lastName && newUserForm.password) {
-        const response = await fetch(`/api/organizations/${selectedOrgForManagement.id}/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newUserForm)
+      console.log('🔍 [ADD_USER] Form validation check:');
+      console.log('  - selectedOrgForManagement:', selectedOrgForManagement?.id);
+      console.log('  - email:', newUserForm.email);
+      console.log('  - firstName:', newUserForm.firstName);
+      console.log('  - lastName:', newUserForm.lastName);
+      console.log('  - password:', newUserForm.password ? '[PROVIDED]' : '[EMPTY]');
+      console.log('  - role:', newUserForm.role);
+      console.log('  - Full form:', newUserForm);
+      
+      // Improved validation with specific field checks
+      const missingFields = [];
+      if (!selectedOrgForManagement) missingFields.push('Organization');
+      if (!newUserForm.email?.trim()) missingFields.push('Email');
+      if (!newUserForm.firstName?.trim()) missingFields.push('First Name');
+      if (!newUserForm.lastName?.trim()) missingFields.push('Last Name');
+      if (!newUserForm.password?.trim()) missingFields.push('Password');
+      
+      if (missingFields.length > 0) {
+        console.log('❌ [ADD_USER] Missing fields:', missingFields);
+        toast({ 
+          title: "Error", 
+          description: `Please fill in the following required fields: ${missingFields.join(', ')}` 
         });
+        return;
+      }
 
-        if (response.ok) {
-          await loadOrgUsers(selectedOrgForManagement.id);
-          setShowAddUserModal(false);
-          setNewUserForm({
-            email: '',
-            firstName: '',
-            lastName: '',
-            password: '',
-            role: 'member',
-            status: 'active'
-          });
-          toast({ title: "Success", description: "User has been added successfully." });
-        } else {
-          throw new Error('Failed to add user');
-        }
+      console.log('✅ [ADD_USER] All fields valid, sending request...');
+      const response = await fetch(`/api/organizations/${selectedOrgForManagement.id}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUserForm)
+      });
+
+      if (response.ok) {
+        await loadOrgUsers(selectedOrgForManagement.id);
+        setShowAddUserModal(false);
+        setNewUserForm({
+          email: '',
+          firstName: '',
+          lastName: '',
+          password: '',
+          role: 'member',
+          status: 'active'
+        });
+        toast({ title: "Success", description: "User has been added successfully." });
       } else {
-        toast({ title: "Error", description: "Please fill in all required fields." });
+        const errorData = await response.text();
+        console.log('❌ [ADD_USER] Server error:', errorData);
+        throw new Error('Failed to add user: ' + errorData);
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to add user." });
+      console.error('❌ [ADD_USER] Error:', error);
+      toast({ title: "Error", description: "Failed to add user: " + error.message });
     }
   };
 
@@ -944,6 +970,7 @@ export function SuperAdminDashboard() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
                               setSelectedOrg(org);
+                              setSelectedOrgForManagement(org);
                               setShowAddUserModal(true);
                             }}>
                               <UserPlus className="h-4 w-4 mr-2" />
@@ -1078,7 +1105,10 @@ export function SuperAdminDashboard() {
           <TabsContent value="users" className="space-y-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold">User Management</h3>
-              <Button onClick={() => setShowAddUserModal(true)}>
+              <Button onClick={() => {
+                console.log('⚠️ [ADD_USER] Global Add User clicked - no specific organization context');
+                setShowAddUserModal(true);
+              }}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 Add User
               </Button>
@@ -2716,6 +2746,7 @@ export function SuperAdminDashboard() {
                   <h4 className="font-medium">Organization Users</h4>
                   <Button onClick={() => {
                     setSelectedOrg(selectedOrg);
+                    setSelectedOrgForManagement(selectedOrg);
                     setShowAddUserModal(true);
                   }}>
                     <Plus className="h-4 w-4 mr-2" />

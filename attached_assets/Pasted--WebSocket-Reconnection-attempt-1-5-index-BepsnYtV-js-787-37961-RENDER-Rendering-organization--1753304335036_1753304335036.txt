@@ -1,0 +1,70 @@
+
+WebSocket: Reconnection attempt 1/5 index-BepsnYtV.js:787:37961
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 3 organizations: 
+Array(3) [ {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 3 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+
+​
+
