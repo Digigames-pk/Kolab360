@@ -207,6 +207,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Channel routes
+  app.post('/api/channels', async (req: any, res) => {
+    try {
+      const userId = req.user?.id || 3; // Default to user ID 3 for development
+      const { name, workspaceId = 1 } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Channel name is required" });
+      }
+      
+      const channelData = {
+        id: nanoid(),
+        name,
+        workspaceId: workspaceId.toString(),
+        isPrivate: false,
+        description: `Channel for ${name}`,
+        createdBy: userId,
+      };
+      
+      const channel = await storage.createChannel(channelData);
+      console.log('✅ Channel created:', channel.name);
+      res.json(channel);
+    } catch (error) {
+      console.error("Error creating channel:", error);
+      res.status(500).json({ message: "Failed to create channel" });
+    }
+  });
+
   app.post('/api/workspaces/:workspaceId/channels', requireAuth, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -285,15 +312,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Extract file metadata from message metadata for frontend compatibility
       const processedMessages = messages.map(message => {
-        const processedMessage = { ...message };
+        const processedMessage = { ...message } as any;
         
         // If message has file metadata, extract it to top level for frontend compatibility
         if (message.metadata && message.messageType === 'file') {
-          const { fileUrl, fileName, fileType, fileSize } = message.metadata;
-          processedMessage.fileUrl = fileUrl;
-          processedMessage.fileName = fileName;
-          processedMessage.fileType = fileType;
-          processedMessage.fileSize = fileSize;
+          const metadata = message.metadata as any;
+          processedMessage.fileUrl = metadata.fileUrl;
+          processedMessage.fileName = metadata.fileName;
+          processedMessage.fileType = metadata.fileType;
+          processedMessage.fileSize = metadata.fileSize;
         }
         
         return processedMessage;
@@ -542,13 +569,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileData = {
         filename: uploadResult.key, // Use Wasabi key as filename
         originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
+        category: req.file.mimetype.startsWith('image/') ? 'image' :
+                 req.file.mimetype.startsWith('video/') ? 'video' :
+                 req.file.mimetype.startsWith('audio/') ? 'audio' : 'document',
         size: req.file.size,
         uploadedBy: userId,
+        wasabiKey: uploadResult.key,
+        wasabiUrl: uploadResult.url,
+        mimeType: req.file.mimetype,
         workspaceId: req.params.workspaceId,
         channelId: req.body.channelId || null,
         messageId: req.body.messageId || null,
-        url: uploadResult.url, // Store the Wasabi URL
       };
 
       const file = await storage.createFile(fileData);
@@ -854,6 +885,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User search routes for DM functionality
+  app.get('/api/users/search', async (req: any, res) => {
+    try {
+      const { name } = req.query;
+      if (!name) {
+        return res.status(400).json({ message: "Name parameter is required" });
+      }
+      
+      // Mock users for development - replace with real user search
+      const mockUsers = [
+        { id: 1, firstName: "Super", lastName: "Admin", email: "superadmin@test.com" },
+        { id: 2, firstName: "Marty", lastName: "McFly", email: "marty@24flix.com" },
+        { id: 3, firstName: "Regular", lastName: "User", email: "user@test.com" }
+      ];
+      
+      const results = mockUsers.filter(user => 
+        user.firstName.toLowerCase().includes(name.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(name.toLowerCase()) ||
+        user.email.toLowerCase().includes(name.toLowerCase())
+      );
+      
+      console.log('🔍 User search for:', name, 'Results:', results.length);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  app.get('/api/workspace/users', async (req: any, res) => {
+    try {
+      // Mock workspace users for development - replace with real user query
+      const mockUsers = [
+        { 
+          id: 1, 
+          firstName: "Super", 
+          lastName: "Admin", 
+          email: "superadmin@test.com",
+          role: "super_admin",
+          department: "Administration"
+        },
+        { 
+          id: 2, 
+          firstName: "Marty", 
+          lastName: "McFly", 
+          email: "marty@24flix.com",
+          role: "admin", 
+          department: "Management"
+        },
+        { 
+          id: 3, 
+          firstName: "Regular", 
+          lastName: "User", 
+          email: "user@test.com",
+          role: "user",
+          department: "Development"
+        }
+      ];
+      
+      console.log('👥 Workspace users requested, returning:', mockUsers.length, 'users');
+      res.json(mockUsers);
+    } catch (error) {
+      console.error("Error fetching workspace users:", error);
+      res.status(500).json({ message: "Failed to fetch workspace users" });
+    }
+  });
+
   // Admin routes (Super Admin only)
   app.get('/api/admin/users', requireAuth, async (req: any, res) => {
     try {
@@ -940,7 +1038,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update last sync time
       await storage.updateIntegration(integrationId, userId, {
-        lastSyncAt: new Date().toISOString(),
+        lastSyncAt: new Date(),
       });
       
       res.json({ success: true, message: "Sync completed" });
@@ -1001,7 +1099,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const integrationId = req.params.id;
       
       await storage.adminUpdateIntegration(integrationId, {
-        lastSyncAt: new Date().toISOString(),
+        lastSyncAt: new Date(),
       });
       
       res.json({ success: true, message: "Force sync completed" });
