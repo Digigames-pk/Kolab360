@@ -2387,8 +2387,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
   const httpServer = createServer(app);
 
-  // WebSocket server setup
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  // WebSocket server setup - PRODUCTION FIX
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws',
+    verifyClient: (info) => {
+      console.log('🔍 WebSocket connection attempt from:', info.origin || 'direct');
+      // Allow all connections for production debugging
+      return true;
+    }
+  });
 
   wss.on('connection', (ws: WebSocketConnection, req) => {
     connections.add(ws);

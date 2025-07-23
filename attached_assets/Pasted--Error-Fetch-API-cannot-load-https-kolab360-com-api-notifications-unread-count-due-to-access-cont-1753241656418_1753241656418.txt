@@ -1,0 +1,34 @@
+[Error] Fetch API cannot load https://kolab360.com/api/notifications/unread-count due to access control checks.
+	(anonymous function) (index-BdhSvGqf.js:787:19224)
+	queryFn (index-BdhSvGqf.js:787:19339)
+	y (index-BdhSvGqf.js:48:10079)
+	start (index-BdhSvGqf.js:48:10537)
+	Ec (index-BdhSvGqf.js:48:36221)
+	(anonymous function) (index-BdhSvGqf.js:48:36919)
+[Error] Failed to load resource: the server responded with a status of 401 () (me, line 0)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – [Object, Object, Object, …] (6) (index-BdhSvGqf.js, line 787)
+[Object, Object, Object, Object, Object, Object]Array (6)
+[Log] 🔍 File metadata check: – [Object, Object, Object, …] (6) (index-BdhSvGqf.js, line 787)
+[Object, Object, Object, Object, Object, Object]Array (6)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (channels, line 0)
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] WebSocket: Connecting to server... (index-BdhSvGqf.js, line 787)
+[Log] WebSocket: Attempting connection to: – "wss://kolab360.com/ws" (index-BdhSvGqf.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
