@@ -2260,18 +2260,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const userData = insertOrganizationUserSchema.parse(req.body);
         console.log(`✅ [USER-CREATE] Schema validation passed:`, userData);
+        console.log(`🔍 [USER-CREATE] Role from frontend:`, userData.role);
+        console.log(`🔍 [USER-CREATE] Full userData object:`, JSON.stringify(userData, null, 2));
         
         // Use provided password or generate a temporary password
         const userPassword = userData.password || generateRandomPassword();
         
         // Hash the password using the same method as auth
         const hashedPassword = await hashPassword(userPassword);
+        
+        const createUserData = {
+          organizationId,
+          ...userData,
+          password: hashedPassword, // Include the hashed password
+        };
+        console.log(`🔍 [USER-CREATE] Data being sent to storage:`, JSON.stringify(createUserData, null, 2));
       
-      const newUser = await storage.createOrganizationUser({
-        organizationId,
-        ...userData,
-        password: hashedPassword, // Include the hashed password
-      });
+      const newUser = await storage.createOrganizationUser(createUserData);
       
       // Send welcome email with login credentials
       try {

@@ -783,7 +783,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {
+    console.log(`🔍 [STORAGE] createOrganizationUser called with:`, JSON.stringify(userData, null, 2));
+    console.log(`🔍 [STORAGE] Role in userData:`, userData.role);
+    
     const [user] = await db.insert(organizationUsers).values(userData).returning();
+    
+    console.log(`🔍 [STORAGE] User created in database:`, JSON.stringify(user, null, 2));
+    console.log(`🔍 [STORAGE] Role in created user:`, user.role);
+    
     return user;
   }
 
