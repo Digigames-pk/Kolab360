@@ -2209,19 +2209,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create organization user
   app.post('/api/organizations/:id/users', requireAuth, async (req: any, res) => {
     try {
+      console.log(`🔧 [USER-CREATE] Request received for org ${req.params.id}`);
+      console.log(`🔧 [USER-CREATE] Request body:`, req.body);
+      
       const user = req.user;
       if (user.role !== 'super_admin') {
+        console.log(`❌ [USER-CREATE] Access denied - user role: ${user.role}`);
         return res.status(403).json({ error: 'Super admin access required' });
       }
 
       const organizationId = parseInt(req.params.id);
-      const userData = insertOrganizationUserSchema.parse(req.body);
+      console.log(`🔧 [USER-CREATE] Parsing data for org ID: ${organizationId}`);
       
-      // Use provided password or generate a temporary password
-      const userPassword = userData.password || generateRandomPassword();
-      
-      // Hash the password using the same method as auth
-      const hashedPassword = await hashPassword(userPassword);
+      try {
+        const userData = insertOrganizationUserSchema.parse(req.body);
+        console.log(`✅ [USER-CREATE] Schema validation passed:`, userData);
+        
+        // Use provided password or generate a temporary password
+        const userPassword = userData.password || generateRandomPassword();
+        
+        // Hash the password using the same method as auth
+        const hashedPassword = await hashPassword(userPassword);
       
       const newUser = await storage.createOrganizationUser({
         organizationId,
@@ -2253,8 +2261,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         temporaryPasswordSent: true,
         message: 'User created successfully. Welcome email sent with login credentials.'
       });
+      } catch (parseError) {
+        console.error(`❌ [USER-CREATE] Schema validation failed:`, parseError);
+        return res.status(400).json({ 
+          error: 'Invalid user data provided', 
+          details: parseError instanceof Error ? parseError.message : 'Validation failed'
+        });
+      }
     } catch (error) {
-      console.error('Error creating organization user:', error);
+      console.error('❌ [USER-CREATE] Unexpected error:', error);
       res.status(500).json({ error: 'Failed to create organization user' });
     }
   });

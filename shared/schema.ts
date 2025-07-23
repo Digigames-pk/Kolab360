@@ -535,6 +535,8 @@ export const insertOrganizationSettingsSchema = createInsertSchema(organizationS
 export const insertOrganizationUserSchema = createInsertSchema(organizationUsers).omit({
   id: true,
   organizationId: true, // This will be provided from URL parameter
+  userId: true, // Optional field, can be null
+  lastLoginAt: true,
   createdAt: true,
   updatedAt: true,
 });
