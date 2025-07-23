@@ -1536,7 +1536,16 @@ class MemoryStorage implements IStorage {
   }
 
   async updateOrganizationUserPassword(id: number, hashedPassword: string): Promise<OrganizationUser | undefined> {
-    throw new Error("Method not implemented for memory storage");
+    const userIndex = this.organizationUsers.findIndex(u => u.id === id);
+    if (userIndex === -1) return undefined;
+    
+    this.organizationUsers[userIndex] = {
+      ...this.organizationUsers[userIndex],
+      password: hashedPassword,
+      updatedAt: new Date(),
+    };
+    
+    return this.organizationUsers[userIndex];
   }
 
   // Pricing Plan operations (Memory Storage)

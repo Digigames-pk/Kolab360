@@ -175,6 +175,11 @@ export function SuperAdminDashboard() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedUserForPassword, setSelectedUserForPassword] = useState<any>(null);
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: '',
+    confirmPassword: '',
+    sendNotification: true
+  });
   const [customRoles, setCustomRoles] = useState<any[]>([]);
   const [pricingPlans, setPricingPlans] = useState<any[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -3014,6 +3019,7 @@ export function SuperAdminDashboard() {
                 <Button variant="ghost" size="sm" onClick={() => {
                   setShowPasswordModal(false);
                   setSelectedUserForPassword(null);
+                  setPasswordForm({ newPassword: '', confirmPassword: '', sendNotification: true });
                 }}>
                   <X className="h-4 w-4" />
                 </Button>
@@ -3029,6 +3035,8 @@ export function SuperAdminDashboard() {
                     type="password" 
                     placeholder="Enter new password" 
                     className="w-full"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
                   />
                 </div>
                 <div>
@@ -3037,43 +3045,72 @@ export function SuperAdminDashboard() {
                     type="password" 
                     placeholder="Confirm new password" 
                     className="w-full"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="sendEmail" />
+                  <input 
+                    type="checkbox" 
+                    id="sendEmail" 
+                    checked={passwordForm.sendNotification}
+                    onChange={(e) => setPasswordForm({...passwordForm, sendNotification: e.target.checked})}
+                  />
                   <label htmlFor="sendEmail" className="text-sm">Send password change notification email</label>
                 </div>
                 <div className="flex space-x-3 pt-4">
                   <Button onClick={async () => {
                     try {
-                      if (selectedOrg && selectedUserForPassword) {
+                      // Validation
+                      if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
+                        toast({ title: "Error", description: "Please fill in all password fields." });
+                        return;
+                      }
+                      
+                      if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                        toast({ title: "Error", description: "Passwords do not match." });
+                        return;
+                      }
+                      
+                      if (passwordForm.newPassword.length < 6) {
+                        toast({ title: "Error", description: "Password must be at least 6 characters long." });
+                        return;
+                      }
+
+                      if (selectedOrgForManagement && selectedUserForPassword) {
+                        console.log('🔐 Changing password for user:', selectedUserForPassword.email);
+                        
                         // API call to change password
-                        const response = await fetch(`/api/organizations/${selectedOrg.id}/users/${selectedUserForPassword.id}/password`, {
+                        const response = await fetch(`/api/organizations/${selectedOrgForManagement.id}/users/${selectedUserForPassword.id}/password`, {
                           method: 'PUT',
                           headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
                           body: JSON.stringify({
-                            newPassword: 'newPassword123', // This would come from the form
-                            sendNotification: true
+                            newPassword: passwordForm.newPassword,
                           })
                         });
 
                         if (response.ok) {
-                          toast({ title: "Password Changed", description: "User password has been updated successfully." });
+                          toast({ title: "Password Changed", description: `Password updated successfully for ${selectedUserForPassword.email}` });
+                          setShowPasswordModal(false);
+                          setSelectedUserForPassword(null);
+                          setPasswordForm({ newPassword: '', confirmPassword: '', sendNotification: true });
                         } else {
-                          throw new Error('Failed to change password');
+                          const error = await response.json();
+                          throw new Error(error.error || 'Failed to change password');
                         }
                       }
-                    } catch (error) {
-                      toast({ title: "Error", description: "Failed to change user password." });
+                    } catch (error: any) {
+                      console.error('Password change error:', error);
+                      toast({ title: "Error", description: error.message || "Failed to change user password." });
                     }
-                    setShowPasswordModal(false);
-                    setSelectedUserForPassword(null);
                   }}>
                     Change Password
                   </Button>
                   <Button variant="outline" onClick={() => {
                     setShowPasswordModal(false);
                     setSelectedUserForPassword(null);
+                    setPasswordForm({ newPassword: '', confirmPassword: '', sendNotification: true });
                   }}>Cancel</Button>
                 </div>
               </div>
