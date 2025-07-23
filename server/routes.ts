@@ -1157,28 +1157,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     if (req.isAuthenticated() && req.user) {
       try {
-        // Get organization information for the user
+        // Get ALL organizations for the user
         const user = req.user;
-        let organization = null;
+        let organizations = [];
         
-        // Try to find organization user record to get organization details
-        console.log('🔍 [DEBUG] Looking up organization user for:', user.email);
-        const orgUser = await storage.getOrganizationUserByEmail(user.email);
-        console.log('🔍 [DEBUG] Organization user result:', orgUser);
+        // Get all organizations this user belongs to
+        console.log('🔍 [DEBUG] Looking up ALL organizations for user:', user.email);
+        const userOrgs = await storage.getAllOrganizationsByUserEmail(user.email);
+        console.log('🔍 [DEBUG] User organizations result:', userOrgs.length, 'organizations found');
         
-        if (orgUser && orgUser.organizationId) {
-          console.log('🔍 [DEBUG] Looking up organization with ID:', orgUser.organizationId);
-          organization = await storage.getOrganization(orgUser.organizationId);
-          console.log('🔍 [DEBUG] Organization lookup result:', organization);
-        }
+        organizations = userOrgs.map(userOrg => ({
+          ...userOrg.organization,
+          userRole: userOrg.role,
+          userStatus: userOrg.status
+        }));
         
-        const userWithOrg = {
+        // For backward compatibility, also include the primary organization
+        const primaryOrganization = organizations[0] || null;
+        
+        const userWithOrgs = {
           ...user,
-          organization
+          organization: primaryOrganization, // For backward compatibility
+          organizations // All organizations
         };
         
-        console.log('✅ [DEBUG] User with organization data:', userWithOrg.email, 'Org:', organization?.name);
-        res.json(userWithOrg);
+        console.log('✅ [DEBUG] User with organizations data:', userWithOrgs.email, 'Organizations:', organizations.map(o => o.name).join(', '));
+        res.json(userWithOrgs);
       } catch (error) {
         console.error('❌ [DEBUG] Error fetching user organization:', error);
         res.json(req.user);

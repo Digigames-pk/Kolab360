@@ -128,6 +128,7 @@ export interface IStorage {
   getOrganizationUsers(orgId: number): Promise<OrganizationUser[]>;
   getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined>;
   getOrganizationUserById(id: number): Promise<OrganizationUser | undefined>;
+  getAllOrganizationsByUserEmail(email: string): Promise<(OrganizationUser & { organization: Organization })[]>;
   createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser>;
   updateOrganizationUser(id: number, updates: Partial<OrganizationUser>): Promise<OrganizationUser | undefined>;
   deleteOrganizationUser(id: number): Promise<boolean>;
@@ -717,6 +718,31 @@ export class DatabaseStorage implements IStorage {
     // Prefer users with non-null passwords, and among those, take the most recent
     const usersWithPassword = users.filter(user => user.password !== null && user.password !== '');
     return usersWithPassword[0] || users[0];
+  }
+
+  async getAllOrganizationsByUserEmail(email: string): Promise<(OrganizationUser & { organization: Organization })[]> {
+    const result = await db
+      .select({
+        id: organizationUsers.id,
+        organizationId: organizationUsers.organizationId,
+        userId: organizationUsers.userId,
+        email: organizationUsers.email,
+        firstName: organizationUsers.firstName,
+        lastName: organizationUsers.lastName,
+        role: organizationUsers.role,
+        status: organizationUsers.status,
+        password: organizationUsers.password,
+        lastLoginAt: organizationUsers.lastLoginAt,
+        createdAt: organizationUsers.createdAt,
+        updatedAt: organizationUsers.updatedAt,
+        organization: organizations,
+      })
+      .from(organizationUsers)
+      .innerJoin(organizations, eq(organizationUsers.organizationId, organizations.id))
+      .where(eq(organizationUsers.email, email))
+      .orderBy(organizations.name);
+
+    return result;
   }
 
   async getOrganizationUserById(id: number): Promise<OrganizationUser | undefined> {
@@ -1491,6 +1517,10 @@ class MemoryStorage implements IStorage {
 
   async getOrganizationUserById(id: number): Promise<OrganizationUser | undefined> {
     return undefined;
+  }
+
+  async getAllOrganizationsByUserEmail(email: string): Promise<(OrganizationUser & { organization: Organization })[]> {
+    return [];
   }
 
   async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {

@@ -6,6 +6,9 @@ interface Organization {
   name: string;
   domain: string;
   status: string;
+  plan?: string;
+  userRole?: string;
+  userStatus?: string;
 }
 
 interface User {
@@ -16,6 +19,7 @@ interface User {
   role: string;
   isActive: boolean;
   organization?: Organization;
+  organizations?: Organization[];
 }
 
 interface AuthContextType {

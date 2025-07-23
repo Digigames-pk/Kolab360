@@ -125,24 +125,41 @@ export default function Home() {
   };
 
   // Dynamic workspace data based on user's organization - update when user changes
-  const [workspaces, setWorkspaces] = useState([
+  const [workspaces, setWorkspaces] = useState<Array<{
+    id: number;
+    name: string;
+    initial: string;
+    plan?: string;
+    userRole?: string;
+  }>>([
     { id: 1, name: 'Kolab360 Demo', initial: 'KD' }
   ]);
 
-  // Update workspaces when user data changes
+  // Update workspaces when user data changes - support multiple organizations
   useEffect(() => {
-    if (user?.organization) {
+    if (user?.organizations && user.organizations.length > 0) {
+      // User has multiple organizations - show all as separate workspaces
+      const userWorkspaces = user.organizations.map((org: any) => ({
+        id: org.id,
+        name: org.name,
+        initial: org.name.charAt(0).toUpperCase(),
+        plan: org.plan,
+        userRole: org.userRole
+      }));
+      setWorkspaces(userWorkspaces);
+      setSelectedWorkspace(userWorkspaces[0].id); // Default to first organization
+    } else if (user?.organization) {
+      // Fallback to single organization for backward compatibility
       setWorkspaces([{ 
         id: user.organization.id, 
         name: user.organization.name, 
-        initial: user.organization.name.charAt(0).toUpperCase() 
+        initial: user.organization.name.charAt(0).toUpperCase(),
+        plan: user.organization.plan,
+        userRole: user.organization.userRole || 'member'
       }]);
       setSelectedWorkspace(user.organization.id);
-    } else if (user?.email?.includes('24flix.com')) {
-      setWorkspaces([{ id: 5, name: 'Peremis', initial: 'P' }]);
-      setSelectedWorkspace(5);
     } else {
-      setWorkspaces([{ id: 1, name: 'Kolab360 Demo', initial: 'KD' }]);
+      setWorkspaces([{ id: 1, name: 'Kolab360 Demo', initial: 'KD', plan: 'free', userRole: 'member' }]);
       setSelectedWorkspace(1);
     }
   }, [user]);
@@ -431,7 +448,6 @@ export default function Home() {
             </button>
             <WorkspaceThemeCustomizer
               workspaceId={selectedWorkspace}
-              currentTheme={currentTheme}
               onThemeChange={(theme: any) => setCurrentTheme(theme)}
             />
           </div>
