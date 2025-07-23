@@ -343,7 +343,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Message routes
+  // Message routes - Direct Messages
+  app.get('/api/messages/direct/:recipientId', async (req: any, res) => {
+    // Auto-authenticate in development
+    if (process.env.NODE_ENV === 'development' && !req.user) {
+      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+      if (superAdmin) {
+        req.user = superAdmin;
+      }
+    }
+    
+    try {
+      const recipientId = parseInt(req.params.recipientId);
+      const userId = req.user.id;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      const messages = await storage.getDirectMessages(userId, recipientId, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching direct messages:", error);
+      res.status(500).json({ message: "Failed to fetch direct messages" });
+    }
+  });
+
   app.get('/api/channels/:id/messages', async (req: any, res) => {
     // Auto-authenticate in development
     if (process.env.NODE_ENV === 'development' && !req.user) {

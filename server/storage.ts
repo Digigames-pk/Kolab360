@@ -1286,7 +1286,7 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Memory storage for immediate messaging functionality
-class MemoryStorage {
+class MemoryStorage implements IStorage {
   sessionStore: any = null;
   private mockMessages: (Message & { author: User })[] = [];
 
