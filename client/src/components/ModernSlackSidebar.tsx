@@ -323,7 +323,29 @@ export function ModernSlackSidebar({
             <div className={`px-4 ${settings.compactMode ? 'py-2' : 'py-3'}`}>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold text-gray-700">Channels</h3>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0"
+                  onClick={() => {
+                    const channelName = prompt('Enter channel name:');
+                    if (channelName) {
+                      console.log('Creating channel:', channelName);
+                      // Add to channels list
+                      const newChannel = {
+                        id: channelName.toLowerCase().replace(/\s+/g, '-'),
+                        name: channelName,
+                        type: 'public' as const,
+                        unread: 0,
+                        memberCount: 1,
+                        activeMembers: 1
+                      };
+                      // This would normally call a parent callback
+                      onChannelSelect(newChannel.id);
+                      onViewChange('chat');
+                    }
+                  }}
+                >
                   <Plus className="h-3 w-3" />
                 </Button>
               </div>
@@ -400,7 +422,27 @@ export function ModernSlackSidebar({
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-gray-700">Direct messages</h3>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0"
+                onClick={() => {
+                  const userName = prompt('Enter username to message:');
+                  if (userName) {
+                    console.log('Starting DM with:', userName);
+                    // Add to DM list and switch view
+                    const newDM = {
+                      id: userName.toLowerCase().replace(/\s+/g, '-'),
+                      name: userName,
+                      status: 'online' as const,
+                      unread: 0
+                    };
+                    // This would normally call a parent callback to update DM list
+                    onViewChange('chat');
+                    console.log('DM created with:', userName);
+                  }
+                }}
+              >
                 <Plus className="h-3 w-3" />
               </Button>
             </div>

@@ -388,14 +388,61 @@ export default function Home() {
             </div>
           )}
 
-          {(activeView === "threads" || activeView === "mentions" || activeView === "saved" || activeView === "people") && (
+          {activeView === "people" && (
+            <div className="flex-1 w-full p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-2">People</h2>
+                <p className="text-gray-600">Browse and connect with workspace members</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Sample workspace members */}
+                {[
+                  { name: "Alex Johnson", role: "Product Manager", status: "online", avatar: "AJ" },
+                  { name: "Sarah Chen", role: "Designer", status: "away", avatar: "SC" },
+                  { name: "Mike Rodriguez", role: "Developer", status: "offline", avatar: "MR" },
+                  { name: "Emma Thompson", role: "Marketing", status: "online", avatar: "ET" },
+                  { name: "David Kim", role: "Engineer", status: "online", avatar: "DK" },
+                  { name: "Lisa Wang", role: "Data Scientist", status: "away", avatar: "LW" }
+                ].map((person, index) => (
+                  <div key={index} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          {person.avatar}
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                          person.status === 'online' ? 'bg-green-500' : 
+                          person.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'
+                        }`}></div>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
+                        <p className="text-sm text-gray-600">{person.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline" className="flex-1">
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Message
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Users className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(activeView === "threads" || activeView === "mentions" || activeView === "saved") && (
             <div className="flex-1 flex items-center justify-center w-full">
               <div className="text-center space-y-4">
                 <div className="p-4 bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
                   {activeView === "threads" && <MessageSquare className="h-8 w-8 text-gray-500" />}
                   {activeView === "mentions" && <Bell className="h-8 w-8 text-gray-500" />}
                   {activeView === "saved" && <Star className="h-8 w-8 text-gray-500" />}
-                  {activeView === "people" && <Users className="h-8 w-8 text-gray-500" />}
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold capitalize">{activeView}</h3>
