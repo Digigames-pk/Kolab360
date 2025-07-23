@@ -410,15 +410,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post('/api/channels/:id/messages', async (req: any, res) => {
-    // Auto-authenticate in development
-    if (process.env.NODE_ENV === 'development' && !req.user) {
-      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-      if (superAdmin) {
-        req.user = superAdmin;
-      }
-    }
-    
     try {
+      // Auto-authenticate in development
+      if (process.env.NODE_ENV === 'development' && !req.user) {
+        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+        if (superAdmin) {
+          req.user = superAdmin;
+        }
+      }
+      
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
       const userId = req.user.id;
       
       // Handle "general" channel as UUID
@@ -511,16 +514,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // General messages endpoint  
+  // General messages endpoint with proper authentication
   app.get('/api/messages', async (req: any, res) => {
-    // Auto-authenticate in development
-    if (process.env.NODE_ENV === 'development' && !req.user) {
-      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-      if (superAdmin) {
-        req.user = superAdmin;
-      }
-    }
     try {
+      // Auto-authenticate in development
+      if (process.env.NODE_ENV === 'development' && !req.user) {
+        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+        if (superAdmin) {
+          req.user = superAdmin;
+        }
+      }
+      
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
       // Return empty array for now - this endpoint is used by the frontend
       res.json([]);
     } catch (error) {
@@ -529,16 +537,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Channels list endpoint
+  // Channels list endpoint with proper authentication
   app.get('/api/channels', async (req: any, res) => {
-    // Auto-authenticate in development
-    if (process.env.NODE_ENV === 'development' && !req.user) {
-      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-      if (superAdmin) {
-        req.user = superAdmin;
-      }
-    }
     try {
+      // Auto-authenticate in development
+      if (process.env.NODE_ENV === 'development' && !req.user) {
+        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+        if (superAdmin) {
+          req.user = superAdmin;
+        }
+      }
+      
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
       // Get user's workspaces and their channels
       const userId = req.user.id;
       const userWorkspaces = await storage.getUserWorkspaces(userId);
