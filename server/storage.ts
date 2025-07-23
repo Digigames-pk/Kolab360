@@ -708,12 +708,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOrganizationUserByEmail(email: string): Promise<OrganizationUser | undefined> {
-    // Get all users with this email and prefer ones with passwords
-    const users = await db.select().from(organizationUsers).where(eq(organizationUsers.email, email));
+    // Get all users with this email, ordered by most recent update first
+    const users = await db.select().from(organizationUsers)
+      .where(eq(organizationUsers.email, email))
+      .orderBy(desc(organizationUsers.updatedAt));
     
-    // Prefer users with non-null passwords
-    const userWithPassword = users.find(user => user.password !== null && user.password !== '');
-    return userWithPassword || users[0];
+    // Prefer users with non-null passwords, and among those, take the most recent
+    const usersWithPassword = users.filter(user => user.password !== null && user.password !== '');
+    return usersWithPassword[0] || users[0];
   }
 
   async createOrganizationUser(userData: InsertOrganizationUser): Promise<OrganizationUser> {
