@@ -48,7 +48,7 @@ import {
   type InsertMoodBoardVote,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, or, isNull } from "drizzle-orm";
+import { eq, and, desc, asc, or, isNull, sql } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -655,33 +655,41 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOrganization(id: number): Promise<boolean> {
     try {
-      // Delete in the correct order to handle foreign key constraints
+      console.log(`🗑️ [STORAGE] Starting deletion process for organization ${id}`);
       
-      // 1. Delete organization users first
-      await db.delete(organizationUsers).where(eq(organizationUsers.organizationId, id));
-      console.log(`✅ Deleted organization users for org ${id}`);
-      
-      // 2. Delete organization settings
-      await db.delete(organizationSettings).where(eq(organizationSettings.organizationId, id));
-      console.log(`✅ Deleted organization settings for org ${id}`);
-      
-      // 3. Delete workspaces and related data
-      const workspacesToDelete = await db.select().from(workspaces).where(eq(workspaces.organizationId, id));
-      for (const workspace of workspacesToDelete) {
-        // Delete channels in this workspace
-        await db.delete(channels).where(eq(channels.workspaceId, workspace.id));
-        // Delete workspace itself
-        await db.delete(workspaces).where(eq(workspaces.id, workspace.id));
+      // Check if organization exists first
+      const existingOrg = await this.getOrganization(id);
+      if (!existingOrg) {
+        console.log(`❌ [STORAGE] Organization ${id} not found in database`);
+        return false;
       }
-      console.log(`✅ Deleted workspaces and channels for org ${id}`);
+      console.log(`✅ [STORAGE] Found organization: ${existingOrg.name}`);
       
-      // 4. Finally delete the organization itself
-      const result = await db.delete(organizations).where(eq(organizations.id, id));
-      console.log(`✅ Deleted organization ${id} successfully`);
+      // Delete related data first to avoid foreign key constraints
+      console.log(`🗑️ [STORAGE] Deleting organization users...`);
+      try {
+        await db.delete(organizationUsers).where(eq(organizationUsers.organizationId, id));
+        console.log(`✅ [STORAGE] Deleted organization users for org ${id}`);
+      } catch (userError) {
+        console.log(`⚠️ [STORAGE] No users to delete or error:`, userError.message);
+      }
       
-      return result.rowCount > 0;
+      console.log(`🗑️ [STORAGE] Deleting organization settings...`);
+      try {
+        await db.delete(organizationSettings).where(eq(organizationSettings.organizationId, id));
+        console.log(`✅ [STORAGE] Deleted organization settings for org ${id}`);
+      } catch (settingsError) {
+        console.log(`⚠️ [STORAGE] No settings to delete or error:`, settingsError.message);
+      }
+      
+      // Delete the organization itself
+      console.log(`🗑️ [STORAGE] Deleting organization record...`);
+      const result = await db.delete(organizations).where(eq(organizations.id, id)).returning();
+      console.log(`✅ [STORAGE] Organization ${id} deleted - returned:`, result);
+      
+      return result.length > 0;
     } catch (error) {
-      console.error("Error deleting organization:", error);
+      console.error("❌ [STORAGE] Error deleting organization:", error);
       return false;
     }
   }

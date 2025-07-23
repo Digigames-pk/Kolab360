@@ -1,0 +1,75 @@
+
+WebSocket: Reconnection attempt 1/5 index-DuHaNDYN.js:787:37961
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 7 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-BepsnYtV.js:920:9996
+📊 [STATE] Organizations state changed: 7 
+Array(7) [ "Test Organization Auto Channel", "Tech Innovators LLC", "Test Organization", "OCTV", "ICFF", "Peremis", "Test Corporation" ]
+index-BepsnYtV.js:910:60720
+📊 [STATE] Full organizations array: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-BepsnYtV.js:910:60803
+WebSocket: Connecting to server... index-BepsnYtV.js:787:37177
+WebSocket: Attempting connection to: wss://kolab360.com/ws index-BepsnYtV.js:787:37321
+✅ WebSocket connection confirmed: jxrfertfy index-BepsnYtV.js:787:37589
+🗑️ [DELETE] Attempting to delete organization: Test Organization Auto Channel (ID: 10) index-BepsnYtV.js:920:156
+XHRDELETE
+https://kolab360.com/api/organizations/10
+[HTTP/3 404  318ms]
+
+❌ [DELETE] Failed to delete organization: 
+Object { error: "Organization not found" }
+index-BepsnYtV.js:920:697
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 7 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 7 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-BepsnYtV.js:920:9996
+🗑️ [DELETE] Attempting to delete organization: Test Organization (ID: 8) index-BepsnYtV.js:920:156
+XHRDELETE
+https://kolab360.com/api/organizations/8
+[HTTP/3 404  334ms]
+
+❌ [DELETE] Failed to delete organization: 
+Object { error: "Organization not found" }
+index-BepsnYtV.js:920:697
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-BepsnYtV.js:920:9270
+🔍 [RENDER] About to render 7 organization cards index-BepsnYtV.js:920:9905
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-BepsnYtV.js:920:9996
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-BepsnYtV.js:920:9996
+💓 WebSocket heartbeat received index-BepsnYtV.js:787:37711
+
+​
+
