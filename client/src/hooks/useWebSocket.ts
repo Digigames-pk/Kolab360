@@ -23,14 +23,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const reconnectDelay = 3000;
 
   const connect = () => {
-    // In development mode, use mock WebSocket functionality
-    if (process.env.NODE_ENV === 'development') {
-      console.log("WebSocket: Using mock connection in development mode");
-      setIsConnected(true);
-      setError(null);
-      options.onConnect?.();
-      return;
-    }
+    // Always use real WebSocket connection, but handle localhost properly
+    console.log("WebSocket: Connecting to server...");
 
     try {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";

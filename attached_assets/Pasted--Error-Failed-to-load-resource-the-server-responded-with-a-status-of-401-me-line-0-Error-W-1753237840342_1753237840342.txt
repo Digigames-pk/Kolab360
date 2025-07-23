@@ -1,0 +1,25 @@
+[Error] Failed to load resource: the server responded with a status of 401 () (me, line 0)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – [] (0) (index-NiAQ0jTi.js, line 787)
+[Log] 🔍 File metadata check: – [] (0) (index-NiAQ0jTi.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server. (x2)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-NiAQ0jTi.js, line 787)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server. (x2)
+[Error] Failed to load resource: the server responded with a status of 500 () (channels, line 0)
+[Error] WebSocket connection to 'wss://kolab360.com/ws' failed: There was a bad response from the server.
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Log] 📤 Upload response status: – 201 (index-NiAQ0jTi.js, line 787)
+[Log] 📤 File data received: – {success: true, id: "1", originalName: "KOLAB360 purple version Ai-.png", …} (index-NiAQ0jTi.js, line 787)
+{success: true, id: "1", originalName: "KOLAB360 purple version Ai-.png", filename: "f3b11634f7d27942f0ab6fe4c4932a4c", size: 41756, …}Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to create message for file
+	(anonymous function) (index-NiAQ0jTi.js:787:62245)
+[Log] 📤 Upload response status: – 201 (index-NiAQ0jTi.js, line 787)
+[Log] 📤 File data received: – {success: true, id: "2", originalName: "KOLAB360 purple version Ai-.png", …} (index-NiAQ0jTi.js, line 787)
+{success: true, id: "2", originalName: "KOLAB360 purple version Ai-.png", filename: "86fa81e2b74d17d35aad3704c1899a5a", size: 41756, …}Object
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
+[Error] Failed to create message for file
+	(anonymous function) (index-NiAQ0jTi.js:787:62245)
+[Error] Failed to load resource: the server responded with a status of 500 () (messages, line 0)
