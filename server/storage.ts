@@ -655,8 +655,31 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOrganization(id: number): Promise<boolean> {
     try {
-      await db.delete(organizations).where(eq(organizations.id, id));
-      return true;
+      // Delete in the correct order to handle foreign key constraints
+      
+      // 1. Delete organization users first
+      await db.delete(organizationUsers).where(eq(organizationUsers.organizationId, id));
+      console.log(`✅ Deleted organization users for org ${id}`);
+      
+      // 2. Delete organization settings
+      await db.delete(organizationSettings).where(eq(organizationSettings.organizationId, id));
+      console.log(`✅ Deleted organization settings for org ${id}`);
+      
+      // 3. Delete workspaces and related data
+      const workspacesToDelete = await db.select().from(workspaces).where(eq(workspaces.organizationId, id));
+      for (const workspace of workspacesToDelete) {
+        // Delete channels in this workspace
+        await db.delete(channels).where(eq(channels.workspaceId, workspace.id));
+        // Delete workspace itself
+        await db.delete(workspaces).where(eq(workspaces.id, workspace.id));
+      }
+      console.log(`✅ Deleted workspaces and channels for org ${id}`);
+      
+      // 4. Finally delete the organization itself
+      const result = await db.delete(organizations).where(eq(organizations.id, id));
+      console.log(`✅ Deleted organization ${id} successfully`);
+      
+      return result.rowCount > 0;
     } catch (error) {
       console.error("Error deleting organization:", error);
       return false;

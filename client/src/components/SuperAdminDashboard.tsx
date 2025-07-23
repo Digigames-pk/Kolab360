@@ -449,30 +449,55 @@ export function SuperAdminDashboard() {
     const org = organizations.find(o => o.id === orgId);
     if (!org) return;
     
-    if (confirm(`Are you sure you want to delete "${org.name}"? This action cannot be undone.`)) {
-      try {
-        const response = await fetch(`/api/organizations/${orgId}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
-          setOrganizations(prev => prev.filter(o => o.id !== orgId));
-          toast({
-            title: "Organization Deleted",
-            description: `${org.name} has been deleted successfully.`
-          });
-          loadData(); // Refresh data
-        } else {
-          throw new Error('Failed to delete organization');
-        }
-      } catch (error) {
+    // Enhanced confirmation with warning about data loss
+    const confirmMessage = `⚠️ WARNING: Delete "${org.name}"?\n\nThis will permanently delete:\n• All organization users and settings\n• All workspaces and channels\n• All messages and files\n• All task boards and calendar data\n\nThis action CANNOT be undone!\n\nType "DELETE" to confirm:`;
+    
+    const userInput = prompt(confirmMessage);
+    if (userInput !== "DELETE") {
+      toast({
+        title: "Deletion Cancelled",
+        description: "Organization deletion was cancelled."
+      });
+      return;
+    }
+    
+    try {
+      console.log(`🗑️ [DELETE] Attempting to delete organization: ${org.name} (ID: ${orgId})`);
+      
+      const response = await fetch(`/api/organizations/${orgId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        setOrganizations(prev => prev.filter(o => o.id !== orgId));
         toast({
-          title: "Error",
-          description: "Failed to delete organization.",
+          title: "Organization Deleted Successfully",
+          description: `${org.name} and all associated data has been permanently deleted.`,
+          variant: "destructive"
+        });
+        console.log(`✅ [DELETE] Successfully deleted organization: ${org.name}`);
+        loadData(); // Refresh data
+      } else {
+        const error = await response.json();
+        console.error(`❌ [DELETE] Failed to delete organization:`, error);
+        toast({
+          title: "Deletion Failed",
+          description: error.error || "Failed to delete organization due to server error",
           variant: "destructive"
         });
       }
+    } catch (error) {
+      console.error('🚨 [DELETE] Network error deleting organization:', error);
+      toast({
+        title: "Network Error",
+        description: "Failed to delete organization due to network error",
+        variant: "destructive"
+      });
     }
   };
 

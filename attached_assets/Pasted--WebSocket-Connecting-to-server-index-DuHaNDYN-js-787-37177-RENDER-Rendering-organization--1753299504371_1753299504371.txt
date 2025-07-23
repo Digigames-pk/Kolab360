@@ -1,0 +1,63 @@
+
+WebSocket: Connecting to server... index-DuHaNDYN.js:787:37177
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-DuHaNDYN.js:910:74260
+🔍 [RENDER] About to render 7 organization cards index-DuHaNDYN.js:910:74895
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-DuHaNDYN.js:910:74260
+🔍 [RENDER] About to render 7 organization cards index-DuHaNDYN.js:910:74895
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-DuHaNDYN.js:910:74260
+🔍 [RENDER] About to render 7 organization cards index-DuHaNDYN.js:910:74895
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-DuHaNDYN.js:910:74260
+🔍 [RENDER] About to render 7 organization cards index-DuHaNDYN.js:910:74895
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Checking organizations.length: 7 organizations: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+index-DuHaNDYN.js:910:74260
+🔍 [RENDER] About to render 7 organization cards index-DuHaNDYN.js:910:74895
+🔍 [RENDER] Rendering organization: Test Organization Auto Channel ID: 10 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Tech Innovators LLC ID: 9 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Organization ID: 8 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: OCTV ID: 7 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: ICFF ID: 6 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Peremis ID: 5 index-DuHaNDYN.js:910:74986
+🔍 [RENDER] Rendering organization: Test Corporation ID: 3 index-DuHaNDYN.js:910:74986
+💓 WebSocket heartbeat received index-DuHaNDYN.js:787:37711
+
+​
+
