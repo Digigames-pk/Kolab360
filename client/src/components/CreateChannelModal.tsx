@@ -34,6 +34,7 @@ export function CreateChannelModal({ isOpen, onClose, workspaceId }: CreateChann
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // PRODUCTION FIX: Include session cookies
         body: JSON.stringify({
           ...data,
           workspaceId: workspaceId,
@@ -41,7 +42,7 @@ export function CreateChannelModal({ isOpen, onClose, workspaceId }: CreateChann
       });
       
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Failed to create channel' }));
         throw new Error(error.message || 'Failed to create channel');
       }
       

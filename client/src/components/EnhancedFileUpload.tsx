@@ -55,7 +55,9 @@ export function EnhancedFileUpload({
   React.useEffect(() => {
     const fetchRecentFiles = async () => {
       try {
-        const response = await fetch('/api/files');
+        const response = await fetch('/api/files', {
+          credentials: 'include' // PRODUCTION FIX: Include session cookies
+        });
         if (response.ok) {
           const files = await response.json();
           setRecentFiles(files);

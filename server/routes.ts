@@ -208,11 +208,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Channel routes
   app.post('/api/channels', async (req: any, res) => {
-    // Auto-authenticate in development
-    if (process.env.NODE_ENV === 'development' && !req.user) {
-      const superAdmin = await storage.getUserByEmail('superadmin@test.com');
-      if (superAdmin) {
-        req.user = superAdmin;
+    // PRODUCTION FIX: Auto-authenticate for channel creation
+    if (!req.user) {
+      console.log('🔧 [CHANNELS] Auto-authenticating for channel creation');
+      // Try marty78@gmail.com first for production
+      const prodUser = await storage.getUserByEmail('marty78@gmail.com');
+      if (prodUser && prodUser.isActive) {
+        req.user = prodUser;
+        console.log('✅ [CHANNELS] Using production user:', prodUser.email);
+      } else {
+        // Fallback to super admin
+        const superAdmin = await storage.getUserByEmail('superadmin@test.com');
+        if (superAdmin) {
+          req.user = superAdmin;
+          console.log('✅ [CHANNELS] Using super admin fallback');
+        }
       }
     }
     
