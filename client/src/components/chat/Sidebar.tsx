@@ -103,16 +103,29 @@ export default function Sidebar({
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (newChannel) => {
+      // Invalidate and refetch all channel-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
       queryClient.invalidateQueries({ queryKey: ["/api/workspaces", workspace.id, "channels"] });
+      
+      // Force immediate refetch
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/channels"] });
+      }, 100);
+      
       setShowCreateChannel(false);
       setChannelName("");
       setChannelDescription("");
       setIsPrivateChannel(false);
       toast({
         title: "Success",
-        description: "Channel created successfully!",
+        description: `Channel #${newChannel.name} created successfully!`,
       });
+      
+      // Auto-select the new channel if possible
+      if (newChannel.id) {
+        setTimeout(() => onChannelSelect(newChannel.id), 200);
+      }
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {

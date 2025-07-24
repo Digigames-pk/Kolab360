@@ -42,12 +42,24 @@ class NotificationSoundManager {
   }
   
   private initializeAudioContext(): void {
-    // Initialize on first user interaction
-    document.addEventListener('click', () => {
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    // Initialize immediately for better sound responsiveness
+    try {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (this.audioContext.state === 'suspended') {
+        // Resume on first user interaction
+        document.addEventListener('click', () => {
+          this.audioContext?.resume();
+        }, { once: true });
       }
-    }, { once: true });
+    } catch (error) {
+      console.log('Audio context initialization delayed - waiting for user interaction');
+      // Fallback to user interaction
+      document.addEventListener('click', () => {
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+      }, { once: true });
+    }
   }
   
   private shouldPlaySound(): boolean {

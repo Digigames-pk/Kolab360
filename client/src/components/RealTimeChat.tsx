@@ -142,6 +142,8 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           
           // Play notification sound if message is from another user
           if (message.data.authorId !== user?.id) {
+            console.log('🔊 Preparing to play notification sound');
+            
             // Check if user is mentioned in the message
             const content = message.data.content || '';
             const userFullName = `${user?.firstName} ${user?.lastName}`.trim();
@@ -150,8 +152,10 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
                               content.includes(`@${user?.email}`);
             
             if (isMentioned) {
+              console.log('📢 Playing mention sound for @mention');
               notificationSounds.playMentionSound();
             } else {
+              console.log('💬 Playing message sound for regular message');
               notificationSounds.playMessageSound();
             }
           }
@@ -175,6 +179,7 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
           
           // Play mention sound for incoming direct messages (they're inherently personal)
           if (message.data.authorId !== user?.id) {
+            console.log('📧 Playing mention sound for DM');
             notificationSounds.playMentionSound();
           }
           
@@ -241,17 +246,34 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
   // Pin message functionality 
   const pinMessage = async (messageId: string) => {
     try {
+      console.log('📌 Attempting to pin message:', messageId);
       const response = await fetch(`/api/pins/messages/${messageId}`, {
         method: 'POST',
         credentials: 'include'
       });
       
+      console.log('📌 Pin response status:', response.status);
+      
       if (response.ok) {
-        console.log('✅ Message pinned successfully:', messageId);
-        // Show success toast or update UI
+        const result = await response.json();
+        console.log('✅ Message pinned successfully:', result);
+        
+        // Show visual feedback to user
+        if (window.alert) {
+          alert(`Message pinned successfully! Pin ID: ${messageId}`);
+        }
+      } else {
+        const error = await response.text();
+        console.error('❌ Pin failed:', error);
+        if (window.alert) {
+          alert(`Failed to pin message: ${error}`);
+        }
       }
     } catch (error) {
       console.error('Error pinning message:', error);
+      if (window.alert) {
+        alert(`Error pinning message: ${error}`);
+      }
     }
   };
   

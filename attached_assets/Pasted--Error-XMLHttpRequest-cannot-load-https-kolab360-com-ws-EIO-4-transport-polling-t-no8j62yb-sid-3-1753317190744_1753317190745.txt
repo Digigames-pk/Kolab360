@@ -1,0 +1,99 @@
+[Error] XMLHttpRequest cannot load https://kolab360.com/ws/?EIO=4&transport=polling&t=no8j62yb&sid=3bl4eF8ZdnT-UdXfAAAC due to access control checks.
+	_create (index-D-SZaUvD.js:792:47528)
+	Ir (index-D-SZaUvD.js:792:46432)
+	request (index-D-SZaUvD.js:792:48671)
+	doWrite (index-D-SZaUvD.js:792:46005)
+	(anonymous function) (index-D-SZaUvD.js:792:45381)
+	(anonymous function) (index-D-SZaUvD.js:792:39267)
+	(anonymous function) (index-D-SZaUvD.js:792:39240)
+	forEach
+	CU (index-D-SZaUvD.js:792:39229)
+	write (index-D-SZaUvD.js:792:45362)
+	t (index-D-SZaUvD.js:792:45265)
+	doClose (index-D-SZaUvD.js:792:45311)
+	close (index-D-SZaUvD.js:792:43741)
+	_onClose (index-D-SZaUvD.js:792:58777)
+	_onError (index-D-SZaUvD.js:792:58544)
+	(anonymous function) (index-D-SZaUvD.js:792:41867)
+	onError (index-D-SZaUvD.js:792:43569)
+	(anonymous function) (index-D-SZaUvD.js:792:46207)
+	(anonymous function) (index-D-SZaUvD.js:792:41867)
+	_onError (index-D-SZaUvD.js:792:47714)
+	(anonymous function) (index-D-SZaUvD.js:792:47477)
+[Log] ❌ Socket.IO disconnected: – "transport error" (index-D-SZaUvD.js, line 792)
+[Log] ❌ WebSocket disconnected (index-D-SZaUvD.js, line 792)
+[Log] Socket.IO: Initializing connection... (index-D-SZaUvD.js, line 792)
+[Log] ✅ Socket.IO connected: – "6qqzKCQ51GIy8pLyAAAF" (index-D-SZaUvD.js, line 792)
+[Log] ✅ WebSocket connected, joining workspace and channel (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "join_workspace" – {type: "join_workspace", workspaceId: 1, userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "join_channel" – {type: "join_channel", channelId: "general"} (index-D-SZaUvD.js, line 792)
+[Log] 📨 Socket.IO message received: – "connection_established" – [{connectionId: "6qqzKCQ51GIy8pLyAAAF", timestamp: "2025-07-24T00:30:02.316Z"}] (1) (index-D-SZaUvD.js, line 792)
+[Log] 📨 WebSocket message received in RealTimeChat: – {type: "connection_established", data: {connectionId: "6qqzKCQ51GIy8pLyAAAF", timestamp: "2025-07-24T00:30:02.316Z"}, connectionId: "6qqzKCQ51GIy8pLyAAAF", …} (index-D-SZaUvD.js, line 792)
+{type: "connection_established", data: {connectionId: "6qqzKCQ51GIy8pLyAAAF", timestamp: "2025-07-24T00:30:02.316Z"}, connectionId: "6qqzKCQ51GIy8pLyAAAF", timestamp: "2025-07-24T00:30:02.316Z"}Object
+[Error] WebSocket connection to 'wss://kolab360.com/ws/?EIO=4&transport=websocket&sid=rKoy7TtDX3bH-BBWAAAE' failed: There was a bad response from the server.
+[Log] 📥 Messages loaded from API: – [Object, Object, Object, …] (32) (index-D-SZaUvD.js, line 792)
+[Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, …]Array (32)
+[Log] 🔍 File metadata check: – [Object, Object, Object, …] (32) (index-D-SZaUvD.js, line 792)
+[Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, …]Array (32)
+[Log] 📤 Socket.IO sending: – "typing" – {type: "typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "typing" – {type: "typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "new_message" – {type: "new_message", channelId: "general", recipientId: undefined, …} (index-D-SZaUvD.js, line 792)
+{type: "new_message", channelId: "general", recipientId: undefined, content: "kj", authorId: 23, …}Object
+[Log] 📤 Socket.IO sending: – "stop_typing" – {type: "stop_typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "stop_typing" – {type: "stop_typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "typing" – {type: "typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "typing" – {type: "typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "typing" – {type: "typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "new_message" – {type: "new_message", channelId: "general", recipientId: undefined, …} (index-D-SZaUvD.js, line 792)
+{type: "new_message", channelId: "general", recipientId: undefined, content: "sdg", authorId: 23, …}Object
+[Log] 📤 Socket.IO sending: – "stop_typing" – {type: "stop_typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "stop_typing" – {type: "stop_typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] User typing @mention: – "@" (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "typing" – {type: "typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "stop_typing" – {type: "stop_typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Socket.IO sending: – "new_message" – {type: "new_message", channelId: "general", recipientId: undefined, …} (index-D-SZaUvD.js, line 792)
+{type: "new_message", channelId: "general", recipientId: undefined, content: "@Marty McFly ", authorId: 23, …}Object
+[Log] 📤 Socket.IO sending: – "stop_typing" – {type: "stop_typing", channelId: "general", userId: 23} (index-D-SZaUvD.js, line 792)
+[Log] 📤 Upload response status: – 201 (index-D-SZaUvD.js, line 792)
+[Log] 📤 File data received: – {success: true, id: "1", originalName: "Screenshot 2025-07-23 at 3.35.28â¯PM.png", …} (index-D-SZaUvD.js, line 792)
+{success: true, id: "1", originalName: "Screenshot 2025-07-23 at 3.35.28â¯PM.png", filename: "af1cf5d9200431ac89c30259d6513b4f", size: 2630549, …}Object
+[Log] 🔄 Creating file message with payload: – {content: "📎 Shared file: Screenshot 2025-07-23 at 3.35.28â¯PM.png", fileUrl: "/uploads/af1cf5d9200431ac89c30259d6513b4f", fileName: "Screenshot 2025-07-23 at 3.35.28â¯PM.png", …} (index-D-SZaUvD.js, line 792)
+{content: "📎 Shared file: Screenshot 2025-07-23 at 3.35.28â¯PM.png", fileUrl: "/uploads/af1cf5d9200431ac89c30259d6513b4f", fileName: "Screenshot 2025-07-23 at 3.35.28â¯PM.png", fileType: "image/png", fileSize: 2630549}Object
+[Log] 📬 Message response status: – 200 (index-D-SZaUvD.js, line 792)
+[Log] 🆕 New message from API: (index-D-SZaUvD.js, line 792)
+Object
+
+author: {id: 23, email: "user23@kolab360.com", password: "e25d883467ba11901ebf37792170a5087dbb721547f4a52c82…3fcb21f8d7785dd8.0676a4c0e76c62b064d9164aef1ec932", firstName: "Production", lastName: "User", …}
+
+authorId: 23
+
+channelId: "550e8400-e29b-41d4-a716-446655440000"
+
+content: "📎 Shared file: Screenshot 2025-07-23 at 3.35.28â¯PM.png"
+
+createdAt: "2025-07-24T00:30:24.834Z"
+
+editedAt: null
+
+id: "a91e375f-778c-498b-8c6e-e9025bc714c6"
+
+messageType: "file"
+
+metadata: {fileUrl: "/uploads/af1cf5d9200431ac89c30259d6513b4f", fileName: "Screenshot 2025-07-23 at 3.35.28â¯PM.png", fileSize: 2630549, fileType: "image/png"}
+
+recipientId: null
+
+threadId: null
+
+updatedAt: "2025-07-24T00:30:24.834Z"
+
+Object Prototype
+[Log] 🎯 Final message with file data: – {id: "a91e375f-778c-498b-8c6e-e9025bc714c6", content: "📎 Shared file: Screenshot 2025-07-23 at 3.35.28â¯PM.png", authorId: 23, …} (index-D-SZaUvD.js, line 792)
+{id: "a91e375f-778c-498b-8c6e-e9025bc714c6", content: "📎 Shared file: Screenshot 2025-07-23 at 3.35.28â¯PM.png", authorId: 23, channelId: "550e8400-e29b-41d4-a716-446655440000", recipientId: null, …}Object
+[Log] ✅ File message created successfully (index-D-SZaUvD.js, line 792)
+[Log] 📥 Messages loaded from API: – [Object, Object, Object, …] (36) (index-D-SZaUvD.js, line 792)
+[Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, …]Array (36)
+[Log] 🔍 File metadata check: – [Object, Object, Object, …] (36) (index-D-SZaUvD.js, line 792)
+[Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, …]Array (36)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-D-SZaUvD.js, line 792)
+[Error] Failed to load resource: the server responded with a status of 500 () (channels, line 0)

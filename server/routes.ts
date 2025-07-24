@@ -2875,20 +2875,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const io = new SocketIOServer(httpServer, {
     path: '/ws',
     cors: {
-      origin: [
-        'http://localhost:5000',
-        'https://kolab360.com',
-        'https://www.kolab360.com',
-        'https://team-sync-ai-forcerecondelta.replit.app'
-      ],
+      origin: function(origin, callback) {
+        // Allow all origins in development, specific origins in production
+        const allowedOrigins = [
+          'http://localhost:5000',
+          'https://kolab360.com',
+          'https://www.kolab360.com',
+          'https://team-sync-ai-forcerecondelta.replit.app'
+        ];
+        
+        // Allow requests with no origin (mobile apps, postman, etc)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+          callback(null, true);
+        } else {
+          console.log('❌ [SOCKET.IO CORS] Blocked origin:', origin);
+          callback(new Error('Not allowed by CORS policy'));
+        }
+      },
       credentials: true,
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cookie'],
+      exposedHeaders: ['Set-Cookie']
     },
-    transports: ['websocket', 'polling'], // Fallback to polling if WebSocket fails
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000,
-    allowEIO3: true // Support older Engine.IO versions
+    forceNew: false,
+    reconnection: true,
+    timeout: 20000,
+    upgradeTimeout: 10000
   });
 
   // WebSocket server setup - PRODUCTION FIX (Keep for backward compatibility)
