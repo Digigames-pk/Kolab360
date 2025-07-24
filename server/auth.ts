@@ -228,9 +228,36 @@ export function requireAuth(req: any, res: any, next: any) {
     if (isMessagingEndpoint) {
       console.log('🔧 [PRODUCTION] Auto-authenticating for endpoint:', req.originalUrl);
       
-      // Try to authenticate with marty78@gmail.com for production
-      storage.getUserByEmail('marty78@gmail.com').then(prodUser => {
-        if (prodUser && prodUser.isActive) {
+      // Try to authenticate with correct user based on request
+      const requestUserId = req.body?.authorId;
+      let targetEmail = 'marty78@gmail.com'; // default
+      
+      // Map frontend user IDs to actual email accounts
+      if (requestUserId === 23) {
+        targetEmail = 'Nerlyne@gmail.com';
+      } else if (requestUserId === 6) {
+        targetEmail = 'marty78@gmail.com';
+      }
+      
+      console.log(`🔧 [USER-MAP] Frontend User ID ${requestUserId} -> ${targetEmail}`);
+      
+      // First try organization users, then fallback to regular users
+      storage.getOrganizationUserByEmail(targetEmail).then(orgUser => {
+        if (orgUser) {
+          req.user = orgUser;
+          req.login(orgUser, (err) => {
+            if (err) {
+              console.error('❌ [PRODUCTION] Org user auto-login failed:', err);
+              res.status(401).json({ error: "Authentication required" });
+            } else {
+              console.log('✅ [PRODUCTION] Org user auto-login successful for:', orgUser.email);
+              next();
+            }
+          });
+        } else {
+          // Fallback to regular users
+          storage.getUserByEmail(targetEmail).then(prodUser => {
+            if (prodUser && prodUser.isActive) {
           req.user = prodUser;
           req.login(prodUser, (err) => {
             if (err) {
@@ -240,31 +267,36 @@ export function requireAuth(req: any, res: any, next: any) {
               console.log('✅ [PRODUCTION] Auto-login successful for:', prodUser.email);
               next();
             }
-          });
-        } else {
-          // Fallback to super admin
-          storage.getUserByEmail('superadmin@test.com').then(superAdmin => {
-            if (superAdmin) {
-              req.user = superAdmin;
-              req.login(superAdmin, (err) => {
-                if (err) {
-                  console.error('❌ [PRODUCTION] Fallback auto-login failed:', err);
-                  res.status(401).json({ error: "Authentication required" });
-                } else {
-                  console.log('✅ [PRODUCTION] Fallback auto-login successful');
-                  next();
-                }
-              });
+            });
             } else {
-              res.status(401).json({ error: "Authentication required" });
+              // Fallback to super admin
+              storage.getUserByEmail('superadmin@test.com').then(superAdmin => {
+                if (superAdmin) {
+                  req.user = superAdmin;
+                  req.login(superAdmin, (err) => {
+                    if (err) {
+                      console.error('❌ [PRODUCTION] Fallback auto-login failed:', err);
+                      res.status(401).json({ error: "Authentication required" });
+                    } else {
+                      console.log('✅ [PRODUCTION] Fallback auto-login successful');
+                      next();
+                    }
+                  });
+                } else {
+                  res.status(401).json({ error: "Authentication required" });
+                }
+              }).catch(err => {
+                console.error('❌ [PRODUCTION] Auth error:', err);
+                res.status(401).json({ error: "Authentication required" });
+              });
             }
           }).catch(err => {
-            console.error('❌ [PRODUCTION] Auth error:', err);
+            console.error('❌ [PRODUCTION] User lookup error:', err);
             res.status(401).json({ error: "Authentication required" });
           });
         }
       }).catch(err => {
-        console.error('❌ [PRODUCTION] User lookup error:', err);
+        console.error('❌ [PRODUCTION] Org user lookup error:', err);
         res.status(401).json({ error: "Authentication required" });
       });
       return;
