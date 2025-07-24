@@ -605,6 +605,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Members endpoint for workspace members
+  app.get('/api/members', async (req: any, res) => {
+    try {
+      // Auto-authentication for development
+      if (!req.user && process.env.NODE_ENV === 'development') {
+        console.log('🔧 [MEMBERS] Auto-authenticating for members endpoint');
+        try {
+          const productionUser = await storage.getOrganizationUserByEmail('marty78@gmail.com');
+          if (productionUser) {
+            req.user = productionUser;
+            console.log('✅ [MEMBERS] Org user auto-login successful for: marty78@gmail.com');
+          }
+        } catch (error) {
+          console.error('❌ [MEMBERS] Auto-authentication failed:', error);
+          return res.status(401).json({ error: 'Authentication required' });
+        }
+      }
+      
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      // Get workspace members - simplified approach for now
+      const members = []; // Empty for now, can be expanded later
+      console.log('📋 [MEMBERS] Retrieved members:', members.length);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
   // Channels list endpoint with proper authentication and auto-auth
   app.get('/api/channels', async (req: any, res) => {
     try {
