@@ -24,7 +24,8 @@ import {
   Users,
   Settings,
   LogOut,
-  Send
+  Send,
+  Trash2
 } from "lucide-react";
 import { UserStatusControl } from "@/components/UserStatusControl";
 
@@ -162,6 +163,39 @@ export default function Sidebar({
       description: channelDescription.trim() || undefined,
       isPrivate: isPrivateChannel,
     });
+  };
+
+  const handleDeleteChannel = async (channelId: string, channelName: string) => {
+    if (confirm(`Are you sure you want to DELETE #${channelName}? This action cannot be undone and will permanently remove all messages and files.`)) {
+      try {
+        const response = await fetch(`/api/channels/${channelId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          // Refresh the channels list
+          queryClient.invalidateQueries({ queryKey: ['/api/channels'] });
+          toast({
+            title: "Success",
+            description: `Channel #${channelName} has been deleted successfully`,
+          });
+        } else {
+          toast({
+            title: "Error", 
+            description: "Failed to delete channel. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Error deleting channel:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete channel. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleLogout = () => {
@@ -331,13 +365,23 @@ export default function Sidebar({
                     }`}
                     onClick={() => onChannelSelect(channel.id)}
                   >
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 group">
                       {channel.isPrivate ? (
                         <Lock className="h-4 w-4" />
                       ) : (
                         <Hash className="h-4 w-4" />
                       )}
                       <span className="text-sm truncate flex-1">{channel.name || 'general'}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteChannel(channel.id, channel.name);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 p-1"
+                        title="Delete channel"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
                     </div>
                   </div>
                 ))}

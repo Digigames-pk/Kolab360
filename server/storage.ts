@@ -75,6 +75,7 @@ export interface IStorage {
   getWorkspaceChannels(workspaceId: string): Promise<Channel[]>;
   getAllChannels(): Promise<Channel[]>;
   getChannel(id: string): Promise<Channel | undefined>;
+  deleteChannel(id: string): Promise<void>;
   joinChannel(channelId: string, userId: number): Promise<void>;
   getChannelMembers(channelId: string): Promise<(ChannelMember & { user: User })[]>;
   
@@ -317,6 +318,15 @@ export class DatabaseStorage implements IStorage {
   async getChannel(id: string): Promise<Channel | undefined> {
     const [channel] = await db.select().from(channels).where(eq(channels.id, id));
     return channel;
+  }
+
+  async deleteChannel(id: string): Promise<void> {
+    // Delete channel members first (foreign key constraint)
+    await db.delete(channelMembers).where(eq(channelMembers.channelId, id));
+    // Delete all messages in the channel
+    await db.delete(messages).where(eq(messages.channelId, id));
+    // Delete the channel itself
+    await db.delete(channels).where(eq(channels.id, id));
   }
 
   async joinChannel(channelId: string, userId: number): Promise<void> {

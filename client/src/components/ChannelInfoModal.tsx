@@ -85,10 +85,26 @@ export function ChannelInfoModal({ isOpen, onClose, channelName }: ChannelInfoMo
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm(`Are you sure you want to DELETE #${channelName}? This action cannot be undone and will permanently remove all messages and files.`)) {
-      console.log('Deleting channel:', channelName);
-      alert(`Channel #${channelName} has been deleted`);
+      try {
+        console.log('Deleting channel:', channelId);
+        const response = await fetch(`/api/channels/${channelId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          alert(`Channel #${channelName} has been deleted successfully`);
+          // Refresh the channels list
+          window.location.reload();
+        } else {
+          alert('Failed to delete channel. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting channel:', error);
+        alert('Failed to delete channel. Please try again.');
+      }
       onClose();
     }
   };
