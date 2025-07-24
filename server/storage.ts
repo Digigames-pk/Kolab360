@@ -73,6 +73,7 @@ export interface IStorage {
   // Channel operations
   createChannel(channel: InsertChannel & { createdBy: number }): Promise<Channel>;
   getWorkspaceChannels(workspaceId: string): Promise<Channel[]>;
+  getAllChannels(): Promise<Channel[]>;
   getChannel(id: string): Promise<Channel | undefined>;
   joinChannel(channelId: string, userId: number): Promise<void>;
   getChannelMembers(channelId: string): Promise<(ChannelMember & { user: User })[]>;
@@ -307,6 +308,10 @@ export class DatabaseStorage implements IStorage {
 
   async getWorkspaceChannels(workspaceId: string): Promise<Channel[]> {
     return await db.select().from(channels).where(eq(channels.workspaceId, workspaceId));
+  }
+
+  async getAllChannels(): Promise<Channel[]> {
+    return await db.select().from(channels);
   }
 
   async getChannel(id: string): Promise<Channel | undefined> {
@@ -1378,6 +1383,10 @@ class MemoryStorage implements IStorage {
   }
 
   async getWorkspaceChannels(workspaceId: string): Promise<Channel[]> {
+    return [];
+  }
+
+  async getAllChannels(): Promise<Channel[]> {
     return [];
   }
 
