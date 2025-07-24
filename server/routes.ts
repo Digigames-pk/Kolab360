@@ -274,12 +274,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Transform channel name to lowercase and replace spaces with hyphens
+      const transformedName = name.trim().toLowerCase().replace(/\s+/g, '-');
+      
       const channelData = {
         id: randomUUID(),
-        name,
+        name: transformedName,
         workspaceId: defaultWorkspace.id,
         isPrivate: false,
-        description: `Channel for ${name}`,
+        description: `Channel for ${transformedName}`,
         createdBy: userId,
       };
       
@@ -307,8 +310,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/workspaces/:workspaceId/channels', requireAuth, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const { name, ...otherData } = req.body;
+      
+      // Transform channel name to lowercase and replace spaces with hyphens
+      const transformedName = name ? name.trim().toLowerCase().replace(/\s+/g, '-') : undefined;
+      
       const channelData = insertChannelSchema.parse({
-        ...req.body,
+        ...otherData,
+        name: transformedName,
         workspaceId: req.params.workspaceId,
       });
       

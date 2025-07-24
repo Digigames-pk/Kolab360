@@ -159,7 +159,7 @@ export default function Sidebar({
     }
     
     createChannelMutation.mutate({
-      name: channelName.trim(),
+      name: channelName.trim().toLowerCase().replace(/\s+/g, '-'),
       description: channelDescription.trim() || undefined,
       isPrivate: isPrivateChannel,
     });
