@@ -36,6 +36,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { notificationSounds } from '@/utils/notificationSounds';
 import {
   Popover,
   PopoverContent,
@@ -139,6 +140,22 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             return exists ? prev : [...prev, message.data];
           });
           
+          // Play notification sound if message is from another user
+          if (message.data.authorId !== user?.id) {
+            // Check if user is mentioned in the message
+            const content = message.data.content || '';
+            const userFullName = `${user?.firstName} ${user?.lastName}`.trim();
+            const isMentioned = content.includes(`@${userFullName}`) || 
+                              content.includes(`@${user?.firstName}`) ||
+                              content.includes(`@${user?.email}`);
+            
+            if (isMentioned) {
+              notificationSounds.playMentionSound();
+            } else {
+              notificationSounds.playMessageSound();
+            }
+          }
+          
           // Mark channel as read if user is actively viewing it
           if (channelId) {
             markChannelAsRead(channelId);
@@ -155,6 +172,11 @@ export function RealTimeChat({ channelId, recipientId, recipientName, className 
             const exists = prev.some(m => m.id === message.data.id);
             return exists ? prev : [...prev, message.data];
           });
+          
+          // Play mention sound for incoming direct messages (they're inherently personal)
+          if (message.data.authorId !== user?.id) {
+            notificationSounds.playMentionSound();
+          }
           
           // Mark DM as read if user is actively viewing it
           if (recipientId) {

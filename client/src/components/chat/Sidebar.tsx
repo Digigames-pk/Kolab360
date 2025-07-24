@@ -26,6 +26,7 @@ import {
   LogOut,
   Send
 } from "lucide-react";
+import { UserStatusControl } from "@/components/UserStatusControl";
 
 interface Channel {
   id: string;
@@ -394,6 +395,9 @@ export default function Sidebar({
 
       {/* Bottom Actions */}
       <div className="p-4 border-t border-gray-700/50 space-y-2">
+        {/* User Status Control */}
+        <UserStatusControl className="w-full justify-start text-gray-300 hover:text-white" />
+        
         <Button
           variant="ghost"
           size="sm"
