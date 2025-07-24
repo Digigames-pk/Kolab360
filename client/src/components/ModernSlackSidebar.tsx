@@ -86,6 +86,8 @@ interface ModernSlackSidebarProps {
   onShowSettings?: () => void;
   channelStats?: ChannelStat[];
   dmStats?: DMStat[];
+  channels?: any[];
+  members?: any[];
   onCreateWorkspace?: () => void;
   onCreateChannel?: () => void;
   onCreateDM?: () => void;
@@ -107,6 +109,8 @@ export function ModernSlackSidebar({
   onShowSettings,
   channelStats = [],
   dmStats = [],
+  channels: apiChannels = [],
+  members = [],
   onCreateWorkspace,
   onCreateChannel,
   onCreateDM
@@ -342,13 +346,13 @@ export function ModernSlackSidebar({
               </div>
               
               <div className={`space-y-1 ${settings.compactMode ? 'space-y-0' : 'space-y-1'}`}>
-                {channels.map((channel) => (
+                {apiChannels.map((channel) => (
                   <Button
                     key={channel.id}
-                    variant={selectedChannel === channel.id ? 'secondary' : 'ghost'}
+                    variant={selectedChannel === channel.name ? 'secondary' : 'ghost'}
                     className={`w-full justify-start px-2 ${settings.compactMode ? 'py-0 h-6 text-xs' : 'py-1 h-8 text-sm'}`}
                     onClick={async () => {
-                      onChannelSelect(channel.id);
+                      onChannelSelect(channel.name);
                       onViewChange('chat');
                       
                       // Mark as read after a short delay to simulate viewing messages
@@ -378,7 +382,7 @@ export function ModernSlackSidebar({
                       }
                     }}
                   >
-                    {channel.type === 'private' ? (
+                    {channel.isPrivate ? (
                       <Lock className={`${settings.compactMode ? 'h-2 w-2' : 'h-3 w-3'} mr-2 text-gray-500`} />
                     ) : (
                       <Hash className={`${settings.compactMode ? 'h-2 w-2' : 'h-3 w-3'} mr-2 text-gray-500`} />
@@ -428,67 +432,31 @@ export function ModernSlackSidebar({
             </div>
             
             <div className={`space-y-1 ${settings.compactMode ? 'space-y-0' : 'space-y-1'}`}>
-              {directMessages.map((dm) => (
+              {members.map((member) => (
                 <Button
-                  key={dm.id}
+                  key={member.id}
                   variant="ghost"
                   className={`w-full justify-start px-2 ${settings.compactMode ? 'py-0 h-6 text-xs' : 'py-1 h-8 text-sm'}`}
                   onClick={async () => {
                     onViewChange('chat');
-                    console.log('Selected DM:', dm.name);
-                    
-                    // Mark DM as read after a short delay to simulate viewing messages
-                    if (dm.unread > 0) {
-                      setTimeout(async () => {
-                        try {
-                          console.log(`🔄 [Frontend] Marking DM "${dm.name}" as read`);
-                          
-                          const response = await fetch(`/api/unread-counts/direct-messages/${encodeURIComponent(dm.name)}/mark-read`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
-                          });
-                          
-                          if (response.ok) {
-                            const result = await response.json();
-                            console.log('✅ [Frontend] Successfully marked DM as read:', result);
-                            
-                            // Update local state with backend response
-                            setDMUnreadCounts(result.allCounts);
-                          } else {
-                            console.error('❌ [Frontend] Failed to mark DM as read:', response.statusText);
-                          }
-                        } catch (error) {
-                          console.error('❌ [Frontend] Error marking DM as read:', error);
-                        }
-                      }, 2000);
-                    }
+                    console.log('Selected DM:', member.user?.email);
                   }}
                 >
                   <div className="flex items-center mr-2">
                     {settings.showStatusIndicators && (
                       <Circle 
-                        className={`${settings.compactMode ? 'h-1 w-1' : 'h-2 w-2'} mr-1 ${
-                          dm.status === 'online' ? 'text-green-500 fill-current' :
-                          dm.status === 'away' ? 'text-yellow-500 fill-current' :
-                          'text-gray-400'
-                        }`} 
+                        className={`${settings.compactMode ? 'h-1 w-1' : 'h-2 w-2'} mr-1 text-green-500 fill-current`} 
                       />
                     )}
                     <Avatar className={settings.compactMode ? 'h-4 w-4' : 'h-5 w-5'}>
                       <AvatarFallback className={settings.compactMode ? 'text-xs' : 'text-xs'}>
-                        {dm.name.split(' ').map(n => n[0]).join('')}
+                        {(member.user?.firstName?.charAt(0) || '') + (member.user?.lastName?.charAt(0) || '')}
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <span className="truncate">{dm.name}</span>
-                  {dm.unread > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className={`ml-auto ${settings.compactMode ? 'text-xs h-4 min-w-4' : 'text-xs h-5 min-w-5'}`}
-                    >
-                      {dm.unread}
-                    </Badge>
-                  )}
+                  <span className="truncate">
+                    {member.user?.firstName} {member.user?.lastName}
+                  </span>
                 </Button>
               ))}
             </div>

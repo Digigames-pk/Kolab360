@@ -128,6 +128,18 @@ export default function Home() {
     role: (user?.role as 'admin' | 'super_admin') || 'admin'
   };
 
+  // Fetch channels for the sidebar
+  const { data: channels = [], isLoading: channelsLoading } = useQuery({
+    queryKey: ['/api/channels'],
+    enabled: !!user,
+  });
+
+  // Fetch workspace members
+  const { data: members = [], isLoading: membersLoading } = useQuery({
+    queryKey: ['/api/workspaces', selectedWorkspace, 'members'],
+    enabled: !!selectedWorkspace,
+  });
+
   // Dynamic workspace data based on user's organization - update when user changes
   const [workspaces, setWorkspaces] = useState<Array<{
     id: number;
@@ -179,24 +191,26 @@ export default function Home() {
     console.log('New workspace created:', workspaceWithInitial);
   };
 
-  // Clean workspace data without hardcoded channels/DMs
-  const workspaceData: Record<number, {channels: any[], directMessages: any[]}> = {
-    1: { channels: [], directMessages: [] },
-    2: { channels: [], directMessages: [] },
-    3: { channels: [], directMessages: [] }
-  };
-
-  // Get current workspace data
-  const currentWorkspaceData = workspaceData[selectedWorkspace] || workspaceData[1];
-
-  // Empty channel stats - no hardcoded data
-  const [channelStats, setChannelStats] = useState([]);
+  // Convert API channel data to stats format for sidebar
+  const channelStats = channels.map((channel: any) => ({
+    id: channel.id,
+    name: channel.name,
+    memberCount: 1, // Default to 1 member
+    activeMembers: 1,
+    lastActivity: channel.updatedAt || channel.createdAt,
+    messageCount: 0, // Will be updated with real data later
+    type: channel.isPrivate ? 'private' : 'public'
+  }));
 
   // Empty DM stats - no hardcoded data
   const [dmStats, setDMStats] = useState([]);
-
-  const channels = currentWorkspaceData.channels;
-  const directMessages = currentWorkspaceData.directMessages;
+  
+  // Direct messages from members
+  const directMessages = members.map((member: any) => ({
+    id: member.userId,
+    name: `${member.user?.firstName || 'User'} ${member.user?.lastName || ''}`.trim(),
+    email: member.user?.email
+  }));
 
   return (
     <div className="h-screen bg-gray-50 flex">
@@ -225,6 +239,8 @@ export default function Home() {
           onShowSettings={() => alert('Opening audio settings...')}
           channelStats={channelStats}
           dmStats={dmStats}
+          channels={channels}
+          members={members}
           onCreateWorkspace={() => setShowCreateWorkspace(true)}
           onCreateChannel={() => setShowCreateChannel(true)}
           onCreateDM={() => setShowStartDM(true)}
